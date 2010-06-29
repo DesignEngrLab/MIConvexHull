@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIConvexHull", "MIConvexHull\MIConvexHull.csproj", "{2337776D-7D0C-40AA-A439-C26C3CE24FAB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestEXE for MIConvexHull", "TestEXE for MIConvexHull\TestEXE for MIConvexHull.csproj", "{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
