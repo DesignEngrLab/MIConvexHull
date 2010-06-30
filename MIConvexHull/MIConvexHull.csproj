@@ -35,6 +35,8 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="face.cs" />
+    <Compile Include="HelperFunctions for 3D.cs" />
     <Compile Include="MIConvexHull3D.cs" />
     <Compile Include="HelperFunctions for 2D.cs" />
     <Compile Include="MIConvexHull2D.cs" />

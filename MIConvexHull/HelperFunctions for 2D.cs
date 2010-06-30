@@ -29,21 +29,6 @@ namespace MIConvexNameSpace
     public static partial class MIConvexHull
     {
         /// <summary>
-        /// Returns the signed distance from edge, a. The distance between a point and a line is perpendicular
-        /// to the line and can be found using the cross product. "aMag" is the magnitude of vector 
-        /// a, thus dividing the cross product by it gives us basically = |b|*sin(theta)
-        /// </summary>
-        /// <param name="aX">X-component of the A vector.</param>
-        /// <param name="aY">Y-component of the A vector..</param>
-        /// <param name="bX">X-component of the B vector.</param>
-        /// <param name="bY">Y-component of the B vector.</param>
-        /// <param name="aMag">magnitude of A vector.</param>
-        /// <returns></returns>
-        static double signedDistance(double aX, double aY, double bX, double bY, double aMag)
-        {
-            return crossProduct(aX, aY, bX, bY) / aMag;
-        }
-        /// <summary>
         /// A quick cross-product of 2-D vectors. The result can be a single double since it
         /// is just the value in the z-direction.
         /// </summary>
@@ -52,7 +37,7 @@ namespace MIConvexNameSpace
         /// <param name="bX">X-component of the B vector.</param>
         /// <param name="bY">Y-component of the B vector.</param>
         /// <returns></returns>
-        static double crossProduct(double aX, double aY, double bX, double bY)
+        private static double crossProduct(double aX, double aY, double bX, double bY)
         {
             return (aX * bY - bX * aY);
         }
@@ -67,10 +52,9 @@ namespace MIConvexNameSpace
         /// <param name="bY">Y-component of the B vector.</param>
         /// <param name="aMag">magnitude of A vector.</param>
         /// <returns></returns>
-        static double positionAlong(double aX, double aY, double bX, double bY, double Mag)
+        private static double dotProduct(double aX, double aY, double bX, double bY)
         {
-            var dotProduct = aX * bX + aY * bY;
-            return dotProduct / Mag; //basically = |b|*cos(theta)
+            return (aX * bX + aY * bY);
         }
     }
 }
