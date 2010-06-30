@@ -24,20 +24,20 @@ namespace MIConvexNameSpace
     using System.Collections.Generic;
 
     /// <summary>
-    /// MIConvexHull ("my convex hull", my initials are MIC) is built to be fast for large numbers of
-    /// 2D points. Well, it should be fast for small numbers as well with the exception that C# is perhaps
-    /// a little slower than C++ for the small amount of array math that'd happen for a small number 
-    /// (l.t.20) of vertices.
-    /// This reasons it is fast are:
-    /// 1. implementing the Akl-Toussaint "octagon" heuristic
-    /// 2. using quick dot- and cross-products instead of more expensie sine and cosine functions.
-    /// 3. the data structure (an array of sorted-lists of tuples) is calculated and stored to avoid 
-    ///    future recalculation.
-    /// 4. a single break function to further speed up inter-vectex checking
-    /// 5. an ordered list reduces the number of checks for new convex candidates.
+    /// One night, I thought that the process wastes a lot of time having to make two loops through all
+    /// the nodes. Wouldn't it be a good idea to combine them as much as possible. Here is the working
+    /// code. Several additional objects and arrays are created but in the end to optimal value (as 
+    /// stated in the next comment for startInnerCheck) was 1! I suppose the initial pass via the
+    /// Akl-Toussaint heuristic is really quick. There appears to be no improvement for big or small
+    /// numbers of vertices (tried everything from 100 to 100 million).
     /// </summary>
     public static partial class MIConvexHull
     {
+        /* startInnerCheck is a number between 0 and 1. It is the percentage through the initial
+         * check for extremes in which candidate vertices can be weeded out. This affects the efficiency
+         * of the run not the accuracy. It is unclear what the optimal value should be, but a value of
+         * ?? seems to work best. */
+        const double startInnerCheck = 1.0;
         /// <summary>
         /// Finds the convex hull vertices.
         /// </summary>
@@ -50,6 +50,9 @@ namespace MIConvexNameSpace
             var origVertices = new List<vertex>(vertices);
             var origVNum = origVertices.Count;
 
+            int innerCheckStartAt = (int)(((1.0 - startInnerCheck) * origVNum) + 0.5);
+            if (innerCheckStartAt > origVNum - 3) innerCheckStartAt = origVNum - 3;
+            else if (innerCheckStartAt < 0) innerCheckStartAt = 0;
             #region Step 1 : Define Convex Octogon
             /* The first step is to quickly identify the three to eight vertices based on the
              * Akl-Toussaint heuristic. */
@@ -61,23 +64,29 @@ namespace MIConvexNameSpace
             double minY = double.PositiveInfinity;
             double minSum = double.PositiveInfinity;
             double minDiff = double.PositiveInfinity;
-
+            var MayBePartOfHull = new Boolean[innerCheckStartAt];
             /* the array of extreme is comprised of: 0.minX, 1. minSum, 2. minY, 3. maxDiff, 4. MaxX, 5. MaxSum, 6. MaxY, 7. MinDiff. */
             vertex[] extremeVertices = new vertex[8];
-            //  int[] extremeVertexIndices = new int[8]; I thought that this might speed things up. That is, to use this to RemoveAt
-            // as oppoaws to the Remove in line 91, which I thought might be slow. Turns out I was wrong - plus code is more succinct
-            // way.
+            int[] extremeVertexIndices = new int[8];
             for (int i = origVNum - 1; i >= 0; i--)
             {
                 var n = origVertices[i];
-                if (n.X < minX) { extremeVertices[0] = n; minX = n.X; }
-                if ((n.X + n.Y) < minSum) { extremeVertices[1] = n; minSum = n.X + n.Y; }
-                if (n.Y < minY) { extremeVertices[2] = n; minY = n.Y; }
-                if ((n.X - n.Y) > maxDiff) { extremeVertices[3] = n; maxDiff = n.X - n.Y; }
-                if (n.X > maxX) { extremeVertices[4] = n; maxX = n.X; }
-                if ((n.X + n.Y) > maxSum) { extremeVertices[5] = n; maxSum = n.X + n.Y; }
-                if (n.Y > maxY) { extremeVertices[6] = n; maxY = n.Y; }
-                if ((n.X - n.Y) < minDiff) { extremeVertices[7] = n; minDiff = n.X - n.Y; }
+                var extremeFound = false;
+                if (n.X < minX) { extremeVertices[0] = n; extremeVertexIndices[0] = i; minX = n.X; extremeFound = true; }
+                if ((n.X + n.Y) < minSum) { extremeVertices[1] = n; extremeVertexIndices[1] = i; minSum = n.X + n.Y; extremeFound = true; }
+                if (n.Y < minY) { extremeVertices[2] = n; extremeVertexIndices[2] = i; minY = n.Y; extremeFound = true; }
+                if ((n.X - n.Y) > maxDiff) { extremeVertices[3] = n; extremeVertexIndices[3] = i; maxDiff = n.X - n.Y; extremeFound = true; }
+                if (n.X > maxX) { extremeVertices[4] = n; extremeVertexIndices[4] = i; maxX = n.X; extremeFound = true; }
+                if ((n.X + n.Y) > maxSum) { extremeVertices[5] = n; extremeVertexIndices[5] = i; maxSum = n.X + n.Y; extremeFound = true; }
+                if (n.Y > maxY) { extremeVertices[6] = n; extremeVertexIndices[6] = i; maxY = n.Y; extremeFound = true; }
+                if ((n.X - n.Y) < minDiff) { extremeVertices[7] = n; extremeVertexIndices[7] = i; minDiff = n.X - n.Y; extremeFound = true; }
+                /* at a certain point in this initial search, it may be useful to start removing vertices that are already
+                 * contained within the candidate octagon hull. This addition will reduce the size of origVertices, thus
+                 * speeding up Step 2 below. However, the "containedIn" function is a tad time-consuming, so here is where
+                 * the optimal value for startInnerCheck is useful. */
+                if (!extremeFound && (i < innerCheckStartAt) && (outsideInitialShape(n, extremeVertexIndices, extremeVertices)))
+                    MayBePartOfHull[i] = true;
+                //origVertices.RemoveAt(i);
             }
 
             /* convexHullCCW is the result of this function. It is a list of 
@@ -85,11 +94,12 @@ namespace MIConvexNameSpace
              * counter-clockwise loop beginning with the leftmost (minimum
              * value of X) vertex. */
             var convexHullCCW = new List<vertex>();
-            for (int i = 0; i < 8; i++)
-                if (!convexHullCCW.Contains(extremeVertices[i]))
+            convexHullCCW.Add(extremeVertices[0]); origVertices.RemoveAt(0);
+            for (int i = 1; i < 8; i++)
+                if (extremeVertexIndices[i] != extremeVertexIndices[i - 1])
                 {
                     convexHullCCW.Add(extremeVertices[i]);
-                    origVertices.Remove(extremeVertices[i]);
+                    origVertices.RemoveAt(i);
                 }
             #endregion
 
@@ -140,31 +150,34 @@ namespace MIConvexNameSpace
              * are inside or out. If they are out, add them to the proper row of the hullCands array. */
             for (int i = 0; i < origVNum; i++)
             {
-                for (int j = 0; j < cvxVNum; j++)
+                if ((i >= innerCheckStartAt) || (MayBePartOfHull[i]))
                 {
-                    var bX = origVertices[i].X - convexHullCCW[j].X;
-                    var bY = origVertices[i].Y - convexHullCCW[j].Y;
-                    //signedDists[0, k, i] = signedDistance(convexVectInfo[i, 0], convexVectInfo[i, 1], bX, bY, convexVectInfo[i, 2]);
-                    //signedDists[1, k, i] = positionAlong(convexVectInfo[i, 0], convexVectInfo[i, 1], bX, bY, convexVectInfo[i, 2]);
-                    //if (signedDists[0, k, i] <= 0)
-                    /* Again, these lines are commented because the signedDists has been removed. This data may be useful in 
-                     * other applications though. In the condition below, any signed distance that is negative is outside of the
-                     * original polygon. It is only possible for the vertex to be outside one of the 3 to 8 edges, so once we
-                     * add it, we break out of the inner loop (gotta save time where we can!). */
-                    if (crossProduct(edgeUnitVectors[j, 0], edgeUnitVectors[j, 1], bX, bY) <= 0)
+                    for (int j = 0; j < cvxVNum; j++)
                     {
-                        //var newSideCand = Tuple.Create(oldNodes[k], signedDists[1, k, i]);
-                        /* In order to improve the efficiency of Step 3, we add the new vertices to a sorted List. Perhaps
-                         * this while loop could be replaced with a binary sort inserter to be more efficient. The sort is
-                         * done based on the dot product or "positionAlong", this is the signedDistance parallel to the edge 
-                         * starting at the vertex (basically = |b|*cos(theta)). All values though will be positive if they
-                         * violate the above. */
-                        var newSideCand = Tuple.Create(origVertices[i],
-                            dotProduct(edgeUnitVectors[j, 0], edgeUnitVectors[j, 1], bX, bY));
-                        int k = 0;
-                        while ((k < hullCands[j].Count) && (newSideCand.Item2 > hullCands[j][k].Item2)) k++;
-                        hullCands[j].Insert(k, newSideCand);
-                        break;
+                        var bX = origVertices[i].X - convexHullCCW[j].X;
+                        var bY = origVertices[i].Y - convexHullCCW[j].Y;
+                        //signedDists[0, i, j] = signedDistance(convexVectInfo[j, 0], convexVectInfo[j, 1], bX, bY, convexVectInfo[j, 2]);
+                        //signedDists[1, i, j] = positionAlong(convexVectInfo[j, 0], convexVectInfo[j, 1], bX, bY, convexVectInfo[j, 2]);
+                        //if (signedDists[0, i, j] <= 0)
+                        /* Again, these lines are commented because the signedDists has been removed. This data may be useful in 
+                         * other applications though. In the condition below, any signed distance that is negative is outside of the
+                         * original polygon. It is only possible for the vertex to be outside one of the 3 to 8 edges, so once we
+                         * add it, we break out of the inner loop (gotta save time where we can!). */
+                        if (crossProduct(edgeUnitVectors[j, 0], edgeUnitVectors[j, 1], bX, bY) <= 0)
+                        {
+                            //var newSideCand = Tuple.Create(oldNodes[i], signedDists[1, i, j]);
+                            /* In order to improve the efficiency of Step 3, we add the new vertices to a sorted List. Perhaps
+                             * this while loop could be replaced with a binary sort inserter to be more efficient. The sort is
+                             * done based on the dot product or "positionAlong", this is the signedDistance parallel to the edge 
+                             * starting at the vertex (basically = |b|*cos(theta)). All values though will be positive if they
+                             * violate the above. */
+                            var newSideCand = Tuple.Create(origVertices[i],
+                                dotProduct(edgeUnitVectors[j, 0], edgeUnitVectors[j, 1], bX, bY));
+                            int k = 0;
+                            while ((k < hullCands[j].Count) && (newSideCand.Item2 > hullCands[j][k].Item2)) k++;
+                            hullCands[j].Insert(k, newSideCand);
+                            break;
+                        }
                     }
                 }
             }
@@ -208,16 +221,16 @@ namespace MIConvexNameSpace
                         {
                             /* remove any vertices that create concave angles. */
                             hc.RemoveAt(i);
-                            /* but don't reduce k since we need to check the previous angle again. Well, 
-                             * if you're back to the end you do need to reduce k (hence the line below). */
+                            /* but don't reduce i since we need to check the previous angle again. Well, 
+                             * if you're back to the end you do need to reduce i (hence the line below). */
                             if (i == hc.Count - 1) i--;
                         }
-                        /* if the angle is convex, then continue toward the start, k-- */
+                        /* if the angle is convex, then continue toward the start, i-- */
                         else i--;
                     }
-                    /* for each of the remaining vertices in hullCands[i-1], add them to the convexHullCCW. 
-                     * Here we insert them backwards (k counts down) to simplify the insert operation (k.e.
-                     * since all are inserted @ i, the previous inserts are pushed up to i+1, i+2, etc. */
+                    /* for each of the remaining vertices in hullCands[j-1], add them to the convexHullCCW. 
+                     * Here we insert them backwards (i counts down) to simplify the insert operation (i.e.
+                     * since all are inserted @ j, the previous inserts are pushed up to j+1, j+2, etc. */
                     for (i = hc.Count - 2; i > 0; i--)
                         convexHullCCW.Insert(j, hc[i].Item1);
                 }
@@ -254,5 +267,30 @@ namespace MIConvexNameSpace
             return result;
         }
 
+
+
+
+
+        /// <summary>
+        /// Checks whether the vertex, n, is outside of the initial shape.
+        /// </summary>
+        /// <param name="n">The vertex, n.</param>
+        /// <param name="extremeVertexIndices">The extreme vertex indices.</param>
+        /// <param name="extremeVertices">The extreme vertices.</param>
+        /// <returns></returns>
+        private static bool outsideInitialShape(vertex n, int[] extremeVertexIndices, vertex[] extremeVertices)
+        {
+            for (int i = 1; i < 8; i++)
+                if ((extremeVertexIndices[i] != extremeVertexIndices[i - 1])
+                    && (crossProduct(extremeVertices[i].X - extremeVertices[i - 1].X, extremeVertices[i].Y - extremeVertices[i - 1].Y,
+                    n.X - extremeVertices[i - 1].X, n.Y - extremeVertices[i - 1].Y) <= 0))
+                    return true;
+            if ((extremeVertexIndices[0] != extremeVertexIndices[7])
+                && (crossProduct(extremeVertices[0].X - extremeVertices[7].X, extremeVertices[0].Y - extremeVertices[7].Y,
+                n.X - extremeVertices[7].X, n.Y - extremeVertices[7].Y) <= 0))
+                return true;
+
+            return false;
+        }
     }
 }

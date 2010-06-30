@@ -36,97 +36,124 @@ namespace MIConvexNameSpace
         /// <returns></returns>
         public static List<vertex> Find3D(List<vertex> vertices)
         {
-            throw new NotImplementedException();
             /* first, the original vertices are copied as they will be modified
-             * by this function. */ 
+             * by this function. */
             var origVertices = new List<vertex>(vertices);
+            var origVNum = origVertices.Count;
 
-            /* convexHullCCW is the result of this function. It is a list of 
-             * vertices found in the original vertices and ordered to make a
-             * counter-clockwise loop beginning with the leftmost (minimum
-             * value of X) vertex. */ 
-            var convexHullCCW = new List<vertex>();
+            #region Step 1 : Define Convex Rhombicuboctahedron
+            /* The first step is to quickly identify the four to 26 vertices based on the
+             * Akl-Toussaint heuristic. In order to do this, I use a 3D matrix to help keep
+             * track of the extreme. The 26 extrema can be see as approaching the cloud of 
+             * points from the 26 faces of the Disdyakis dodecahedron 
+             * (http://en.wikipedia.org/wiki/Disdyakis_dodecahedron although it may be easier
+             * to understand by considering its dual, the Truncated cuboctahedron
+             * (http://en.wikipedia.org/wiki/Truncated_cuboctahedron). This also corresponds
+             * to base-3 (min,center,max) in three dimensions. Three raised to the third power
+             * though is 27. the point at the center (0,0,0) is not used therefore 27 - 1 = 26.
+             */
+            vertex[, ,] extremeVertices = new vertex[3, 3, 3];
+            int[, ,] extremeVertexIndices = new int[3, 3, 3];
+            double[, ,] extremeValues = new double[3, 3, 3];
 
-            #region Step 1 : Define Convex Octogon
-            /* The first step is to quickly identify the three to eight vertices based on the
-             * Akl-Toussaint heuristic. */
-            /***** need additional points for 3D ******/
-            /***** does it still work for 3D? *****/
-            double maxX = double.NegativeInfinity;
-            double maxY = double.NegativeInfinity;
-            double maxSum = double.NegativeInfinity;
-            double maxDiff = double.NegativeInfinity;
-            double minX = double.PositiveInfinity;
-            double minY = double.PositiveInfinity;
-            double minSum = double.PositiveInfinity;
-            double minDiff = double.PositiveInfinity;
-            vertex nodeMaxX = null, nodeMaxY = null, nodeMaxSum = null, nodeMaxDiff = null;
-            vertex nodeMinX = null, nodeMinY = null, nodeMinSum = null, nodeMinDiff = null;
-            foreach (vertex n in origVertices)
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++)
+                    for (int k = 0; k < 3; k++)
+                        extremeValues[i, j, k] = double.NegativeInfinity;
+
+
+            for (int m = 0; m < origVNum; m++)
             {
-                if (n.X > maxX) { nodeMaxX = n; maxX = n.X; }
-                if (n.Y > maxY) { nodeMaxY = n; maxY = n.Y; }
-                if ((n.X + n.Y) > maxSum) { nodeMaxSum = n; maxSum = n.X + n.Y; }
-                if ((n.X - n.Y) > maxDiff) { nodeMaxDiff = n; maxDiff = n.X - n.Y; }
-                if (n.X < minX) { nodeMinX = n; minX = n.X; }
-                if (n.Y < minY) { nodeMinY = n; minY = n.Y; }
-                if ((n.X + n.Y) < minSum) { nodeMinSum = n; minSum = n.X + n.Y; }
-                if ((n.X - n.Y) < minDiff) { nodeMinDiff = n; minDiff = n.X - n.Y; }
+                var n = origVertices[m];
+                for (int i = 0; i < 3; i++)
+                    for (int j = 0; j < 3; j++)
+                        for (int k = 0; k < 3; k++)
+                            if (!((i == 1) && (j == 1) && (k == 1)))
+                            {
+                                if (sumproduct(i, j, k, n) > extremeValues[i, j, k])
+                                {
+                                    extremeVertices[i, j, k] = n;
+                                    extremeVertexIndices[i, j, k] = m;
+                                    extremeValues[i, j, k] = sumproduct(i, j, k, n);
+                                }
+                            }
             }
-            convexHullCCW.Add(nodeMinX); origVertices.Remove(nodeMinX);
-            if (!convexHullCCW.Contains(nodeMinSum)) { convexHullCCW.Add(nodeMinSum); origVertices.Remove(nodeMinSum); }
-            if (!convexHullCCW.Contains(nodeMinY)) { convexHullCCW.Add(nodeMinY); origVertices.Remove(nodeMinY); }
-            if (!convexHullCCW.Contains(nodeMaxDiff)) { convexHullCCW.Add(nodeMaxDiff); origVertices.Remove(nodeMaxDiff); }
-            if (!convexHullCCW.Contains(nodeMaxX)) { convexHullCCW.Add(nodeMaxX); origVertices.Remove(nodeMaxX); }
-            if (!convexHullCCW.Contains(nodeMaxSum)) { convexHullCCW.Add(nodeMaxSum); origVertices.Remove(nodeMaxSum); }
-            if (!convexHullCCW.Contains(nodeMaxY)) { convexHullCCW.Add(nodeMaxY); origVertices.Remove(nodeMaxY); }
-            if (!convexHullCCW.Contains(nodeMinDiff)) { convexHullCCW.Add(nodeMinDiff); origVertices.Remove(nodeMinDiff); }
             #endregion
 
-            /* the following limits are used extensively in for-loop below. In order to reduce the arithmetic calls and
-             * steamline the code, these are established. */
-            var origVNum = origVertices.Count;
-            var cvxVNum = convexHullCCW.Count;
-            var last = cvxVNum - 1;
+            #region Step #2: Define up to 48 faces of the Disdyakis dodecahedron
+            var sortedIndices = new List<int>();
+            var convexHull = new List<vertex>();
+            var convexFaces = new List<face>();
+            /* store vertices */
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++)
+                    for (int k = 0; k < 3; k++)
+                        if ((!((i == 1) && (j == 1) && (k == 1)))
+                        && !sortedIndices.Contains(extremeVertexIndices[i, j, k]))
+                        {
+                            convexHull.Add(extremeVertices[i, j, k]);
+                            sortedIndices.Add(extremeVertexIndices[i, j, k]);
+                        }
+            sortedIndices.Sort();
+            for (int i = sortedIndices.Count - 1; i >= 0; i--) origVertices.RemoveAt(sortedIndices[i]);
 
-            #region Step 2 : Find Signed-Distance to each convex edge
-            /***** need to check distances to faces *****/
-            var convexVectInfo = new double[cvxVNum, 4];
+            /* Faces: I couldn't find any logic in what made a positive direction to a face. As a result, the
+             * following code is a bit difficult to follow. */
+            var adjacentVertID = new int[9, 2] { 
+            { -1, -1 }, { 0, -1 }, { +1, -1 }, { +1, 0 }, { +1, +1 }, { 0, +1 }, { -1, +1 }, { -1, 0 }, { -1, -1 }
+            };
 
-            for (int i = 0; i < last; i++)
+            for (int i = -3; i < 3; i++)
             {
-                convexVectInfo[i, 0] = convexHullCCW[i + 1].X - convexHullCCW[i].X;
-                convexVectInfo[i, 1] = convexHullCCW[i + 1].Y - convexHullCCW[i].Y;
-                /***** and for z *****/
-                convexVectInfo[i, 3] = Math.Sqrt(convexVectInfo[i, 0] * convexVectInfo[i, 0] +
-                    convexVectInfo[i, 1] * convexVectInfo[i, 1]);
+                var baseVert = new int[3];
+                baseVert[cycle(i)] = isNonNegative(i);
+                for (int j = 0; j < 8; j++)
+                {
+                    var v1 = (int[])baseVert.Clone();
+                    v1[cycle(i + 1, i)] = adjacentVertID[j, 0];
+                    v1[cycle(i + 2, i)] = adjacentVertID[j, 1];
+                    var v2 = (int[])baseVert.Clone();
+                    v2[cycle(i + 1, i)] = adjacentVertID[j + 1, 0];
+                    v2[cycle(i + 2, i)] = adjacentVertID[j + 1, 1];
+                    var f = face.MakeFace(getVertexFromExtreme(extremeVertices, baseVert),
+                       getVertexFromExtreme(extremeVertices, v1), getVertexFromExtreme(extremeVertices, v2));
+                    if (f != null) convexFaces.Add(f);
+                }
             }
-            convexVectInfo[last, 0] = convexHullCCW[0].X - convexHullCCW[last].X;
-            convexVectInfo[last, 1] = convexHullCCW[0].Y - convexHullCCW[last].Y;
-            /***** and for z *****/
-            convexVectInfo[last, 3] = Math.Sqrt(convexVectInfo[last, 0] * convexVectInfo[last, 0] +
-                convexVectInfo[last, 1] * convexVectInfo[last, 1]);
 
-            /***** does this now need to be a 3-tuple? are two distances needed? well, at any rate, sorting wouldn't
-             ***** be possible. hmmm... *****/
-            var hullCands = new List<Tuple<vertex, double>>[cvxVNum];
-        
-            for (int j = 0; j < cvxVNum; j++) hullCands[j] = new List<Tuple<vertex, double>>();
+            origVNum = origVertices.Count;
+            //var cvxVNum = convexHull.Count;
+            var cvxFNum = convexFaces.Count;
+            var last = cvxFNum - 1;
+            #endregion
 
-            /* Now a big loop. For each of the original vertices, check them with the 3 to 8 edges to see if they 
+            #region Step 3 : Find Signed-Distance to each convex edge
+            /* Of the 4 to 48 faces identified in the convex hull, we now define a matrix called edgeUnitVectors, 
+             * check these against the remaining vertices. Just like for 2D we create an array of lists of tuples.
+             * As we find new candidate convex points, we store them in hullCands. The second
+             * part of the tuple (Item2 is a double) is the manhattan distance of the point from the center of the
+             * face. This manhattan distance is comprised of the distance parallel to the face (dot-product) plus
+             * the distance perpendicular to the face (cross-product). This is used to order the vertices that
+             * are found for a particular side (More on this in 23 lines). */
+            var hullCands = new List<Tuple<vertex, double>>[cvxFNum];
+            /* initialize the face Lists s.t. members can be added below. */
+            for (int j = 0; j < cvxFNum; j++) hullCands[j] = new List<Tuple<vertex, double>>();
+
+            /* Now a big loop. For each of the original vertices, check them with the 4 to 48 faces to see if they 
              * are inside or out. If they are out, add them to the proper row of the hullCands array. */
             for (int i = 0; i < origVNum; i++)
             {
-                for (int j = 0; j < cvxVNum; j++)
+                for (int j = 0; j < cvxFNum; j++)
                 {
-                    var bX = origVertices[i].X - convexHullCCW[j].X;
-                    var bY = origVertices[i].Y - convexHullCCW[j].Y;
-           
-                    if (signedDistance(convexVectInfo[j, 0], convexVectInfo[j, 1], bX, bY, convexVectInfo[j, 2]) <= 0)
+                    var bX = origVertices[i].X - convexFaces[j].center.X;
+                    var bY = origVertices[i].Y - convexFaces[j].center.Y;
+                    var bZ = origVertices[i].Z - convexFaces[j].center.Z;
+                    var dotP = dotProduct(convexFaces[j].normal.X, convexFaces[j].normal.Y, convexFaces[j].normal.Z, bX, bY, bZ);
+                    if (dotP >= 0)
                     {
-         
-                        var newSideCand = Tuple.Create(origVertices[i],
-                            positionAlong(convexVectInfo[j, 0], convexVectInfo[j, 1], bX, bY, convexVectInfo[j, 2]));
+                        var crossP = crossProduct(convexFaces[j].normal.X, convexFaces[j].normal.Y, convexFaces[j].normal.Z, bX, bY, bZ);
+                        var magCross = Math.Sqrt((crossP.X * crossP.X) + (crossP.Y * crossP.Y) + (crossP.Z * crossP.Z));
+                        var newSideCand = Tuple.Create(origVertices[i], dotP + magCross);
                         int k = 0;
                         while ((k < hullCands[j].Count) && (newSideCand.Item2 > hullCands[j][k].Item2)) k++;
                         hullCands[j].Insert(k, newSideCand);
@@ -137,61 +164,43 @@ namespace MIConvexNameSpace
             #endregion
 
             #region Step 3: now check the remaining hull candidates
-            /* Now it's time to go through our array of sorted lists of tuples. We search backwards through
-             * the current convex hull points s.t. any additions will not confuse our for-loop indexers. */
-            for (int j = cvxVNum; j > 0; j--)
+            for (int i = cvxFNum - 1; i >= 0; i--)
             {
-                if (hullCands[j - 1].Count == 1)
-                    /* If there is one and only one candidate, it must be in the convex hull. Add it now. */
-                    convexHullCCW.Insert(j, hullCands[j - 1][0].Item1);
-                else if (hullCands[j - 1].Count > 1)
+                if (hullCands[i].Count == 1)
                 {
-                    /* If there's more than one than...Well, now comes the tricky part. Here is where the
-                     * most time is spent for large sets. this is the O(N*logN) part (the previous steps
-                     * were all linear). The above octagon trick was to conquer and divide the candidates. */
-
-                    /* a renaming for compactness and clarity */
-                    var hc = hullCands[j - 1];
-
-                    /* put the known starting vertex as the beginning of the list. No need for the "positionAlong"
-                     * anymore since the list is now sorted. At any rate, the positionAlong is zero. */
-                    hc.Insert(0, Tuple.Create(convexHullCCW[j - 1], 0.0));
-                    /* put the ending vertex on the end of the list. Need to check if it wraps back around to 
-                     * the first in the loop (hence the simple condition). */
-                    if (j == cvxVNum) hc.Add(Tuple.Create(convexHullCCW[0], double.NaN));
-                    else hc.Add(Tuple.Create(convexHullCCW[j], double.NaN));
-
-                    /* Now starting from second from end, work backwards looks for places where the angle 
-                     * between the vertices in concave (which would produce a negative value of z). */
-                    int i = hc.Count - 2;
-                    while (i > 0)
+                    /* If there is one and only one candidate, it must be in the convex hull. Add it now. */
+                    convexHull.Add(hullCands[i][0].Item1);
+                    /* what about faces? should these be updated? Maybe, but our resulting polyhedron is not 
+                     * as pretty as a Delaunay-ized one. We'll have some poor-aspect ratio triangles. */
+                    replaceFace(convexFaces, i, hullCands[i][0].Item1);
+                }
+                else if (hullCands[i].Count > 1)
+                {
+                    var subFaces = new List<face>();
+                    subFaces.Add(convexFaces[i]);
+                    for (int j = hullCands[i].Count - 1; j >= 0; j--)
                     {
-                        var zValue = crossProduct(hc[i].Item1.X - hc[i - 1].Item1.X,
-                            hc[i].Item1.Y - hc[i - 1].Item1.Y,
-                            hc[i + 1].Item1.X - hc[i].Item1.X,
-                            hc[i + 1].Item1.Y - hc[i].Item1.Y);
-                        if (zValue < 0)
+                        for (int k = subFaces.Count - 1; k >= 0; k--)
                         {
-                            /* remove any vertices that create concave angles. */
-                            hc.RemoveAt(i);
-                            /* but don't reduce i since we need to check the previous angle again. Well, 
-                             * if you're back to the end you do need to reduce i (hence the line below). */
-                            if (i == hc.Count - 1) i--;
+                            var bX = hullCands[i][j].Item1.X - subFaces[k].center.X;
+                            var bY = hullCands[i][j].Item1.Y - subFaces[k].center.Y;
+                            var bZ = hullCands[i][j].Item1.Z - subFaces[k].center.Z;
+                            var dotP = dotProduct(subFaces[k].normal.X, subFaces[k].normal.Y, subFaces[k].normal.Z, bX, bY, bZ);
+                            if (dotP >= 0)
+                            {
+                                replaceFace(subFaces, k, hullCands[i][j].Item1);
+                                convexHull.Add(hullCands[i][j].Item1);
+                                break;
+                            }
                         }
-                        /* if the angle is convex, then continue toward the start, i-- */
-                        else i--;
                     }
-                    /* for each of the remaining vertices in hullCands[j-1], add them to the convexHullCCW. 
-                     * Here we insert them backwards (i counts down) to simplify the insert operation (i.e.
-                     * since all are inserted @ j, the previous inserts are pushed up to j+1, j+2, etc. */
-                    for (i = hc.Count - 2; i > 0; i--)
-                        convexHullCCW.Insert(j, hc[i].Item1);
                 }
             }
             #endregion
 
             /* finally return the hull points. */
-            return convexHullCCW;
+            return convexHull;
+
         }
 
 
