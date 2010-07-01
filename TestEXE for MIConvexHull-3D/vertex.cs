@@ -18,12 +18,13 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace MIConvexNameSpace
+namespace TestEXE_for_MIConvexHull3D
 {
+    using MIConvexHull;
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class vertex
+    public class vertex : IVertexConvHull
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="vertex"/> class.
@@ -62,19 +63,19 @@ namespace MIConvexNameSpace
         /// Gets or sets the X.
         /// </summary>
         /// <value>The X position.</value>
-        internal double X { get; set; }
+        public double X { get; set; }
 
         /// <summary>
         /// Gets or sets the Y.
         /// </summary>
         /// <value>The Y position.</value>
-        internal double Y { get; set; }
+        public double Y { get; set; }
 
-        
+
         /// <summary>
         /// Gets or sets the Z. Not used by MIConvexHull2D.
         /// </summary>
         /// <value>The Z position.</value>
-        internal double Z { get; set; }
+        public double Z { get; set; }
     }
 }

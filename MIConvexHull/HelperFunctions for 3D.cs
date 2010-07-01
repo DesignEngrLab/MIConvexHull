@@ -18,7 +18,7 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace MIConvexNameSpace
+namespace MIConvexHull
 {
     using System;
     using System.Collections.Generic;
@@ -26,9 +26,10 @@ namespace MIConvexNameSpace
     /// <summary>
     /// functions called from Find for the 3D case. 
     /// </summary>
-    public static partial class MIConvexHull
+    public static partial class ConvexHull
     {
-
+        const double epsilon = 0.0000001;
+        static Type faceType;
         /// <summary>
         /// Sumproducts the specified k.
         /// </summary>
@@ -37,7 +38,7 @@ namespace MIConvexNameSpace
         /// <param name="k">The k.</param>
         /// <param name="n">The n.</param>
         /// <returns></returns>
-        private static double sumproduct(int i, int j, int k, vertex n)
+        private static double sumproduct(int i, int j, int k, IVertexConvHull n)
         {
             return ((i - 1) * n.X + (j - 1) * n.Y + (k - 1) * n.Z);
         }
@@ -52,14 +53,14 @@ namespace MIConvexNameSpace
         /// <param name="bX">X-component of the b vector.</param>
         /// <param name="bY">Y-component of the b vector.</param>
         /// <param name="bZ">Z-component of the b vector.</param>
-        /// <returns>A vertex of the resulting vector.</returns>
-        internal static vertex crossProduct(double aX, double aY, double aZ,
+        /// <returns>A IVertexConvHull of the resulting vector.</returns>
+        internal static double[] crossProduct(double aX, double aY, double aZ,
             double bX, double bY, double bZ)
         {
-            return new vertex(
+            return new double[] {
                 ((aY * bZ) - (bY * aZ)),
                 ((aZ * bX) - (bZ * aX)),
-                ((aX * bY) - (bX * aY)));
+                ((aX * bY) - (bX * aY))};
         }
 
 
@@ -79,12 +80,12 @@ namespace MIConvexNameSpace
         }
 
         /// <summary>
-        /// Gets the vertex from extreme matrix.
+        /// Gets the IVertexConvHull from extreme matrix.
         /// </summary>
         /// <param name="extremeVertices">The extreme vertices matrix.</param>
         /// <param name="v">The three indices but these are from -1 to 1, need to adjust to 0 to 2.</param>
-        /// <returns>the vertex at the location in  extremeVertices</returns>
-        private static vertex getVertexFromExtreme(vertex[, ,] extremeVertices, int[] v)
+        /// <returns>the IVertexConvHull at the location in  extremeVertices</returns>
+        private static IVertexConvHull getVertexFromExtreme(IVertexConvHull[, ,] extremeVertices, int[] v)
         {
             return extremeVertices[v[0] + 1, v[1] + 1, v[2] + 1];
         }
@@ -115,18 +116,48 @@ namespace MIConvexNameSpace
 
 
         /// <summary>
-        /// Replace face, j, in the list with three new faces.
+        /// Replace IFaceConvHull, j, in the list with three new faces.
         /// </summary>
         /// <param name="faces">The convex faces.</param>
         /// <param name="i">The i.</param>
-        /// <param name="vertex">The vertex.</param>
-        private static void replaceFace(List<face> faces, int j, vertex vertex)
+        /// <param name="IVertexConvHull">The IVertexConvHull.</param>
+        private static void replaceFace(List<IFaceConvHull> faces, int j, IVertexConvHull IVertexConvHull)
         {
             var oldFace = faces[j];
             faces.RemoveAt(j);
-            faces.Add(face.MakeFace(vertex, oldFace.v1, oldFace.v2));
-            faces.Add(face.MakeFace(vertex, oldFace.v2, oldFace.v3));
-            faces.Add(face.MakeFace(vertex, oldFace.v3, oldFace.v1));
+            faces.Add(MakeFace(IVertexConvHull, oldFace.v1, oldFace.v2));
+            faces.Add(MakeFace(IVertexConvHull, oldFace.v2, oldFace.v3));
+            faces.Add(MakeFace(IVertexConvHull, oldFace.v3, oldFace.v1));
+        }
+
+
+        public static IFaceConvHull MakeFace(IVertexConvHull v1, IVertexConvHull v2, IVertexConvHull v3)
+        {
+            if (v1.Equals(v2) || v2.Equals(v3) || v3.Equals(v1)) return null;
+            double[] n = crossProduct(v2.X - v1.X, v2.Y - v1.Y, v2.Z - v1.Z,
+                v3.X - v1.X, v3.Y - v1.Y, v3.Z - v1.Z);
+            var nMag = Math.Sqrt((n[0] * n[0]) + (n[1] * n[1]) + (n[2] * n[2]));
+            if (nMag < epsilon) return null;
+            n[0] /= nMag;
+            n[1] /= nMag;
+            n[2] /= nMag;
+
+            IFaceConvHull newFace = null;
+            if (faceType != null)
+            {
+                var constructor = faceType.GetConstructor(new Type[0]);
+                newFace = (IFaceConvHull)constructor.Invoke(new object[0]);
+            }
+            if (newFace == null) newFace = new defFaceClass();
+
+            newFace.v1 = v1;
+            newFace.v2 = v2;
+            newFace.v3 = v3;
+            newFace.normal = n;
+            newFace.center = new double[]{((v1.X + v2.X + v3.X) / 3),
+                    ((v1.Y + v2.Y + v3.Y) / 3),
+                    ((v1.Z + v2.Z + v3.Z) / 3)};
+            return newFace;
         }
     }
 }

@@ -18,43 +18,18 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace TestEXE_for_MIConvexHull
+namespace TestEXE_for_MIConvexHull3D
 {
     using System;
     using System.Collections.Generic;
-    using MIConvexNameSpace;
+    using MIConvexHull;
 
 
     class Program
     {
-        static void Main2d(string[] args)
-        {
-            int NumberOfVertices = 1000;
-            double size = 1000;
-
-            Random r = new Random();
-            Console.WriteLine("Ready? Push Return/Enter to start.");
-            Console.ReadLine();
-
-            Console.WriteLine("Making " + NumberOfVertices.ToString() + " random vertices.");
-            var vertices = new List<vertex>();
-            for (int i = 0; i < NumberOfVertices; i++)
-                vertices.Add(new vertex(size * r.NextDouble(), size * r.NextDouble()));
-
-            Console.WriteLine("Running...");
-            DateTime now = DateTime.Now;
-            var ConvexHull = MIConvexHull.Find2D(vertices);
-            TimeSpan interval = DateTime.Now - now;
-            Console.WriteLine("Out of the " + NumberOfVertices.ToString() + " vertices, there are " +
-                ConvexHull.Count.ToString() + " in the convex hull.");
-            Console.WriteLine("time = " + interval);
-            Console.ReadLine();
-        }
-
-
         static void Main(string[] args)
         {
-            int NumberOfVertices = 1000;
+            int NumberOfVertices = 100000;
             double size = 1000;
 
             Random r = new Random();
@@ -68,10 +43,10 @@ namespace TestEXE_for_MIConvexHull
 
             Console.WriteLine("Running...");
             DateTime now = DateTime.Now;
-            var ConvexHull = MIConvexHull.Find3D(vertices);
+            var convexHullVertices = ConvexHull.Find3D(vertices);
             TimeSpan interval = DateTime.Now - now;
             Console.WriteLine("Out of the " + NumberOfVertices.ToString() + " vertices, there are " +
-                ConvexHull.Count.ToString() + " in the convex hull.");
+                convexHullVertices.Count.ToString() + " in the convex hull.");
             Console.WriteLine("time = " + interval);
             Console.ReadLine();
         }

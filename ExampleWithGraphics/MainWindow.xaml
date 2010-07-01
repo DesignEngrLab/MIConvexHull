@@ -1,0 +1,52 @@
+﻿<Window x:Class="ExampleWithGraphics.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:cp="http://schemas.charlespetzold.com/2007/xaml"
+        Title="MainWindow" Height="300" Width="300">
+
+    <DockPanel>
+        <!-- Scrollbars for rotating camera -->
+        <ScrollBar Name="vscroll" DockPanel.Dock="Right"
+                   Orientation="Vertical" Minimum="-180" Maximum="180" />
+        <ScrollBar Name="hscroll" DockPanel.Dock="Bottom"
+                   Orientation="Horizontal" Minimum="-180" Maximum="180" />
+
+        <Viewport3D Name="viewport">
+
+            <cp:Axes Extent="50" />
+            <!-- Light sources -->
+            <ModelVisual3D>
+                <ModelVisual3D.Content>
+                    <Model3DGroup>
+                        <DirectionalLight Color="#808080" Direction="2 -3 -1" />
+                        <AmbientLight Color="#808080" />
+                    </Model3DGroup>
+                </ModelVisual3D.Content>
+            </ModelVisual3D>
+
+            <!-- Camera -->
+            <Viewport3D.Camera>
+                <PerspectiveCamera Position="50 50 100" UpDirection="0 1 0"
+                                   LookDirection="-1 -1 -2" FieldOfView="45">
+                    <PerspectiveCamera.Transform>
+                        <Transform3DGroup>
+                            <RotateTransform3D>
+                                <RotateTransform3D.Rotation>
+                                    <AxisAngleRotation3D Axis="1 0 0"
+                                      Angle="{Binding ElementName=vscroll, Path=Value}" />
+                                </RotateTransform3D.Rotation>
+                            </RotateTransform3D>
+                            <RotateTransform3D>
+                                <RotateTransform3D.Rotation>
+                                    <AxisAngleRotation3D Axis="0 1 0"
+                                      Angle="{Binding ElementName=hscroll, Path=Value}" />
+                                </RotateTransform3D.Rotation>
+                            </RotateTransform3D>
+                        </Transform3DGroup>
+                    </PerspectiveCamera.Transform>
+                </PerspectiveCamera>
+
+            </Viewport3D.Camera>
+        </Viewport3D>
+    </DockPanel>
+</Window>
