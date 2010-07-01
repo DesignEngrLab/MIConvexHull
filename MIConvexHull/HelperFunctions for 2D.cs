@@ -18,7 +18,7 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace MIConvexNameSpace
+namespace MIConvexHull
 {
     using System;
     using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace MIConvexNameSpace
     /// <summary>
     /// functions called from Find for the 2D case. 
     /// </summary>
-    public static partial class MIConvexHull
+    public static partial class ConvexHull
     {
         /// <summary>
         /// A quick cross-product of 2-D vectors. The result can be a single double since it

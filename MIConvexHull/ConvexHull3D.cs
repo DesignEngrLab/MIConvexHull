@@ -18,41 +18,40 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace MIConvexNameSpace
+namespace MIConvexHull
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections;
 
     /// <summary>
     /// MIConvexHull for 3D is not yet complete. Most of the code from Find2D is shown below.
     /// Look for my 5-stars comments for things to do ("*****")
     /// </summary>
-    public static partial class MIConvexHull
+    public static partial class ConvexHull
     {
+        static List<IFaceConvHull> convexFaces;
         /// <summary>
         /// Finds the convex hull vertices.
         /// </summary>
         /// <param name="vertices">All of the vertices as a list.</param>
         /// <returns></returns>
-        public static List<vertex> Find3D(List<vertex> vertices)
+        static List<IVertexConvHull> Find3D()
         {
-            /* first, the original vertices are copied as they will be modified
-             * by this function. */
-            var origVertices = new List<vertex>(vertices);
             var origVNum = origVertices.Count;
 
             #region Step 1 : Define Convex Rhombicuboctahedron
             /* The first step is to quickly identify the four to 26 vertices based on the
              * Akl-Toussaint heuristic. In order to do this, I use a 3D matrix to help keep
-             * track of the extreme. The 26 extrema can be see as approaching the cloud of 
-             * points from the 26 faces of the Disdyakis dodecahedron 
+             * track of the extremse. The 26 extrema can be see as approaching the cloud of 
+             * points from the 26 vertices of the Disdyakis dodecahedron 
              * (http://en.wikipedia.org/wiki/Disdyakis_dodecahedron although it may be easier
              * to understand by considering its dual, the Truncated cuboctahedron
              * (http://en.wikipedia.org/wiki/Truncated_cuboctahedron). This also corresponds
              * to base-3 (min,center,max) in three dimensions. Three raised to the third power
              * though is 27. the point at the center (0,0,0) is not used therefore 27 - 1 = 26.
              */
-            vertex[, ,] extremeVertices = new vertex[3, 3, 3];
+            IVertexConvHull[, ,] extremeVertices = new IVertexConvHull[3, 3, 3];
             int[, ,] extremeVertexIndices = new int[3, 3, 3];
             double[, ,] extremeValues = new double[3, 3, 3];
 
@@ -82,8 +81,8 @@ namespace MIConvexNameSpace
 
             #region Step #2: Define up to 48 faces of the Disdyakis dodecahedron
             var sortedIndices = new List<int>();
-            var convexHull = new List<vertex>();
-            var convexFaces = new List<face>();
+            var convexHull = new List<IVertexConvHull>();
+            convexFaces = new List<IFaceConvHull>();
             /* store vertices */
             for (int i = 0; i < 3; i++)
                 for (int j = 0; j < 3; j++)
@@ -97,7 +96,7 @@ namespace MIConvexNameSpace
             sortedIndices.Sort();
             for (int i = sortedIndices.Count - 1; i >= 0; i--) origVertices.RemoveAt(sortedIndices[i]);
 
-            /* Faces: I couldn't find any logic in what made a positive direction to a face. As a result, the
+            /* Faces: I couldn't find any logic in what made a positive direction to a IFaceConvHull. As a result, the
              * following code is a bit difficult to follow. */
             var adjacentVertID = new int[9, 2] { 
             { -1, -1 }, { 0, -1 }, { +1, -1 }, { +1, 0 }, { +1, +1 }, { 0, +1 }, { -1, +1 }, { -1, 0 }, { -1, -1 }
@@ -115,7 +114,7 @@ namespace MIConvexNameSpace
                     var v2 = (int[])baseVert.Clone();
                     v2[cycle(i + 1, i)] = adjacentVertID[j + 1, 0];
                     v2[cycle(i + 2, i)] = adjacentVertID[j + 1, 1];
-                    var f = face.MakeFace(getVertexFromExtreme(extremeVertices, baseVert),
+                    var f = MakeFace(getVertexFromExtreme(extremeVertices, baseVert),
                        getVertexFromExtreme(extremeVertices, v1), getVertexFromExtreme(extremeVertices, v2));
                     if (f != null) convexFaces.Add(f);
                 }
@@ -132,12 +131,12 @@ namespace MIConvexNameSpace
              * check these against the remaining vertices. Just like for 2D we create an array of lists of tuples.
              * As we find new candidate convex points, we store them in hullCands. The second
              * part of the tuple (Item2 is a double) is the manhattan distance of the point from the center of the
-             * face. This manhattan distance is comprised of the distance parallel to the face (dot-product) plus
-             * the distance perpendicular to the face (cross-product). This is used to order the vertices that
+             * IFaceConvHull. This manhattan distance is comprised of the distance parallel to the IFaceConvHull (dot-product) plus
+             * the distance perpendicular to the IFaceConvHull (cross-product). This is used to order the vertices that
              * are found for a particular side (More on this in 23 lines). */
-            var hullCands = new List<Tuple<vertex, double>>[cvxFNum];
-            /* initialize the face Lists s.t. members can be added below. */
-            for (int j = 0; j < cvxFNum; j++) hullCands[j] = new List<Tuple<vertex, double>>();
+            var hullCands = new List<Tuple<IVertexConvHull, double>>[cvxFNum];
+            /* initialize the IFaceConvHull Lists s.t. members can be added below. */
+            for (int j = 0; j < cvxFNum; j++) hullCands[j] = new List<Tuple<IVertexConvHull, double>>();
 
             /* Now a big loop. For each of the original vertices, check them with the 4 to 48 faces to see if they 
              * are inside or out. If they are out, add them to the proper row of the hullCands array. */
@@ -145,14 +144,14 @@ namespace MIConvexNameSpace
             {
                 for (int j = 0; j < cvxFNum; j++)
                 {
-                    var bX = origVertices[i].X - convexFaces[j].center.X;
-                    var bY = origVertices[i].Y - convexFaces[j].center.Y;
-                    var bZ = origVertices[i].Z - convexFaces[j].center.Z;
-                    var dotP = dotProduct(convexFaces[j].normal.X, convexFaces[j].normal.Y, convexFaces[j].normal.Z, bX, bY, bZ);
+                    var bX = origVertices[i].X - convexFaces[j].center[0];
+                    var bY = origVertices[i].Y - convexFaces[j].center[1];
+                    var bZ = origVertices[i].Z - convexFaces[j].center[2];
+                    var dotP = dotProduct(convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2], bX, bY, bZ);
                     if (dotP >= 0)
                     {
-                        var crossP = crossProduct(convexFaces[j].normal.X, convexFaces[j].normal.Y, convexFaces[j].normal.Z, bX, bY, bZ);
-                        var magCross = Math.Sqrt((crossP.X * crossP.X) + (crossP.Y * crossP.Y) + (crossP.Z * crossP.Z));
+                        var crossP = crossProduct(convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2], bX, bY, bZ);
+                        var magCross = Math.Sqrt((crossP[0] * crossP[0]) + (crossP[1] * crossP[1]) + (crossP[2] * crossP[2]));
                         var newSideCand = Tuple.Create(origVertices[i], dotP + magCross);
                         int k = 0;
                         while ((k < hullCands[j].Count) && (newSideCand.Item2 > hullCands[j][k].Item2)) k++;
@@ -176,16 +175,16 @@ namespace MIConvexNameSpace
                 }
                 else if (hullCands[i].Count > 1)
                 {
-                    var subFaces = new List<face>();
+                    var subFaces = new List<IFaceConvHull>();
                     subFaces.Add(convexFaces[i]);
                     for (int j = hullCands[i].Count - 1; j >= 0; j--)
                     {
                         for (int k = subFaces.Count - 1; k >= 0; k--)
                         {
-                            var bX = hullCands[i][j].Item1.X - subFaces[k].center.X;
-                            var bY = hullCands[i][j].Item1.Y - subFaces[k].center.Y;
-                            var bZ = hullCands[i][j].Item1.Z - subFaces[k].center.Z;
-                            var dotP = dotProduct(subFaces[k].normal.X, subFaces[k].normal.Y, subFaces[k].normal.Z, bX, bY, bZ);
+                            var bX = hullCands[i][j].Item1.X - subFaces[k].center[0];
+                            var bY = hullCands[i][j].Item1.Y - subFaces[k].center[1];
+                            var bZ = hullCands[i][j].Item1.Z - subFaces[k].center[2];
+                            var dotP = dotProduct(subFaces[k].normal[0], subFaces[k].normal[1], subFaces[k].normal[2], bX, bY, bZ);
                             if (dotP >= 0)
                             {
                                 replaceFace(subFaces, k, hullCands[i][j].Item1);
@@ -203,31 +202,52 @@ namespace MIConvexNameSpace
 
         }
 
-
-        /// <summary>
-        /// An overload that takes the vertices as an nX3 matrix, where the first column
-        /// is the x values of the matrix, the second column is the y values, and the third is the
-        /// z values. It returns a similar matrix comprised only of the convex hull ordered in a 
-        /// counter-clock-wise loop.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <returns></returns>
-        public static double[,] Find3D(double[,] vertices)
+        public static List<IVertexConvHull> Find3D(List<IVertexConvHull> vertices, Type face_Type = null)
         {
-            var numRows = vertices.GetLength(0);
-            var vList = new List<vertex>(numRows);
-            for (int i = 0; i < numRows; i++)
-                vList.Add(new vertex(vertices[i, 0], vertices[i, 1]));
-
-            List<vertex> convexHull = Find2D(vList);
-            numRows = convexHull.Count;
-            double[,] result = new double[numRows, 2];
-            for (int i = 0; i < numRows; i++)
-            {
-                result[i, 0] = convexHull[i].X;
-                result[i, 1] = convexHull[i].Y;
-            }
-            return result;
+            /* first, the original vertices are copied as they will be modified
+             * by this function. */
+            faceType = face_Type;
+            origVertices = new List<IVertexConvHull>(vertices);
+            return Find3D();
         }
+        public static List<IVertexConvHull> Find3D(List<IVertexConvHull> vertices, Type face_Type, IList faces)
+        {
+            /* first, the original vertices are copied as they will be modified
+             * by this function. */
+            faceType = face_Type;
+            origVertices = new List<IVertexConvHull>(vertices);
+            var convexVertices = Find3D();
+            faces = convexFaces;
+            return convexVertices;
+        }
+
+
+        /* These three overloads take longer than the ones above. They are provided in cases
+         * where the users classes and collections are more like these. Ideally, the
+         * user should declare there list of vertices as a List<IVertexConvHull>, but 
+         * this is an unrealistic requirement. At any rate, these methods take about 50  
+         * nano-second to add each one. */
+        public static List<IVertexConvHull> Find3D(IList vertices, Type face_Type = null)
+        {
+            object[] arrayOfVertices = new object[vertices.Count];
+            vertices.CopyTo(arrayOfVertices, 0);
+            return Find3D(arrayOfVertices, face_Type);
+        }
+        public static List<IVertexConvHull> Find3D(object[] vertices, Type face_Type=null)
+        {
+            faceType = face_Type;
+            origVertices = new List<IVertexConvHull>();
+            for (int i = 0; i < vertices.GetLength(0); i++)
+                origVertices.Add((IVertexConvHull)vertices[i]);
+            return Find3D();
+        }
+        public static List<IVertexConvHull> Find3D(IList vertices, Type face_Type, IList faces)
+        {
+            faceType = face_Type;
+            var convexVertices = Find3D(vertices, faces[0].GetType());
+            faces = convexFaces;
+            return convexVertices;
+        }
+
     }
 }

@@ -18,10 +18,11 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace MIConvexNameSpace
+namespace MIConvexHull
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections;
 
     /// <summary>
     /// MIConvexHull ("my convex hull", my initials are MIC) is built to be fast for large numbers of
@@ -36,18 +37,16 @@ namespace MIConvexNameSpace
     /// 4. a single break function to further speed up inter-vectex checking
     /// 5. an ordered list reduces the number of checks for new convex candidates.
     /// </summary>
-    public static partial class MIConvexHull
+    public static partial class ConvexHull
     {
+        static List<IVertexConvHull> origVertices;
         /// <summary>
         /// Finds the convex hull vertices.
         /// </summary>
         /// <param name="vertices">All of the vertices as a list.</param>
         /// <returns></returns>
-        public static List<vertex> Find2D(List<vertex> vertices)
+        static List<IVertexConvHull> Find2D()
         {
-            /* first, the original vertices are copied as they will be modified
-             * by this function. */
-            var origVertices = new List<vertex>(vertices);
             var origVNum = origVertices.Count;
 
             #region Step 1 : Define Convex Octogon
@@ -63,36 +62,34 @@ namespace MIConvexNameSpace
             double minDiff = double.PositiveInfinity;
 
             /* the array of extreme is comprised of: 0.minX, 1. minSum, 2. minY, 3. maxDiff, 4. MaxX, 5. MaxSum, 6. MaxY, 7. MinDiff. */
-            vertex[] extremeVertices = new vertex[8];
-            int[] extremeVertexIndices = new int[8];
+            IVertexConvHull[] extremeVertices = new IVertexConvHull[8];
+            //  int[] extremeVertexIndices = new int[8]; I thought that this might speed things up. That is, to use this to RemoveAt
+            // as oppoaws to the Remove in line 91, which I thought might be slow. Turns out I was wrong - plus code is more succinct
+            // way.
             for (int i = origVNum - 1; i >= 0; i--)
             {
                 var n = origVertices[i];
-                if (n.X < minX) { extremeVertices[0] = n; extremeVertexIndices[0] = i; minX = n.X; }
-                if ((n.X + n.Y) < minSum) { extremeVertices[1] = n; extremeVertexIndices[1] = i; minSum = n.X + n.Y; }
-                if (n.Y < minY) { extremeVertices[2] = n; extremeVertexIndices[2] = i; minY = n.Y; }
-                if ((n.X - n.Y) > maxDiff) { extremeVertices[3] = n; extremeVertexIndices[3] = i; maxDiff = n.X - n.Y; }
-                if (n.X > maxX) { extremeVertices[4] = n; extremeVertexIndices[4] = i; maxX = n.X; }
-                if ((n.X + n.Y) > maxSum) { extremeVertices[5] = n; extremeVertexIndices[5] = i; maxSum = n.X + n.Y; }
-                if (n.Y > maxY) { extremeVertices[6] = n; extremeVertexIndices[6] = i; maxY = n.Y; }
-                if ((n.X - n.Y) < minDiff) { extremeVertices[7] = n; extremeVertexIndices[7] = i; minDiff = n.X - n.Y; }
+                if (n.X < minX) { extremeVertices[0] = n; minX = n.X; }
+                if ((n.X + n.Y) < minSum) { extremeVertices[1] = n; minSum = n.X + n.Y; }
+                if (n.Y < minY) { extremeVertices[2] = n; minY = n.Y; }
+                if ((n.X - n.Y) > maxDiff) { extremeVertices[3] = n; maxDiff = n.X - n.Y; }
+                if (n.X > maxX) { extremeVertices[4] = n; maxX = n.X; }
+                if ((n.X + n.Y) > maxSum) { extremeVertices[5] = n; maxSum = n.X + n.Y; }
+                if (n.Y > maxY) { extremeVertices[6] = n; maxY = n.Y; }
+                if ((n.X - n.Y) < minDiff) { extremeVertices[7] = n; minDiff = n.X - n.Y; }
             }
 
             /* convexHullCCW is the result of this function. It is a list of 
              * vertices found in the original vertices and ordered to make a
              * counter-clockwise loop beginning with the leftmost (minimum
-             * value of X) vertex. */
-            List<int> sortedindices = new List<int>();
-            var convexHullCCW = new List<vertex>();
-            convexHullCCW.Add(extremeVertices[0]);
+             * value of X) IVertexConvHull. */
+            var convexHullCCW = new List<IVertexConvHull>();
             for (int i = 0; i < 8; i++)
-                if (!sortedindices.Contains(extremeVertexIndices[i]))
+                if (!convexHullCCW.Contains(extremeVertices[i]))
                 {
                     convexHullCCW.Add(extremeVertices[i]);
-                    sortedindices.Add(extremeVertexIndices[i]);
+                    origVertices.Remove(extremeVertices[i]);
                 }
-            sortedindices.Sort();
-            for (int i = sortedindices.Count-1; i >= 0; i--) origVertices.RemoveAt(sortedindices[i]);
             #endregion
 
             /* the following limits are used extensively in for-loop below. In order to reduce the arithmetic calls and
@@ -131,12 +128,12 @@ namespace MIConvexNameSpace
              * the voronoi sets. */
             //var signedDists = new double[2, origVNum, cvxVNum];
 
-            /* An array of lists of tuples! As we find new candidate convex points, we store them here. The second
+            /* An array of sorted dictionaries! As we find new candidate convex points, we store them here. The second
              * part of the tuple (Item2 is a double) is the "positionAlong" - this is used to order the nodes that
              * are found for a particular side (More on this in 23 lines). */
-            var hullCands = new List<Tuple<vertex, double>>[cvxVNum];
+            var hullCands = new SortedList<double,IVertexConvHull>[cvxVNum];
             /* initialize the 3 to 8 Lists s.t. members can be added below. */
-            for (int j = 0; j < cvxVNum; j++) hullCands[j] = new List<Tuple<vertex, double>>();
+            for (int j = 0; j < cvxVNum; j++) hullCands[j] = new SortedList<double, IVertexConvHull>();
 
             /* Now a big loop. For each of the original vertices, check them with the 3 to 8 edges to see if they 
              * are inside or out. If they are out, add them to the proper row of the hullCands array. */
@@ -146,26 +143,16 @@ namespace MIConvexNameSpace
                 {
                     var bX = origVertices[i].X - convexHullCCW[j].X;
                     var bY = origVertices[i].Y - convexHullCCW[j].Y;
-                    //signedDists[0, i, j] = signedDistance(convexVectInfo[j, 0], convexVectInfo[j, 1], bX, bY, convexVectInfo[j, 2]);
-                    //signedDists[1, i, j] = positionAlong(convexVectInfo[j, 0], convexVectInfo[j, 1], bX, bY, convexVectInfo[j, 2]);
-                    //if (signedDists[0, i, j] <= 0)
+                    //signedDists[0, k, i] = signedDistance(convexVectInfo[i, 0], convexVectInfo[i, 1], bX, bY, convexVectInfo[i, 2]);
+                    //signedDists[1, k, i] = positionAlong(convexVectInfo[i, 0], convexVectInfo[i, 1], bX, bY, convexVectInfo[i, 2]);
+                    //if (signedDists[0, k, i] <= 0)
                     /* Again, these lines are commented because the signedDists has been removed. This data may be useful in 
                      * other applications though. In the condition below, any signed distance that is negative is outside of the
-                     * original polygon. It is only possible for the vertex to be outside one of the 3 to 8 edges, so once we
+                     * original polygon. It is only possible for the IVertexConvHull to be outside one of the 3 to 8 edges, so once we
                      * add it, we break out of the inner loop (gotta save time where we can!). */
                     if (crossProduct(edgeUnitVectors[j, 0], edgeUnitVectors[j, 1], bX, bY) <= 0)
                     {
-                        //var newSideCand = Tuple.Create(oldNodes[i], signedDists[1, i, j]);
-                        /* In order to improve the efficiency of Step 3, we add the new vertices to a sorted List. Perhaps
-                         * this while loop could be replaced with a binary sort inserter to be more efficient. The sort is
-                         * done based on the dot product or "positionAlong", this is the signedDistance parallel to the edge 
-                         * starting at the vertex (basically = |b|*cos(theta)). All values though will be positive if they
-                         * violate the above. */
-                        var newSideCand = Tuple.Create(origVertices[i],
-                            dotProduct(edgeUnitVectors[j, 0], edgeUnitVectors[j, 1], bX, bY));
-                        int k = 0;
-                        while ((k < hullCands[j].Count) && (newSideCand.Item2 > hullCands[j][k].Item2)) k++;
-                        hullCands[j].Insert(k, newSideCand);
+                        hullCands[j].Add(dotProduct(edgeUnitVectors[j, 0], edgeUnitVectors[j, 1], bX, bY),origVertices[i]);
                         break;
                     }
                 }
@@ -179,7 +166,7 @@ namespace MIConvexNameSpace
             {
                 if (hullCands[j - 1].Count == 1)
                     /* If there is one and only one candidate, it must be in the convex hull. Add it now. */
-                    convexHullCCW.Insert(j, hullCands[j - 1][0].Item1);
+                    convexHullCCW.Insert(j, hullCands[j - 1].Values[0]);
                 else if (hullCands[j - 1].Count > 1)
                 {
                     /* If there's more than one than...Well, now comes the tricky part. Here is where the
@@ -187,41 +174,41 @@ namespace MIConvexNameSpace
                      * were all linear). The above octagon trick was to conquer and divide the candidates. */
 
                     /* a renaming for compactness and clarity */
-                    var hc = hullCands[j - 1];
+                    var hc = new List<IVertexConvHull>(hullCands[j - 1].Values);
 
-                    /* put the known starting vertex as the beginning of the list. No need for the "positionAlong"
+                    /* put the known starting IVertexConvHull as the beginning of the list. No need for the "positionAlong"
                      * anymore since the list is now sorted. At any rate, the positionAlong is zero. */
-                    hc.Insert(0, Tuple.Create(convexHullCCW[j - 1], 0.0));
-                    /* put the ending vertex on the end of the list. Need to check if it wraps back around to 
+                    hc.Insert(0, convexHullCCW[j - 1]);
+                    /* put the ending IVertexConvHull on the end of the list. Need to check if it wraps back around to 
                      * the first in the loop (hence the simple condition). */
-                    if (j == cvxVNum) hc.Add(Tuple.Create(convexHullCCW[0], double.NaN));
-                    else hc.Add(Tuple.Create(convexHullCCW[j], double.NaN));
-
+                    if (j == cvxVNum) hc.Add(convexHullCCW[0]);
+                    else hc.Add(convexHullCCW[j]);
+  
                     /* Now starting from second from end, work backwards looks for places where the angle 
                      * between the vertices in concave (which would produce a negative value of z). */
                     int i = hc.Count - 2;
                     while (i > 0)
                     {
-                        var zValue = crossProduct(hc[i].Item1.X - hc[i - 1].Item1.X,
-                            hc[i].Item1.Y - hc[i - 1].Item1.Y,
-                            hc[i + 1].Item1.X - hc[i].Item1.X,
-                            hc[i + 1].Item1.Y - hc[i].Item1.Y);
+                        var zValue = crossProduct(hc[i].X - hc[i - 1].X,
+                            hc[i].Y - hc[i - 1].Y,
+                            hc[i + 1].X - hc[i].X,
+                            hc[i + 1].Y - hc[i].Y);
                         if (zValue < 0)
                         {
                             /* remove any vertices that create concave angles. */
                             hc.RemoveAt(i);
-                            /* but don't reduce i since we need to check the previous angle again. Well, 
-                             * if you're back to the end you do need to reduce i (hence the line below). */
+                            /* but don't reduce k since we need to check the previous angle again. Well, 
+                             * if you're back to the end you do need to reduce k (hence the line below). */
                             if (i == hc.Count - 1) i--;
                         }
-                        /* if the angle is convex, then continue toward the start, i-- */
+                        /* if the angle is convex, then continue toward the start, k-- */
                         else i--;
                     }
-                    /* for each of the remaining vertices in hullCands[j-1], add them to the convexHullCCW. 
-                     * Here we insert them backwards (i counts down) to simplify the insert operation (i.e.
-                     * since all are inserted @ j, the previous inserts are pushed up to j+1, j+2, etc. */
+                    /* for each of the remaining vertices in hullCands[i-1], add them to the convexHullCCW. 
+                     * Here we insert them backwards (k counts down) to simplify the insert operation (k.e.
+                     * since all are inserted @ i, the previous inserts are pushed up to i+1, i+2, etc. */
                     for (i = hc.Count - 2; i > 0; i--)
-                        convexHullCCW.Insert(j, hc[i].Item1);
+                        convexHullCCW.Insert(j, hc[i]);
                 }
             }
             #endregion
@@ -230,31 +217,32 @@ namespace MIConvexNameSpace
             return convexHullCCW;
         }
 
-
-        /// <summary>
-        /// An overload that takes the vertices as an nX2 matrix, where the first column
-        /// is the x values of the matrix and the second column is the y values. It returns,
-        /// a similar matrix comprised only of the convex hull ordered in a counter-clock-wise loop.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <returns></returns>
-        public static double[,] Find2D(double[,] vertices)
+        public static List<IVertexConvHull> Find2D(List<IVertexConvHull> vertices)
         {
-            var numRows = vertices.GetLength(0);
-            var vList = new List<vertex>(numRows);
-            for (int i = 0; i < numRows; i++)
-                vList.Add(new vertex(vertices[i, 0], vertices[i, 1]));
-
-            List<vertex> convexHull = Find2D(vList);
-            numRows = convexHull.Count;
-            double[,] result = new double[numRows, 2];
-            for (int i = 0; i < numRows; i++)
-            {
-                result[i, 0] = convexHull[i].X;
-                result[i, 1] = convexHull[i].Y;
-            }
-            return result;
+            /* first, the original vertices are copied as they will be modified
+             * by this function. */
+            origVertices = new List<IVertexConvHull>(vertices);
+            return Find2D();
         }
 
+        /* These two overloads take longer than the one above. They are provided in cases
+         * where the users classes and collections are more like these. Ideally, the
+         * user should declare there list of vertices as a List<IVertexConvHull>, but 
+         * this is an unrealistic requirement. At any rate, these methods take about 50  
+         * nano-second to add each one.  */
+        public static List<IVertexConvHull> Find2D(IList vertices)
+        {
+            origVertices = new List<IVertexConvHull>();
+            foreach (object o in vertices)
+                origVertices.Add((IVertexConvHull)o);
+            return Find2D();
+        }
+        public static List<IVertexConvHull> Find2D(object[] vertices)
+        {
+            origVertices = new List<IVertexConvHull>();
+            for (int i = 0; i < vertices.GetLength(0); i++)
+                origVertices.Add((IVertexConvHull)vertices[i]);
+            return Find2D();
+        }
     }
 }
