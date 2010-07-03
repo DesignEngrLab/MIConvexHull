@@ -14,17 +14,28 @@ namespace ExampleWithGraphics
     /// </summary>
     public partial class MainWindow : Window
     {
+        const int NumberOfVertices = 100;
+        const double size = 50;
+        List<IVertexConvHull> vertices;
+        List<IVertexConvHull> convexHullVertices;
+        List<IFaceConvHull> faces;
         public MainWindow()
         {
             InitializeComponent();
-            int NumberOfVertices = 100;
-            double size = 50;
+            var ax = new Petzold.Media3D.Axes();
+            ax.Extent = 60;
+            viewport.Children.Add(ax);
+            Setup();
+        }
 
+        private void Setup()
+        {
+            vertices = new List<IVertexConvHull>();
             Random r = new Random();
             //Console.WriteLine("Ready? Push Return/Enter to start.");
             //Console.ReadLine();
             //Console.WriteLine("Making " + NumberOfVertices.ToString() + " random vertices.");
-            var vertices = new List<vertex>();
+          
             for (int i = 0; i < NumberOfVertices; i++)
             {
                 var vi = new vertex(size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2);
@@ -34,31 +45,46 @@ namespace ExampleWithGraphics
             }
 
 
+
+
+        }
+
+        private void btnRun_Click(object sender, RoutedEventArgs e)
+        {
             Console.WriteLine("Running...");
             DateTime now = DateTime.Now;
-            var faces = new List<IFaceConvHull>();
-            var convexHullVertices = ConvexHull.Find3D(vertices, typeof(face), faces);
+             faces = new List<IFaceConvHull>();
+            convexHullVertices = ConvexHull.Find3D(vertices, typeof(face), out faces);
             TimeSpan interval = DateTime.Now - now;
-            Console.WriteLine("Out of the " + NumberOfVertices.ToString() + " vertices, there are " +
-                convexHullVertices.Count.ToString() + " in the convex hull.");
-            Console.WriteLine("time = " + interval);
-            Console.ReadLine();
+            txtBlkTimer.Text = interval.Hours.ToString() + ":" + interval.Minutes.ToString()
+                + ":" + interval.Seconds.ToString() + "." + interval.TotalMilliseconds.ToString();
+            btnDisplay.IsEnabled = true;
+            btnDisplay.IsDefault = true;
 
-            //Point3DCollection CVPoints = new Point3DCollection();
-            //foreach (var chV in convexHullVertices)
-            //    CVPoints.Add(((vertex)chV).Center);
+        }
 
-            //Int32Collection faceTris = new Int32Collection();
-            //foreach (IFaceConvHull f in faces)
-            //{
-            //    faceTris.Add(convexHullVertices.IndexOf(((face)f).v1));
-            //    faceTris.Add(convexHullVertices.IndexOf(((face)f).v2));
-            //    faceTris.Add(convexHullVertices.IndexOf(((face)f).v3));
-            //}
-            //var mg3d = new MeshGeometry3D();
-            //mg3d.Positions = CVPoints;
-            //mg3d.TriangleIndices = faceTris;
-            //viewport.Children.Add(mg3d);
+        private void btnDisplay_Click(object sender, RoutedEventArgs e)
+        {
+            Point3DCollection CVPoints = new Point3DCollection();
+            foreach (var chV in convexHullVertices)
+                CVPoints.Add(((vertex)chV).Center);
+
+            Int32Collection faceTris = new Int32Collection();
+            foreach (IFaceConvHull f in faces)
+            {
+                faceTris.Add(convexHullVertices.IndexOf(((face)f).v1));
+                faceTris.Add(convexHullVertices.IndexOf(((face)f).v2));
+                faceTris.Add(convexHullVertices.IndexOf(((face)f).v3));
+            }
+            var mg3d = new MeshGeometry3D();
+            mg3d.Positions = CVPoints;
+            mg3d.TriangleIndices = faceTris;
+            
+            var geoMod = new GeometryModel3D() { Geometry = mg3d, BackMaterial = new DiffuseMaterial(Brushes.AliceBlue) }; 
+     
+          var modViz = new ModelVisual3D();
+            modViz.Children.Add(modViz);
+
         }
     }
 }
