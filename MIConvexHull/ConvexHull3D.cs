@@ -210,7 +210,7 @@ namespace MIConvexHull
             origVertices = new List<IVertexConvHull>(vertices);
             return Find3D();
         }
-        public static List<IVertexConvHull> Find3D(List<IVertexConvHull> vertices, Type face_Type, IList faces)
+        public static List<IVertexConvHull> Find3D(List<IVertexConvHull> vertices, Type face_Type, out List<IFaceConvHull> faces)
         {
             /* first, the original vertices are copied as they will be modified
              * by this function. */
