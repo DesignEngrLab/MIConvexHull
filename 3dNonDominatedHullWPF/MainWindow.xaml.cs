@@ -14,11 +14,9 @@ namespace ExampleWithGraphics
     /// </summary>
     public partial class MainWindow : Window
     {
-        const int NumberOfVertices = 100;
+        const int NumberOfVertices = 1000000;
         const double size = 50;
-        List<IVertexConvHull> vertices;
-        List<IVertexConvHull> convexHullVertices;
-        List<IFaceConvHull> faces;
+        List<IVertexConvHull> vertices, nonDomVertices;
         public MainWindow()
         {
             InitializeComponent();
@@ -35,13 +33,13 @@ namespace ExampleWithGraphics
             //Console.WriteLine("Ready? Push Return/Enter to start.");
             //Console.ReadLine();
             //Console.WriteLine("Making " + NumberOfVertices.ToString() + " random vertices.");
-          
+
             for (int i = 0; i < NumberOfVertices; i++)
             {
                 var vi = new vertex(size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2);
                 vertices.Add(vi);
 
-                viewport.Children.Add(vi);
+               // viewport.Children.Add(vi);
             }
 
 
@@ -53,8 +51,8 @@ namespace ExampleWithGraphics
         {
             Console.WriteLine("Running...");
             DateTime now = DateTime.Now;
-             faces = new List<IFaceConvHull>();
-            convexHullVertices = ConvexHull.Find3D(vertices, typeof(face), out faces);
+            //faces = new List<IFaceConvHull>();
+            nonDomVertices = NonDominatedHull.Find3D(vertices);
             TimeSpan interval = DateTime.Now - now;
             txtBlkTimer.Text = interval.Hours.ToString() + ":" + interval.Minutes.ToString()
                 + ":" + interval.Seconds.ToString() + "." + interval.TotalMilliseconds.ToString();
@@ -65,26 +63,14 @@ namespace ExampleWithGraphics
 
         private void btnDisplay_Click(object sender, RoutedEventArgs e)
         {
-            Point3DCollection CVPoints = new Point3DCollection();
-            foreach (var chV in convexHullVertices)
-                CVPoints.Add(((vertex)chV).Center);
-
-            Int32Collection faceTris = new Int32Collection();
-            foreach (IFaceConvHull f in faces)
+            foreach (var ndv in nonDomVertices)
             {
-                faceTris.Add(convexHullVertices.IndexOf(((face)f).v1));
-                faceTris.Add(convexHullVertices.IndexOf(((face)f).v2));
-                faceTris.Add(convexHullVertices.IndexOf(((face)f).v3));
+                var s=new Sphere()
+                { Center = new Point3D(ndv.X,ndv.Y,ndv.Z),
+                Radius = 0.3,
+               BackMaterial = new DiffuseMaterial(Brushes.Red)};
+                viewport.Children.Add(s);
             }
-            var mg3d = new MeshGeometry3D();
-            mg3d.Positions = CVPoints;
-            mg3d.TriangleIndices = faceTris;
-            
-            var geoMod = new GeometryModel3D() { Geometry = mg3d, BackMaterial = new DiffuseMaterial(Brushes.AliceBlue) }; 
-     
-          var modViz = new ModelVisual3D();
-            modViz.Children.Add(modViz);
-
         }
     }
 }

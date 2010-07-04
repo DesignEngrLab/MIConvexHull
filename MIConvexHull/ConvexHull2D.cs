@@ -66,7 +66,7 @@ namespace MIConvexHull
             //  int[] extremeVertexIndices = new int[8]; I thought that this might speed things up. That is, to use this to RemoveAt
             // as oppoaws to the Remove in line 91, which I thought might be slow. Turns out I was wrong - plus code is more succinct
             // way.
-            for (int i = origVNum - 1; i >= 0; i--)
+            for (int i = 0; i < origVNum; i++)
             {
                 var n = origVertices[i];
                 if (n.X < minX) { extremeVertices[0] = n; minX = n.X; }
@@ -131,9 +131,9 @@ namespace MIConvexHull
             /* An array of sorted dictionaries! As we find new candidate convex points, we store them here. The second
              * part of the tuple (Item2 is a double) is the "positionAlong" - this is used to order the nodes that
              * are found for a particular side (More on this in 23 lines). */
-            var hullCands = new SortedList<double,IVertexConvHull>[cvxVNum];
+            var hullCands = new SortedDictionary<double, IVertexConvHull>[cvxVNum];
             /* initialize the 3 to 8 Lists s.t. members can be added below. */
-            for (int j = 0; j < cvxVNum; j++) hullCands[j] = new SortedList<double, IVertexConvHull>();
+            for (int j = 0; j < cvxVNum; j++) hullCands[j] = new SortedDictionary<double, IVertexConvHull>();
 
             /* Now a big loop. For each of the original vertices, check them with the 3 to 8 edges to see if they 
              * are inside or out. If they are out, add them to the proper row of the hullCands array. */
@@ -152,7 +152,7 @@ namespace MIConvexHull
                      * add it, we break out of the inner loop (gotta save time where we can!). */
                     if (crossProduct(edgeUnitVectors[j, 0], edgeUnitVectors[j, 1], bX, bY) <= 0)
                     {
-                        hullCands[j].Add(dotProduct(edgeUnitVectors[j, 0], edgeUnitVectors[j, 1], bX, bY),origVertices[i]);
+                        hullCands[j].Add(dotProduct(edgeUnitVectors[j, 0], edgeUnitVectors[j, 1], bX, bY), origVertices[i]);
                         break;
                     }
                 }
@@ -166,7 +166,7 @@ namespace MIConvexHull
             {
                 if (hullCands[j - 1].Count == 1)
                     /* If there is one and only one candidate, it must be in the convex hull. Add it now. */
-                    convexHullCCW.Insert(j, hullCands[j - 1].Values[0]);
+                    convexHullCCW.InsertRange(j, hullCands[j - 1].Values);
                 else if (hullCands[j - 1].Count > 1)
                 {
                     /* If there's more than one than...Well, now comes the tricky part. Here is where the
@@ -183,7 +183,7 @@ namespace MIConvexHull
                      * the first in the loop (hence the simple condition). */
                     if (j == cvxVNum) hc.Add(convexHullCCW[0]);
                     else hc.Add(convexHullCCW[j]);
-  
+
                     /* Now starting from second from end, work backwards looks for places where the angle 
                      * between the vertices in concave (which would produce a negative value of z). */
                     int i = hc.Count - 2;

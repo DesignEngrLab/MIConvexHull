@@ -29,7 +29,7 @@ namespace TestEXE_for_MIConvexHull2D
     {
         static void Main(string[] args)
         {
-            int NumberOfVertices = 10000000;
+            int NumberOfVertices = 1000000;
             double size = 1000;
 
             Random r = new Random();

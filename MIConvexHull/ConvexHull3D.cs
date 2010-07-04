@@ -134,9 +134,9 @@ namespace MIConvexHull
              * IFaceConvHull. This manhattan distance is comprised of the distance parallel to the IFaceConvHull (dot-product) plus
              * the distance perpendicular to the IFaceConvHull (cross-product). This is used to order the vertices that
              * are found for a particular side (More on this in 23 lines). */
-            var hullCands = new List<Tuple<IVertexConvHull, double>>[cvxFNum];
+            var hullCands = new SortedDictionary<double, IVertexConvHull>[cvxFNum];
             /* initialize the IFaceConvHull Lists s.t. members can be added below. */
-            for (int j = 0; j < cvxFNum; j++) hullCands[j] = new List<Tuple<IVertexConvHull, double>>();
+            for (int j = 0; j < cvxFNum; j++) hullCands[j] = new SortedDictionary<double, IVertexConvHull>();
 
             /* Now a big loop. For each of the original vertices, check them with the 4 to 48 faces to see if they 
              * are inside or out. If they are out, add them to the proper row of the hullCands array. */
@@ -152,10 +152,7 @@ namespace MIConvexHull
                     {
                         var crossP = crossProduct(convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2], bX, bY, bZ);
                         var magCross = Math.Sqrt((crossP[0] * crossP[0]) + (crossP[1] * crossP[1]) + (crossP[2] * crossP[2]));
-                        var newSideCand = Tuple.Create(origVertices[i], dotP + magCross);
-                        int k = 0;
-                        while ((k < hullCands[j].Count) && (newSideCand.Item2 > hullCands[j][k].Item2)) k++;
-                        hullCands[j].Insert(k, newSideCand);
+                         hullCands[j].Add(dotP + magCross, origVertices[i]);
                         break;
                     }
                 }
@@ -168,27 +165,29 @@ namespace MIConvexHull
                 if (hullCands[i].Count == 1)
                 {
                     /* If there is one and only one candidate, it must be in the convex hull. Add it now. */
-                    convexHull.Add(hullCands[i][0].Item1);
+                    convexHull.AddRange(hullCands[i].Values);
                     /* what about faces? should these be updated? Maybe, but our resulting polyhedron is not 
                      * as pretty as a Delaunay-ized one. We'll have some poor-aspect ratio triangles. */
-                    replaceFace(convexFaces, i, hullCands[i][0].Item1);
+                    replaceFace(convexFaces, i, convexHull[convexHull.Count-1]);
                 }
                 else if (hullCands[i].Count > 1)
                 {
                     var subFaces = new List<IFaceConvHull>();
-                    subFaces.Add(convexFaces[i]);
+                    subFaces.Add(convexFaces[i]); 
+                    var hc = new List<IVertexConvHull>(hullCands[i].Values);
+
                     for (int j = hullCands[i].Count - 1; j >= 0; j--)
                     {
                         for (int k = subFaces.Count - 1; k >= 0; k--)
                         {
-                            var bX = hullCands[i][j].Item1.X - subFaces[k].center[0];
-                            var bY = hullCands[i][j].Item1.Y - subFaces[k].center[1];
-                            var bZ = hullCands[i][j].Item1.Z - subFaces[k].center[2];
+                            var bX = hc[j].X - subFaces[k].center[0];
+                            var bY =hc[j].Y - subFaces[k].center[1];
+                            var bZ = hc[j].Z - subFaces[k].center[2];
                             var dotP = dotProduct(subFaces[k].normal[0], subFaces[k].normal[1], subFaces[k].normal[2], bX, bY, bZ);
                             if (dotP >= 0)
                             {
-                                replaceFace(subFaces, k, hullCands[i][j].Item1);
-                                convexHull.Add(hullCands[i][j].Item1);
+                                replaceFace(subFaces, k, hc[j]);
+                                convexHull.Add(hc[j]);
                                 break;
                             }
                         }
