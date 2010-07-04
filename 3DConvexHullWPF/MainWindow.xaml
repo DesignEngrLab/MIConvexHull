@@ -36,7 +36,7 @@
 
             <!-- Camera -->
             <Viewport3D.Camera>
-                <PerspectiveCamera Position="50 50 100" UpDirection="0 1 0"
+                <PerspectiveCamera Position="80 80 160" UpDirection="0 1 0"
                                    LookDirection="-1 -1 -2" FieldOfView="45">
                     <PerspectiveCamera.Transform>
                         <Transform3DGroup>

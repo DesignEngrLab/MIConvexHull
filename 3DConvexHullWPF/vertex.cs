@@ -27,7 +27,7 @@ namespace ExampleWithGraphics
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class vertex :Sphere, IVertexConvHull
+    public class vertex : IVertexConvHull //,Sphere
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="vertex"/> class.
@@ -48,10 +48,10 @@ namespace ExampleWithGraphics
             this.X = x;
             this.Y = y;
             this.Z = z;
-            this.Center = new System.Windows.Media.Media3D.Point3D(X, Y, Z);
-            this.Radius = 0.1;
+            //this.Center = new System.Windows.Media.Media3D.Point3D(X, Y, Z);
+            //this.Radius = 0.1;
 
-            this.BackMaterial = new DiffuseMaterial(Brushes.Black);
+            //this.BackMaterial = new DiffuseMaterial(Brushes.Black);
         }
 
         /// <summary>
