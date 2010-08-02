@@ -115,6 +115,66 @@ namespace MIConvexHull
         }
 
 
+
+        /// <summary>
+        /// Determines whether the two faces share an edge.
+        /// </summary>
+        /// <param name="f1">The face, f1.</param>
+        /// <param name="f2">The face, f2.</param>
+        /// <param name="vFrom">The shared from vertex.</param>
+        /// <param name="vTo">The shared to vertex.</param>
+        /// <returns></returns>
+        private static Boolean shareEdge(IFaceConvHull f1, IFaceConvHull f2, out IVertexConvHull vFrom, out IVertexConvHull vTo)
+        {
+            vFrom = null;
+            vTo = null;
+            Boolean result = false;
+            if (f1.v1.Equals(f2.v1) || f1.v1.Equals(f2.v2) || f1.v1.Equals(f2.v3))
+                vFrom = f1.v1;
+            if (f1.v2.Equals(f2.v1) || f1.v2.Equals(f2.v2) || f1.v2.Equals(f2.v3))
+            {
+                if (vFrom != null)
+                {
+                    vTo = f1.v2;
+                    result = true;
+                }
+                else if ((vFrom == null) && (f1.v3.Equals(f2.v1) || f1.v3.Equals(f2.v2) || f1.v3.Equals(f2.v3)))
+                {
+                    vFrom = f1.v2;
+                    vTo = f1.v3;
+                    result = true;
+                }
+            }
+            else if ((vFrom != null) && (f1.v3.Equals(f2.v1) || f1.v3.Equals(f2.v2) || f1.v3.Equals(f2.v3)))
+            {
+                vTo = vFrom;
+                vFrom =f1.v3;
+                result = true;
+            }
+            return result;
+        }
+
+
+
+
+        /// <summary>
+        /// Finds the vertex that is NOT shared (that is not the two provided).
+        /// </summary>
+        /// <param name="iFaceConvHull">The i face conv hull.</param>
+        /// <param name="vFrom">The shared vertex,  vFrom.</param>
+        /// <param name="vTo">The shared vertex, vTo.</param>
+        /// <returns></returns>
+        private static IVertexConvHull findNonSharedVertex(IFaceConvHull iFaceConvHull, IVertexConvHull vFrom, IVertexConvHull vTo)
+        {
+            if (!iFaceConvHull.v1.Equals(vFrom) && !iFaceConvHull.v1.Equals(vTo))
+                return iFaceConvHull.v1;
+            if (!iFaceConvHull.v2.Equals(vFrom) && !iFaceConvHull.v2.Equals(vTo))
+                return iFaceConvHull.v2;
+            return iFaceConvHull.v3;
+
+        }
+
+
         /// <summary>
         /// Replace IFaceConvHull, j, in the list with three new faces.
         /// </summary>
@@ -135,7 +195,7 @@ namespace MIConvexHull
         {
             if (v1.Equals(v2) || v2.Equals(v3) || v3.Equals(v1)) return null;
             double[] n = crossProduct(v2.X - v1.X, v2.Y - v1.Y, v2.Z - v1.Z,
-                v3.X - v1.X, v3.Y - v1.Y, v3.Z - v1.Z);
+                v3.X - v2.X, v3.Y - v2.Y, v3.Z - v2.Z);
             var nMag = Math.Sqrt((n[0] * n[0]) + (n[1] * n[1]) + (n[2] * n[2]));
             if (nMag < epsilon) return null;
             n[0] /= nMag;

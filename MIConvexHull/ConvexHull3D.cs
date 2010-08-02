@@ -124,6 +124,32 @@ namespace MIConvexHull
             //var cvxVNum = convexHull.Count;
             var cvxFNum = convexFaces.Count;
             var last = cvxFNum - 1;
+
+            /* While these vertices are clearly part of the hull, the faces may not be. Now we quickly run through the
+             * faces to identify is they neighbor with a non-convex face. This can be determined by taking the cross-
+             * product of the normals of the two faces. If the direction of the resulting vector, c, is not aligned
+             * with the direction of the first face's edge vector (the one shared with the other face) then we need
+             * to rearrange the faces - essentially we change the faces from the 2 offending faces to the other two
+             * that make up the simplex (tetrahedron) shape defined by the four vertices. */
+            for (int i = 0; i < last; i++)
+                for (int j = i + 1; j < cvxFNum; j++)
+                {
+                    IVertexConvHull vFrom, vTo;
+                    //defVertexClass vFrom = null;
+                    //defVertexClass vTo = null;
+                    if (ConvexHull.shareEdge(convexFaces[i], convexFaces[j], out vFrom, out vTo))
+                    {
+                        var c = ConvexHull.crossProduct(convexFaces[i].normal[0], convexFaces[i].normal[1], convexFaces[i].normal[2],
+                            convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2]);
+                        if ((c[0] / (vTo.X - vFrom.X) < 0) || (c[1] / (vTo.Y - vFrom.Y) < 0) || (c[2] / (vTo.Z - vFrom.Z) < 0))
+                        {
+                            IVertexConvHull viDiff = ConvexHull.findNonSharedVertex(convexFaces[i], vFrom, vTo);
+                            IVertexConvHull vjDiff = ConvexHull.findNonSharedVertex(convexFaces[j], vFrom, vTo);
+                            convexFaces[i] = ConvexHull.MakeFace(viDiff, vjDiff, vTo);
+                            convexFaces[j] = ConvexHull.MakeFace(vjDiff, viDiff, vFrom);
+                        }
+                    }
+                }
             #endregion
 
             #region Step 3 : Find Signed-Distance to each convex edge
@@ -152,7 +178,7 @@ namespace MIConvexHull
                     {
                         var crossP = crossProduct(convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2], bX, bY, bZ);
                         var magCross = Math.Sqrt((crossP[0] * crossP[0]) + (crossP[1] * crossP[1]) + (crossP[2] * crossP[2]));
-                         hullCands[j].Add(dotP + magCross, origVertices[i]);
+                        hullCands[j].Add(dotP + magCross, origVertices[i]);
                         break;
                     }
                 }
@@ -168,12 +194,13 @@ namespace MIConvexHull
                     convexHull.AddRange(hullCands[i].Values);
                     /* what about faces? should these be updated? Maybe, but our resulting polyhedron is not 
                      * as pretty as a Delaunay-ized one. We'll have some poor-aspect ratio triangles. */
-                    replaceFace(convexFaces, i, convexHull[convexHull.Count-1]);
+                    replaceFace(convexFaces, i, convexHull[convexHull.Count - 1]);
                 }
                 else if (hullCands[i].Count > 1)
                 {
                     var subFaces = new List<IFaceConvHull>();
-                    subFaces.Add(convexFaces[i]); 
+                    subFaces.Add(convexFaces[i]);
+                    convexFaces.RemoveAt(i);
                     var hc = new List<IVertexConvHull>(hullCands[i].Values);
 
                     for (int j = hullCands[i].Count - 1; j >= 0; j--)
@@ -181,7 +208,7 @@ namespace MIConvexHull
                         for (int k = subFaces.Count - 1; k >= 0; k--)
                         {
                             var bX = hc[j].X - subFaces[k].center[0];
-                            var bY =hc[j].Y - subFaces[k].center[1];
+                            var bY = hc[j].Y - subFaces[k].center[1];
                             var bZ = hc[j].Z - subFaces[k].center[2];
                             var dotP = dotProduct(subFaces[k].normal[0], subFaces[k].normal[1], subFaces[k].normal[2], bX, bY, bZ);
                             if (dotP >= 0)
@@ -192,6 +219,7 @@ namespace MIConvexHull
                             }
                         }
                     }
+                    convexFaces.AddRange(subFaces);
                 }
             }
             #endregion
@@ -200,7 +228,6 @@ namespace MIConvexHull
             return convexHull;
 
         }
-
         public static List<IVertexConvHull> Find3D(List<IVertexConvHull> vertices, Type face_Type = null)
         {
             /* first, the original vertices are copied as they will be modified
@@ -232,7 +259,7 @@ namespace MIConvexHull
             vertices.CopyTo(arrayOfVertices, 0);
             return Find3D(arrayOfVertices, face_Type);
         }
-        public static List<IVertexConvHull> Find3D(object[] vertices, Type face_Type=null)
+        public static List<IVertexConvHull> Find3D(object[] vertices, Type face_Type = null)
         {
             faceType = face_Type;
             origVertices = new List<IVertexConvHull>();
