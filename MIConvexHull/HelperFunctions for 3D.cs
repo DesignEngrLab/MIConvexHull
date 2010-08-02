@@ -30,11 +30,12 @@ namespace MIConvexHull
     {
         const double epsilon = 0.0000001;
         static Type faceType;
+
         /// <summary>
-        /// Sumproducts the specified k.
+        /// Sumproduct of the i,j,k values with the vertex position.
         /// </summary>
-        /// <param name="k">The k.</param>
         /// <param name="i">The i.</param>
+        /// <param name="j">The j.</param>
         /// <param name="k">The k.</param>
         /// <param name="n">The n.</param>
         /// <returns></returns>
@@ -91,9 +92,9 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        /// Determines whether [is non negative] [the specified k].
+        /// Determines whether [is non negative] [the specified i].
         /// </summary>
-        /// <param name="k">The integer, k.</param>
+        /// <param name="i">The integer, i.</param>
         /// <returns></returns>
         private static int isNonNegative(int i)
         {
@@ -104,7 +105,7 @@ namespace MIConvexHull
         /// <summary>
         /// Cycles the specified k from 0 to 2 while avoiding the value at b.
         /// </summary>
-        /// <param name="k">The integer, k.</param>
+        /// <param name="i">The integer, i.</param>
         /// <param name="b">The integer, b.</param>
         /// <returns></returns>
         private static int cycle(int i, int b = int.MinValue)
@@ -156,9 +157,43 @@ namespace MIConvexHull
 
 
 
+        /// <summary>
+        /// Fixes the non-convex faces.
+        /// </summary>
+        /// <param name="convexFaces">The convex faces.</param>
+        private static void FixNonConvexFaces(List<IFaceConvHull> convexFaces)
+        {
+            int cvxFNum = convexFaces.Count;
+            int last = cvxFNum - 1;
+            /* While these vertices are clearly part of the hull, the faces may not be. Now we quickly run through the
+             * faces to identify if they neighbor with a non-convex face. This can be determined by taking the cross-
+             * product of the normals of the two faces. If the direction of the resulting vector, c, is not aligned
+             * with the direction of the first face's edge vector (the one shared with the other face) then we need
+             * to rearrange the faces - essentially we change the faces from the 2 offending faces to the other two
+             * that make up the simplex (tetrahedron) shape defined by the four vertices. */
+            for (int i = 0; i < last; i++)
+                for (int j = i + 1; j < cvxFNum; j++)
+                {
+                    IVertexConvHull vFrom, vTo;
+                    //defVertexClass vFrom = null;
+                    //defVertexClass vTo = null;
+                    if (ConvexHull.shareEdge(convexFaces[i], convexFaces[j], out vFrom, out vTo))
+                    {
+                        var c = ConvexHull.crossProduct(convexFaces[i].normal[0], convexFaces[i].normal[1], convexFaces[i].normal[2],
+                            convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2]);
+                        if ((c[0] / (vTo.X - vFrom.X) < 0) || (c[1] / (vTo.Y - vFrom.Y) < 0) || (c[2] / (vTo.Z - vFrom.Z) < 0))
+                        {
+                            IVertexConvHull viDiff = ConvexHull.findNonSharedVertex(convexFaces[i], vFrom, vTo);
+                            IVertexConvHull vjDiff = ConvexHull.findNonSharedVertex(convexFaces[j], vFrom, vTo);
+                            convexFaces[i] = ConvexHull.MakeFace(viDiff, vjDiff, vTo);
+                            convexFaces[j] = ConvexHull.MakeFace(vjDiff, viDiff, vFrom);
+                        }
+                    }
+                }
+        }
 
         /// <summary>
-        /// Finds the vertex that is NOT shared (that is not the two provided).
+        /// Finds the vertex that is NOT shared (that is, not the two provided).
         /// </summary>
         /// <param name="iFaceConvHull">The i face conv hull.</param>
         /// <param name="vFrom">The shared vertex,  vFrom.</param>
@@ -179,7 +214,7 @@ namespace MIConvexHull
         /// Replace IFaceConvHull, j, in the list with three new faces.
         /// </summary>
         /// <param name="faces">The convex faces.</param>
-        /// <param name="i">The i.</param>
+        /// <param name="j">The index, j.</param>
         /// <param name="IVertexConvHull">The IVertexConvHull.</param>
         private static void replaceFace(List<IFaceConvHull> faces, int j, IVertexConvHull IVertexConvHull)
         {

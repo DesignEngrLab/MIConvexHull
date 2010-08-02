@@ -14,7 +14,7 @@ namespace ExampleWithGraphics
     /// </summary>
     public partial class MainWindow : Window
     {
-        const int NumberOfVertices = 100;
+        const int NumberOfVertices = 120;
         const double size = 50;
         List<IVertexConvHull> vertices;
         List<IVertexConvHull> convexHullVertices;
@@ -32,10 +32,8 @@ namespace ExampleWithGraphics
         {
             vertices = new List<IVertexConvHull>();
             Random r = new Random();
-            //Console.WriteLine("Ready? Push Return/Enter to start.");
-            //Console.ReadLine();
-            //Console.WriteLine("Making " + NumberOfVertices.ToString() + " random vertices.");
 
+            /****** Random Vertices ******/
             for (int i = 0; i < NumberOfVertices; i++)
             {
                 var vi = new vertex(size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2);
@@ -43,7 +41,10 @@ namespace ExampleWithGraphics
 
                 viewport.Children.Add(vi);
             }
+            /*****************************/
 
+
+            /****** Debug Set of Vertices ******/
             //vertices.Add(new vertex(40, 0, 0));
             //vertices.Add(new vertex(0, 40, 0));
             //vertices.Add(new vertex(0, 0, 40));
@@ -66,20 +67,25 @@ namespace ExampleWithGraphics
             //vertices.Add(new vertex(0, 40, -40));
             //vertices.Add(new vertex(40, 0, -40));
 
-            //vertices.Add(new vertex(31, 25, 25));
-            //vertices.Add(new vertex(-25, -25, -25));
-            //vertices.Add(new vertex(-25, -25, 25));
-            //vertices.Add(new vertex(-25, 25, -25));
-            //vertices.Add(new vertex(25, -25, -25));
-            //vertices.Add(new vertex(25, 25, -25));
-            //vertices.Add(new vertex(25, -25, 25));
-            //vertices.Add(new vertex(-25, 25, 25));
+            //vertices.Add(new vertex(35, 35, 35));
+            //vertices.Add(new vertex(35, 30,25));
+            //vertices.Add(new vertex(35, 25, 30));
+            //vertices.Add(new vertex(38, 38, 15));
+            //vertices.Add(new vertex(38, 15, 38));
+            //////vertices.Add(new vertex(-25, -25, -25));
+            //////vertices.Add(new vertex(-25, -25, 25));
+            //////vertices.Add(new vertex(-25, 25, -25));
+            //////vertices.Add(new vertex(25, -25, -25));
+            //////vertices.Add(new vertex(25, 25, -25));
+            //////vertices.Add(new vertex(25, -25, 25));
+            //////vertices.Add(new vertex(-25, 25, 25));
 
 
 
             //foreach (var vi in vertices)
             //    viewport.Children.Add((vertex)vi);
 
+            /*****************************/
 
 
         }
@@ -106,7 +112,7 @@ namespace ExampleWithGraphics
                 CVPoints.Add(((vertex)chV).Center);
                 viewport.Children.Add(new Sphere()
                 {
-                    Center = new Point3D(chV.X, chV.Y, chV.Z),
+                    Center = ((vertex)chV).Center,
                     BackMaterial = new DiffuseMaterial(Brushes.Orange),
                     Radius = .5
                 });
@@ -132,7 +138,7 @@ namespace ExampleWithGraphics
                 {
                     Children = new MaterialCollection()
                     { new DiffuseMaterial(Brushes.Red),
-                    new SpecularMaterial(Brushes.Beige, 20) }
+                    new SpecularMaterial(Brushes.Beige, 2.0) }
                 }
             };
             var modViz = new ModelVisual3D();
