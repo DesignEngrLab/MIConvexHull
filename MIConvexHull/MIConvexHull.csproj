@@ -35,7 +35,6 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NonDominatedHull3D.cs" />
     <Compile Include="HelperFunctions for 3D.cs" />
     <Compile Include="InterfaceAndDefClassForVertexAndFace.cs" />
     <Compile Include="ConvexHull3D.cs" />
