@@ -1,6 +1,6 @@
 ﻿/*************************************************************************
  *     This file & class is part of the MIConvexHull Library Project. 
- *     Copyright 2006, 2008 Matthew Ira Campbell, PhD.
+ *     Copyright 2006, 2010 Matthew Ira Campbell, PhD.
  *
  *     MIConvexHull is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -191,6 +191,13 @@ namespace MIConvexHull
         }
 
 
+        /// <summary>
+        /// Makes a new face.
+        /// </summary>
+        /// <param name="v1">The v1.</param>
+        /// <param name="v2">The v2.</param>
+        /// <param name="v3">The v3.</param>
+        /// <returns></returns>
         public static IFaceConvHull MakeFace(IVertexConvHull v1, IVertexConvHull v2, IVertexConvHull v3)
         {
             if (v1.Equals(v2) || v2.Equals(v3) || v3.Equals(v1)) return null;

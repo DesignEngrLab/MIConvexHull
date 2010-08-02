@@ -1,6 +1,6 @@
 ﻿/*************************************************************************
  *     This file & class is part of the MIConvexHull Library Project. 
- *     Copyright 2006, 2008 Matthew Ira Campbell, PhD.
+ *     Copyright 2006, 2010 Matthew Ira Campbell, PhD.
  *
  *     MIConvexHull is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ namespace TestEXE_for_MIConvexHull3D
     {
         static void Main(string[] args)
         {
-            int NumberOfVertices = 100000;
+            int NumberOfVertices = 10000000;
             double size = 1000;
 
             Random r = new Random();
