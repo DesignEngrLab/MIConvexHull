@@ -14,7 +14,7 @@ namespace ExampleWithGraphics
     /// </summary>
     public partial class MainWindow : Window
     {
-        const int NumberOfVertices = 10000;
+        const int NumberOfVertices = 100;
         const double size = 50;
         List<IVertexConvHull> vertices;
         List<IVertexConvHull> convexHullVertices;
@@ -41,9 +41,44 @@ namespace ExampleWithGraphics
                 var vi = new vertex(size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2);
                 vertices.Add(vi);
 
-               // viewport.Children.Add(vi);
+                viewport.Children.Add(vi);
             }
 
+            //vertices.Add(new vertex(40, 0, 0));
+            //vertices.Add(new vertex(0, 40, 0));
+            //vertices.Add(new vertex(0, 0, 40));
+            //vertices.Add(new vertex(-40, 0, 0));
+            //vertices.Add(new vertex(0, -40, 0));
+            //vertices.Add(new vertex(0, 0, -40));
+
+            //vertices.Add(new vertex(40, 40, 0));
+            //vertices.Add(new vertex(0, 40, 40));
+            //vertices.Add(new vertex(40, 0, 40));
+
+            //vertices.Add(new vertex(-40, -40, 0));
+            //vertices.Add(new vertex(0, -40, -40));
+            //vertices.Add(new vertex(-40, 0, -40));
+
+            //vertices.Add(new vertex(-40, 40, 0));
+            //vertices.Add(new vertex(0, -40, 40));
+            //vertices.Add(new vertex(-40, 0, 40));
+            //vertices.Add(new vertex(40, -40, 0));
+            //vertices.Add(new vertex(0, 40, -40));
+            //vertices.Add(new vertex(40, 0, -40));
+
+            //vertices.Add(new vertex(31, 25, 25));
+            //vertices.Add(new vertex(-25, -25, -25));
+            //vertices.Add(new vertex(-25, -25, 25));
+            //vertices.Add(new vertex(-25, 25, -25));
+            //vertices.Add(new vertex(25, -25, -25));
+            //vertices.Add(new vertex(25, 25, -25));
+            //vertices.Add(new vertex(25, -25, 25));
+            //vertices.Add(new vertex(-25, 25, 25));
+
+
+
+            //foreach (var vi in vertices)
+            //    viewport.Children.Add((vertex)vi);
 
 
 
@@ -67,8 +102,16 @@ namespace ExampleWithGraphics
         {
             Point3DCollection CVPoints = new Point3DCollection();
             foreach (var chV in convexHullVertices)
-                CVPoints.Add(new Point3D (chV.X,chV.Y,chV.Z));
-           // CVPoints.Add(((vertex)chV).Center);
+            {
+                CVPoints.Add(((vertex)chV).Center);
+                viewport.Children.Add(new Sphere()
+                {
+                    Center = new Point3D(chV.X, chV.Y, chV.Z),
+                    BackMaterial = new DiffuseMaterial(Brushes.Orange),
+                    Radius = .5
+                });
+            }
+
 
             Int32Collection faceTris = new Int32Collection();
             foreach (IFaceConvHull f in faces)
@@ -89,7 +132,7 @@ namespace ExampleWithGraphics
                 {
                     Children = new MaterialCollection()
                     { new DiffuseMaterial(Brushes.Red),
-                    new SpecularMaterial(Brushes.Beige, 250) }
+                    new SpecularMaterial(Brushes.Beige, 20) }
                 }
             };
             var modViz = new ModelVisual3D();
