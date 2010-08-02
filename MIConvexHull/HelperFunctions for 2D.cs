@@ -41,16 +41,14 @@ namespace MIConvexHull
         {
             return (aX * bY - bX * aY);
         }
+
         /// <summary>
-        /// The "positionAlong" is the orthogonal distance to "signedDistance". Instead of
-        /// being perpendicular to the line, it is parallel. While it can be both positive
-        /// and negative, only positive values should be created by the arguments. 
+        /// Returns the dot product from the 2D vectors.
         /// </summary>
         /// <param name="aX">X-component of the A vector.</param>
         /// <param name="aY">Y-component of the A vector..</param>
         /// <param name="bX">X-component of the B vector.</param>
         /// <param name="bY">Y-component of the B vector.</param>
-        /// <param name="aMag">magnitude of A vector.</param>
         /// <returns></returns>
         private static double dotProduct(double aX, double aY, double bX, double bY)
         {

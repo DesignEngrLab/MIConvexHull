@@ -27,13 +27,13 @@ namespace MIConvexHull
     /// <summary>
     /// MIConvexHull ("my convex hull", my initials are MIC) is built to be fast for large numbers of
     /// 2D points. Well, it should be fast for small numbers as well with the exception that C# is perhaps
-    /// a little slower than C++ for the small amount of array math that'd happen for a small number 
+    /// a little slower than C++ for the small amount of array math that'd happen for a small number
     /// (l.t.20) of vertices.
     /// This reasons it is fast are:
     /// 1. implementing the Akl-Toussaint "octagon" heuristic
     /// 2. using quick dot- and cross-products instead of more expensie sine and cosine functions.
-    /// 3. the data structure (an array of sorted-lists of tuples) is calculated and stored to avoid 
-    ///    future recalculation.
+    /// 3. the data structure (an array of sorted-lists of tuples) is calculated and stored to avoid
+    /// future recalculation.
     /// 4. a single break function to further speed up inter-vectex checking
     /// 5. an ordered list reduces the number of checks for new convex candidates.
     /// </summary>
@@ -43,7 +43,6 @@ namespace MIConvexHull
         /// <summary>
         /// Finds the convex hull vertices.
         /// </summary>
-        /// <param name="vertices">All of the vertices as a list.</param>
         /// <returns></returns>
         static List<IVertexConvHull> Find2D()
         {
@@ -217,6 +216,11 @@ namespace MIConvexHull
             return convexHullCCW;
         }
 
+        /// <summary>
+        /// Find the convex hull for the 2D vertices.
+        /// </summary>
+        /// <param name="vertices">The vertices.</param>
+        /// <returns></returns>
         public static List<IVertexConvHull> Find2D(List<IVertexConvHull> vertices)
         {
             /* first, the original vertices are copied as they will be modified
@@ -230,6 +234,11 @@ namespace MIConvexHull
          * user should declare there list of vertices as a List<IVertexConvHull>, but 
          * this is an unrealistic requirement. At any rate, these methods take about 50  
          * nano-second to add each one.  */
+        /// <summary>
+        /// Find the convex hull for the 2D vertices.
+        /// </summary>
+        /// <param name="vertices">The vertices.</param>
+        /// <returns></returns>
         public static List<IVertexConvHull> Find2D(IList vertices)
         {
             origVertices = new List<IVertexConvHull>();
@@ -237,6 +246,11 @@ namespace MIConvexHull
                 origVertices.Add((IVertexConvHull)o);
             return Find2D();
         }
+        /// <summary>
+        /// Find the convex hull for the 2D vertices.
+        /// </summary>
+        /// <param name="vertices">The vertices.</param>
+        /// <returns></returns>
         public static List<IVertexConvHull> Find2D(object[] vertices)
         {
             origVertices = new List<IVertexConvHull>();

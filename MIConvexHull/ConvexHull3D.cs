@@ -25,8 +25,7 @@ namespace MIConvexHull
     using System.Collections;
 
     /// <summary>
-    /// MIConvexHull for 3D is not yet complete. Most of the code from Find2D is shown below.
-    /// Look for my 5-stars comments for things to do ("*****")
+    /// MIConvexHull for 3D.
     /// </summary>
     public static partial class ConvexHull
     {
@@ -34,7 +33,6 @@ namespace MIConvexHull
         /// <summary>
         /// Finds the convex hull vertices.
         /// </summary>
-        /// <param name="vertices">All of the vertices as a list.</param>
         /// <returns></returns>
         static List<IVertexConvHull> Find3D()
         {
@@ -124,32 +122,7 @@ namespace MIConvexHull
             //var cvxVNum = convexHull.Count;
             var cvxFNum = convexFaces.Count;
             var last = cvxFNum - 1;
-
-            /* While these vertices are clearly part of the hull, the faces may not be. Now we quickly run through the
-             * faces to identify is they neighbor with a non-convex face. This can be determined by taking the cross-
-             * product of the normals of the two faces. If the direction of the resulting vector, c, is not aligned
-             * with the direction of the first face's edge vector (the one shared with the other face) then we need
-             * to rearrange the faces - essentially we change the faces from the 2 offending faces to the other two
-             * that make up the simplex (tetrahedron) shape defined by the four vertices. */
-            for (int i = 0; i < last; i++)
-                for (int j = i + 1; j < cvxFNum; j++)
-                {
-                    IVertexConvHull vFrom, vTo;
-                    //defVertexClass vFrom = null;
-                    //defVertexClass vTo = null;
-                    if (ConvexHull.shareEdge(convexFaces[i], convexFaces[j], out vFrom, out vTo))
-                    {
-                        var c = ConvexHull.crossProduct(convexFaces[i].normal[0], convexFaces[i].normal[1], convexFaces[i].normal[2],
-                            convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2]);
-                        if ((c[0] / (vTo.X - vFrom.X) < 0) || (c[1] / (vTo.Y - vFrom.Y) < 0) || (c[2] / (vTo.Z - vFrom.Z) < 0))
-                        {
-                            IVertexConvHull viDiff = ConvexHull.findNonSharedVertex(convexFaces[i], vFrom, vTo);
-                            IVertexConvHull vjDiff = ConvexHull.findNonSharedVertex(convexFaces[j], vFrom, vTo);
-                            convexFaces[i] = ConvexHull.MakeFace(viDiff, vjDiff, vTo);
-                            convexFaces[j] = ConvexHull.MakeFace(vjDiff, viDiff, vFrom);
-                        }
-                    }
-                }
+            ConvexHull.FixNonConvexFaces(convexFaces);
             #endregion
 
             #region Step 3 : Find Signed-Distance to each convex edge
@@ -168,6 +141,10 @@ namespace MIConvexHull
              * are inside or out. If they are out, add them to the proper row of the hullCands array. */
             for (int i = 0; i < origVNum; i++)
             {
+                double maxDotP = 0.0;
+                double minCrossP = double.PositiveInfinity;
+                int maxDotPIndex = -1;
+                int minCrossPIndex = -1;
                 for (int j = 0; j < cvxFNum; j++)
                 {
                     var bX = origVertices[i].X - convexFaces[j].center[0];
@@ -176,11 +153,22 @@ namespace MIConvexHull
                     var dotP = dotProduct(convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2], bX, bY, bZ);
                     if (dotP >= 0)
                     {
+                        if (dotP > maxDotP) { maxDotP = dotP; maxDotPIndex = j; }
                         var crossP = crossProduct(convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2], bX, bY, bZ);
                         var magCross = Math.Sqrt((crossP[0] * crossP[0]) + (crossP[1] * crossP[1]) + (crossP[2] * crossP[2]));
-                        hullCands[j].Add(dotP + magCross, origVertices[i]);
-                        break;
+                        if (magCross < minCrossP) { minCrossP = magCross; minCrossPIndex = j; }
                     }
+                }
+                if (maxDotPIndex >= 0)
+                {
+                    //if (maxDotPIndex != minCrossPIndex) maxDotPIndex = minCrossPIndex;
+                    Boolean sameKey = false;
+                    double epsilon = 0.0;
+                    do
+                    {
+                        try { hullCands[maxDotPIndex].Add(maxDotP + minCrossP + epsilon, origVertices[i]); sameKey = false; }
+                        catch { epsilon += 0.0000001; sameKey = true; }
+                    } while (sameKey);
                 }
             }
             #endregion
@@ -223,11 +211,18 @@ namespace MIConvexHull
                 }
             }
             #endregion
-
+            //ConvexHull.FixNonConvexFaces(convexFaces);
             /* finally return the hull points. */
             return convexHull;
 
         }
+
+        /// <summary>
+        /// Find the convex hull for the 3D vertices.
+        /// </summary>
+        /// <param name="vertices">The vertices.</param>
+        /// <param name="face_Type">Type of the face_.</param>
+        /// <returns></returns>
         public static List<IVertexConvHull> Find3D(List<IVertexConvHull> vertices, Type face_Type = null)
         {
             /* first, the original vertices are copied as they will be modified
@@ -236,6 +231,13 @@ namespace MIConvexHull
             origVertices = new List<IVertexConvHull>(vertices);
             return Find3D();
         }
+        /// <summary>
+        /// Find the convex hull for the 3D vertices.
+        /// </summary>
+        /// <param name="vertices">The vertices.</param>
+        /// <param name="face_Type">Type of the face_.</param>
+        /// <param name="faces">The faces.</param>
+        /// <returns></returns>
         public static List<IVertexConvHull> Find3D(List<IVertexConvHull> vertices, Type face_Type, out List<IFaceConvHull> faces)
         {
             /* first, the original vertices are copied as they will be modified
@@ -253,12 +255,24 @@ namespace MIConvexHull
          * user should declare there list of vertices as a List<IVertexConvHull>, but 
          * this is an unrealistic requirement. At any rate, these methods take about 50  
          * nano-second to add each one. */
+        /// <summary>
+        /// Find the convex hull for the 3D vertices.
+        /// </summary>
+        /// <param name="vertices">The vertices.</param>
+        /// <param name="face_Type">Type of the face_.</param>
+        /// <returns></returns>
         public static List<IVertexConvHull> Find3D(IList vertices, Type face_Type = null)
         {
             object[] arrayOfVertices = new object[vertices.Count];
             vertices.CopyTo(arrayOfVertices, 0);
             return Find3D(arrayOfVertices, face_Type);
         }
+        /// <summary>
+        /// Find the convex hull for the 3D vertices.
+        /// </summary>
+        /// <param name="vertices">The vertices.</param>
+        /// <param name="face_Type">Type of the face_.</param>
+        /// <returns></returns>
         public static List<IVertexConvHull> Find3D(object[] vertices, Type face_Type = null)
         {
             faceType = face_Type;
@@ -267,6 +281,13 @@ namespace MIConvexHull
                 origVertices.Add((IVertexConvHull)vertices[i]);
             return Find3D();
         }
+        /// <summary>
+        /// Find the convex hull for the 3D vertices.
+        /// </summary>
+        /// <param name="vertices">The vertices.</param>
+        /// <param name="face_Type">Type of the face_.</param>
+        /// <param name="faces">The faces.</param>
+        /// <returns></returns>
         public static List<IVertexConvHull> Find3D(IList vertices, Type face_Type, IList faces)
         {
             faceType = face_Type;
