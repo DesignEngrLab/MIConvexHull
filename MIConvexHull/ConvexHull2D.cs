@@ -18,7 +18,7 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace MIConvexHull
+namespace MIConvexHullPluginNameSpace
 {
     using System;
     using System.Collections.Generic;
@@ -130,9 +130,9 @@ namespace MIConvexHull
             /* An array of sorted dictionaries! As we find new candidate convex points, we store them here. The second
              * part of the tuple (Item2 is a double) is the "positionAlong" - this is used to order the nodes that
              * are found for a particular side (More on this in 23 lines). */
-            var hullCands = new SortedDictionary<double, IVertexConvHull>[cvxVNum];
+            var hullCands = new SortedList<double, IVertexConvHull>[cvxVNum];
             /* initialize the 3 to 8 Lists s.t. members can be added below. */
-            for (int j = 0; j < cvxVNum; j++) hullCands[j] = new SortedDictionary<double, IVertexConvHull>();
+            for (int j = 0; j < cvxVNum; j++) hullCands[j] = new SortedList<double, IVertexConvHull>();
 
             /* Now a big loop. For each of the original vertices, check them with the 3 to 8 edges to see if they 
              * are inside or out. If they are out, add them to the proper row of the hullCands array. */

@@ -22,7 +22,7 @@ namespace TestEXE_for_MIConvexHull2D
 {
     using System;
     using System.Collections.Generic;
-    using MIConvexHull;
+    using MIConvexHullPluginNameSpace;
 
 
     class Program
