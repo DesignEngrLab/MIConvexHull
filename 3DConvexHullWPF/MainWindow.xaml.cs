@@ -4,7 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Petzold.Media3D;
-using MIConvexHull;
+using MIConvexHullPluginNameSpace;
 using System.Collections.Generic;
 
 namespace ExampleWithGraphics
@@ -14,7 +14,7 @@ namespace ExampleWithGraphics
     /// </summary>
     public partial class MainWindow : Window
     {
-        const int NumberOfVertices = 120;
+        const int NumberOfVertices = 1200;
         const double size = 50;
         List<IVertexConvHull> vertices;
         List<IVertexConvHull> convexHullVertices;
@@ -22,74 +22,18 @@ namespace ExampleWithGraphics
         public MainWindow()
         {
             InitializeComponent();
+            btnMakeSquarePoints_Click(null, null);
+        }
+
+        void ClearAndDrawAxes()
+        {
+            var init = viewport.Children[0];
+            viewport.Children.Clear();
+            viewport.Children.Add(init);
             var ax = new Petzold.Media3D.Axes();
             ax.Extent = 60;
             viewport.Children.Add(ax);
-            Setup();
         }
-
-        private void Setup()
-        {
-            vertices = new List<IVertexConvHull>();
-            Random r = new Random();
-
-            /****** Random Vertices ******/
-            for (int i = 0; i < NumberOfVertices; i++)
-            {
-                var vi = new vertex(size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2);
-                vertices.Add(vi);
-
-                viewport.Children.Add(vi);
-            }
-            /*****************************/
-
-
-            /****** Debug Set of Vertices ******/
-            //vertices.Add(new vertex(40, 0, 0));
-            //vertices.Add(new vertex(0, 40, 0));
-            //vertices.Add(new vertex(0, 0, 40));
-            //vertices.Add(new vertex(-40, 0, 0));
-            //vertices.Add(new vertex(0, -40, 0));
-            //vertices.Add(new vertex(0, 0, -40));
-
-            //vertices.Add(new vertex(40, 40, 0));
-            //vertices.Add(new vertex(0, 40, 40));
-            //vertices.Add(new vertex(40, 0, 40));
-
-            //vertices.Add(new vertex(-40, -40, 0));
-            //vertices.Add(new vertex(0, -40, -40));
-            //vertices.Add(new vertex(-40, 0, -40));
-
-            //vertices.Add(new vertex(-40, 40, 0));
-            //vertices.Add(new vertex(0, -40, 40));
-            //vertices.Add(new vertex(-40, 0, 40));
-            //vertices.Add(new vertex(40, -40, 0));
-            //vertices.Add(new vertex(0, 40, -40));
-            //vertices.Add(new vertex(40, 0, -40));
-
-            //vertices.Add(new vertex(35, 35, 35));
-            //vertices.Add(new vertex(35, 30,25));
-            //vertices.Add(new vertex(35, 25, 30));
-            //vertices.Add(new vertex(38, 38, 15));
-            //vertices.Add(new vertex(38, 15, 38));
-            //////vertices.Add(new vertex(-25, -25, -25));
-            //////vertices.Add(new vertex(-25, -25, 25));
-            //////vertices.Add(new vertex(-25, 25, -25));
-            //////vertices.Add(new vertex(25, -25, -25));
-            //////vertices.Add(new vertex(25, 25, -25));
-            //////vertices.Add(new vertex(25, -25, 25));
-            //////vertices.Add(new vertex(-25, 25, 25));
-
-
-
-            //foreach (var vi in vertices)
-            //    viewport.Children.Add((vertex)vi);
-
-            /*****************************/
-
-
-        }
-
         private void btnRun_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("Running...");
@@ -146,6 +90,95 @@ namespace ExampleWithGraphics
 
             viewport.Children.Add(modViz);
 
+        }
+
+        private void btnMakeSquarePoints_Click(object sender, RoutedEventArgs e)
+        {
+            ClearAndDrawAxes();
+            vertices = new List<IVertexConvHull>();
+            Random r = new Random();
+
+            /****** Random Vertices ******/
+            for (int i = 0; i < NumberOfVertices; i++)
+            {
+                var vi = new vertex(size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2);
+                vertices.Add(vi);
+
+              //  viewport.Children.Add(vi);
+            }
+            /*****************************/
+
+
+            /****** Debug Set of Vertices ******/
+            //vertices.Add(new vertex(40, 0, 0));
+            //vertices.Add(new vertex(0, 40, 0));
+            //vertices.Add(new vertex(0, 0, 40));
+            //vertices.Add(new vertex(-40, 0, 0));
+            //vertices.Add(new vertex(0, -40, 0));
+            //vertices.Add(new vertex(0, 0, -40));
+
+            //vertices.Add(new vertex(40, 40, 0));
+            //vertices.Add(new vertex(0, 40, 40));
+            //vertices.Add(new vertex(40, 0, 40));
+
+            //vertices.Add(new vertex(-40, -40, 0));
+            //vertices.Add(new vertex(0, -40, -40));
+            //vertices.Add(new vertex(-40, 0, -40));
+
+            //vertices.Add(new vertex(-40, 40, 0));
+            //vertices.Add(new vertex(0, -40, 40));
+            //vertices.Add(new vertex(-40, 0, 40));
+            //vertices.Add(new vertex(40, -40, 0));
+            //vertices.Add(new vertex(0, 40, -40));
+            //vertices.Add(new vertex(40, 0, -40));
+
+            //vertices.Add(new vertex(35, 35, 35));
+            //vertices.Add(new vertex(35, 30,25));
+            //vertices.Add(new vertex(35, 25, 30));
+            //vertices.Add(new vertex(38, 38, 15));
+            //vertices.Add(new vertex(38, 15, 38));
+            //////vertices.Add(new vertex(-25, -25, -25));
+            //////vertices.Add(new vertex(-25, -25, 25));
+            //////vertices.Add(new vertex(-25, 25, -25));
+            //////vertices.Add(new vertex(25, -25, -25));
+            //////vertices.Add(new vertex(25, 25, -25));
+            //////vertices.Add(new vertex(25, -25, 25));
+            //////vertices.Add(new vertex(-25, 25, 25));
+
+
+
+            //foreach (var vi in vertices)
+            //    viewport.Children.Add((vertex)vi);
+
+            /*****************************/
+            btnRun.IsDefault = true;
+            btnDisplay.IsEnabled = false;
+            txtBlkTimer.Text = "00:00:00.000";
+        }
+
+        private void btnMakeCirclePoints_Click(object sender, RoutedEventArgs e)
+        {
+            ClearAndDrawAxes();
+            vertices = new List<IVertexConvHull>();
+            Random r = new Random();
+
+            /****** Random Vertices ******/
+            for (int i = 0; i < NumberOfVertices; i++)
+            {
+                var radius = size + r.NextDouble() / 2;
+                var theta = 2 * Math.PI * r.NextDouble();
+                var azimuth = Math.PI * r.NextDouble();
+                var x = radius * Math.Cos(theta) * Math.Sin(azimuth);
+                var y = radius * Math.Sin(theta) * Math.Sin(azimuth);
+                var z = radius * Math.Cos(azimuth);
+                var vi = new vertex(x, y, z);
+                vertices.Add(vi);
+
+               // viewport.Children.Add(vi);
+            }
+            btnRun.IsDefault = true;
+            btnDisplay.IsEnabled = false;
+            txtBlkTimer.Text = "00:00:00.000";
         }
     }
 }

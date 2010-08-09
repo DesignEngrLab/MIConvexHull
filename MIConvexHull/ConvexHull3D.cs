@@ -18,7 +18,7 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace MIConvexHull
+namespace MIConvexHullPluginNameSpace
 {
     using System;
     using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace MIConvexHull
         /// <returns></returns>
         static List<IVertexConvHull> Find3D()
         {
-            var origVNum = origVertices.Count;
+            var VCount = origVertices.Count;
 
             #region Step 1 : Define Convex Rhombicuboctahedron
             /* The first step is to quickly identify the four to 26 vertices based on the
@@ -59,7 +59,7 @@ namespace MIConvexHull
                         extremeValues[i, j, k] = double.NegativeInfinity;
 
 
-            for (int m = 0; m < origVNum; m++)
+            for (int m = 0; m < VCount; m++)
             {
                 var n = origVertices[m];
                 for (int i = 0; i < 3; i++)
@@ -114,15 +114,12 @@ namespace MIConvexHull
                     v2[cycle(i + 2, i)] = adjacentVertID[j + 1, 1];
                     var f = MakeFace(getVertexFromExtreme(extremeVertices, baseVert),
                        getVertexFromExtreme(extremeVertices, v1), getVertexFromExtreme(extremeVertices, v2));
-                    if (f != null) convexFaces.Add(f);
+                    if ((f != null) && (!convexFaces.Exists(cf => sameFace(cf, f)))) convexFaces.Add(f);
                 }
             }
-
-            origVNum = origVertices.Count;
-            //var cvxVNum = convexHull.Count;
+            FixNonConvexFaces(convexFaces);
+            VCount = origVertices.Count;
             var cvxFNum = convexFaces.Count;
-            var last = cvxFNum - 1;
-            ConvexHull.FixNonConvexFaces(convexFaces);
             #endregion
 
             #region Step 3 : Find Signed-Distance to each convex edge
@@ -133,88 +130,74 @@ namespace MIConvexHull
              * IFaceConvHull. This manhattan distance is comprised of the distance parallel to the IFaceConvHull (dot-product) plus
              * the distance perpendicular to the IFaceConvHull (cross-product). This is used to order the vertices that
              * are found for a particular side (More on this in 23 lines). */
-            var hullCands = new SortedDictionary<double, IVertexConvHull>[cvxFNum];
-            /* initialize the IFaceConvHull Lists s.t. members can be added below. */
-            for (int j = 0; j < cvxFNum; j++) hullCands[j] = new SortedDictionary<double, IVertexConvHull>();
+            //var hullCands = new SortedList<double, IVertexConvHull>;
+            var candVertices = new SortedList<double, CandidateHullVertexData>();//new noEqualSort());
+
+            //var candVerticesOverEdge = new SortedList<double, CandidateHullVertexData>();
 
             /* Now a big loop. For each of the original vertices, check them with the 4 to 48 faces to see if they 
              * are inside or out. If they are out, add them to the proper row of the hullCands array. */
-            for (int i = 0; i < origVNum; i++)
+            for (int i = 0; i < VCount; i++)
             {
-                double maxDotP = 0.0;
-                double minCrossP = double.PositiveInfinity;
-                int maxDotPIndex = -1;
-                int minCrossPIndex = -1;
+                double maxDotP = double.NegativeInfinity;
+                SortedList<double, IFaceConvHull> overFaces = new SortedList<double, IFaceConvHull>();//new noEqualSort());
                 for (int j = 0; j < cvxFNum; j++)
                 {
-                    var bX = origVertices[i].X - convexFaces[j].center[0];
-                    var bY = origVertices[i].Y - convexFaces[j].center[1];
-                    var bZ = origVertices[i].Z - convexFaces[j].center[2];
+                    var bX = origVertices[i].X - convexFaces[j].v1.X;
+                    var bY = origVertices[i].Y - convexFaces[j].v1.Y;
+                    var bZ = origVertices[i].Z - convexFaces[j].v1.Z;
                     var dotP = dotProduct(convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2], bX, bY, bZ);
                     if (dotP >= 0)
                     {
-                        if (dotP > maxDotP) { maxDotP = dotP; maxDotPIndex = j; }
-                        var crossP = crossProduct(convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2], bX, bY, bZ);
-                        var magCross = Math.Sqrt((crossP[0] * crossP[0]) + (crossP[1] * crossP[1]) + (crossP[2] * crossP[2]));
-                        if (magCross < minCrossP) { minCrossP = magCross; minCrossPIndex = j; }
+                        if (dotP >= maxDotP) maxDotP = dotP;
+                        overFaces.Add(dotP, convexFaces[j]);
                     }
                 }
-                if (maxDotPIndex >= 0)
-                {
-                    //if (maxDotPIndex != minCrossPIndex) maxDotPIndex = minCrossPIndex;
-                    Boolean sameKey = false;
-                    double epsilon = 0.0;
-                    do
+                if (maxDotP >= 0)
+                    candVertices.Add(maxDotP, new CandidateHullVertexData()
                     {
-                        try { hullCands[maxDotPIndex].Add(maxDotP + minCrossP + epsilon, origVertices[i]); sameKey = false; }
-                        catch { epsilon += 0.0000001; sameKey = true; }
-                    } while (sameKey);
-                }
+                        vertex = origVertices[i],
+                        otherFaces = overFaces
+                    });
             }
-            #endregion
-
-            #region Step 3: now check the remaining hull candidates
-            for (int i = cvxFNum - 1; i >= 0; i--)
+            VCount = candVertices.Count;
+            for (int i = VCount - 1; i >= 0; i--)
             {
-                if (hullCands[i].Count == 1)
+                var otherFaces = candVertices.Values[i].otherFaces;
+                var vertex = candVertices.Values[i].vertex;
+                for (int j = otherFaces.Count - 1; j >= 0; j--)
                 {
-                    /* If there is one and only one candidate, it must be in the convex hull. Add it now. */
-                    convexHull.AddRange(hullCands[i].Values);
-                    /* what about faces? should these be updated? Maybe, but our resulting polyhedron is not 
-                     * as pretty as a Delaunay-ized one. We'll have some poor-aspect ratio triangles. */
-                    replaceFace(convexFaces, i, convexHull[convexHull.Count - 1]);
-                }
-                else if (hullCands[i].Count > 1)
-                {
-                    var subFaces = new List<IFaceConvHull>();
-                    subFaces.Add(convexFaces[i]);
-                    convexFaces.RemoveAt(i);
-                    var hc = new List<IVertexConvHull>(hullCands[i].Values);
-
-                    for (int j = hullCands[i].Count - 1; j >= 0; j--)
+                    if (convexFaces.Contains(otherFaces.Values[j]))
                     {
-                        for (int k = subFaces.Count - 1; k >= 0; k--)
-                        {
-                            var bX = hc[j].X - subFaces[k].center[0];
-                            var bY = hc[j].Y - subFaces[k].center[1];
-                            var bZ = hc[j].Z - subFaces[k].center[2];
-                            var dotP = dotProduct(subFaces[k].normal[0], subFaces[k].normal[1], subFaces[k].normal[2], bX, bY, bZ);
-                            if (dotP >= 0)
-                            {
-                                replaceFace(subFaces, k, hc[j]);
-                                convexHull.Add(hc[j]);
-                                break;
-                            }
-                        }
+                        convexHull.Add(vertex);
+                        replaceFace(convexFaces, convexFaces.IndexOf(otherFaces.Values[j]), vertex);
+                        FixNonConvexFaces(convexFaces);//, 3);
+                        candVertices.RemoveAt(i);
+                        break;
                     }
-                    convexFaces.AddRange(subFaces);
+                }
+            }
+            VCount = candVertices.Count;
+            for (int i = VCount - 1; i >= 0; i--)
+            {
+                var vertex = candVertices.Values[i].vertex;
+                for (int j = 0; j < convexFaces.Count; j++)
+                {
+                    var bX = vertex.X - convexFaces[j].v1.X;
+                    var bY = vertex.Y - convexFaces[j].v1.Y;
+                    var bZ = vertex.Z - convexFaces[j].v1.Z;
+                    var dotP = dotProduct(convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2], bX, bY, bZ);
+                    if (dotP >= 0)
+                    {
+                        convexHull.Add(vertex);
+                        replaceFace(convexFaces, j, vertex);
+                        FixNonConvexFaces(convexFaces);//, 3);
+                        break;
+                    }
                 }
             }
             #endregion
-            //ConvexHull.FixNonConvexFaces(convexFaces);
-            /* finally return the hull points. */
             return convexHull;
-
         }
 
         /// <summary>

@@ -18,7 +18,7 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace MIConvexHull
+namespace MIConvexHullPluginNameSpace
 {
     using System;
     using System.Collections.Generic;

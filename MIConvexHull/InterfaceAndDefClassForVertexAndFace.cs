@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MIConvexHull
+namespace MIConvexHullPluginNameSpace
 {
     /// <summary>
     /// The interface for vertices that must be used in your program so that MIConvexHull can access you methods.
@@ -53,11 +53,6 @@ namespace MIConvexHull
         /// </summary>
         /// <value>The normal.</value>
         double[] normal { get; set; }
-        /// <summary>
-        /// Gets or sets the center vector.
-        /// </summary>
-        /// <value>The center.</value>
-        double[] center { get; set; }
     }
 
 

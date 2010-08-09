@@ -21,7 +21,7 @@
 using System;
 namespace TestEXE_for_MIConvexHull3D
 {
-    using MIConvexHull;
+    using MIConvexHullPluginNameSpace;
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>

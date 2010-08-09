@@ -1,7 +1,7 @@
 ﻿<Window x:Class="ExampleWithGraphics.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"        
-        Title="MainWindow" Height="300" Width="300">
+        Title="MainWindow" Height="800" Width="800">
 <!--xmlns:cp="http://schemas.charlespetzold.com/2007/xaml"-->
     <DockPanel>
         <!-- Scrollbars for rotating camera -->
@@ -10,13 +10,17 @@
         <Grid DockPanel.Dock="Bottom" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
                 <ColumnDefinition Width="50*"/>
                 <ColumnDefinition Width="25*"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Name="btnRun" Click="btnRun_Click" Content="Analyze" IsDefault="True"/>
-            <TextBlock Grid.Column="1" Name="txtBlkTimer" Text="00:00:00.000" 
+            <Button Grid.Column="0" Name="btnMakeSquarePoints" Click="btnMakeSquarePoints_Click"  Content="Make Rnd[]" IsDefault="True"/>
+            <Button Grid.Column="1" Name="btnMakeCirclePoints" Click="btnMakeCirclePoints_Click"  Content="Make Rnd()" />
+            <Button Grid.Column="2" Name="btnRun" Click="btnRun_Click" Content="Analyze" />
+            <TextBlock Grid.Column="3" Name="txtBlkTimer" Text="00:00:00.000" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <Button Grid.Column="2" Name="btnDisplay" Click="btnDisplay_Click" Content="Display" IsEnabled="False"/>
+            <Button Grid.Column="4" Name="btnDisplay" Click="btnDisplay_Click" Content="Display" IsEnabled="False"/>
         </Grid>
         <ScrollBar Name="hscroll" DockPanel.Dock="Bottom"
                    Orientation="Horizontal" Minimum="-180" Maximum="180" />
