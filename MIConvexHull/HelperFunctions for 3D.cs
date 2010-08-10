@@ -197,11 +197,10 @@ namespace MIConvexHullPluginNameSpace
                             convexFaces.Add(newFace2);
                             newFacesMade = true;
                             FixNonConvexFaces(convexFaces);
-                            break;
+                            return;
                         }
                     }
                 }
-                if (newFacesMade) break;
             }
         }
         /// <summary>
@@ -213,7 +212,6 @@ namespace MIConvexHullPluginNameSpace
         {
             if (numberToCheck == 0) return;
             int lastNew = convexFaces.Count - numberToCheck;
-            numberToCheck = 0;
             /* While these vertices are clearly part of the hull, the faces may not be. Now we quickly run through the
              * faces to identify if they neighbor with a non-convex face. This can be determined by taking the cross-
              * product of the normals of the two faces. If the direction of the resulting vector, c, is not aligned
@@ -223,15 +221,15 @@ namespace MIConvexHullPluginNameSpace
 
             for (int i = convexFaces.Count - 1; i >= lastNew; i--)
             {
-                Boolean newFacesMade = false;
+                numberToCheck--;
                 for (int j = lastNew - 1; j >= 0; j--)
                 {
                     IVertexConvHull vFrom, vTo;
-                    if (ConvexHull.shareEdge(convexFaces[i], convexFaces[j], out vFrom, out vTo))
+                    if (shareEdge(convexFaces[i], convexFaces[j], out vFrom, out vTo))
                     {
-                        var c = ConvexHull.crossProduct(convexFaces[i].normal[0], convexFaces[i].normal[1], convexFaces[i].normal[2],
+                        var c = crossProduct(convexFaces[i].normal[0], convexFaces[i].normal[1], convexFaces[i].normal[2],
                             convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2]);
-                        if (!ConvexHull.sameDirection(c, new double[] { (vTo.X - vFrom.X), (vTo.Y - vFrom.Y), (vTo.Z - vFrom.Z) }))
+                        if (!sameDirection(c, new double[] { (vTo.X - vFrom.X), (vTo.Y - vFrom.Y), (vTo.Z - vFrom.Z) }))
                         {
                             IVertexConvHull viDiff = ConvexHull.findNonSharedVertex(convexFaces[i], vFrom, vTo);
                             IVertexConvHull vjDiff = ConvexHull.findNonSharedVertex(convexFaces[j], vFrom, vTo);
@@ -240,23 +238,16 @@ namespace MIConvexHullPluginNameSpace
                             if ((newFace1 == null) || (newFace2 == null))
                                 throw new Exception("One of both faces are null.");
                             convexFaces.Add(newFace1);
-                            numberToCheck++;
                             convexFaces.Add(newFace2);
-                            numberToCheck++;
-                            newFacesMade = true;
+                            numberToCheck += 2;
+                            convexFaces.RemoveAt(i);
+                            convexFaces.RemoveAt(j);
+                            FixNonConvexFaces(convexFaces, numberToCheck);
+                            return;
                         }
-                    }
-                    if (newFacesMade)
-                    {
-                        convexFaces.RemoveAt(i);
-                        convexFaces.RemoveAt(j);
-                        i--;
-                        lastNew--;
-                        break;
                     }
                 }
             }
-            FixNonConvexFaces(convexFaces, numberToCheck);
         }
 
         private static Boolean sameDirection(double[] c, double[] p)
