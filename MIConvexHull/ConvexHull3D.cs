@@ -131,7 +131,7 @@ namespace MIConvexHullPluginNameSpace
              * the distance perpendicular to the IFaceConvHull (cross-product). This is used to order the vertices that
              * are found for a particular side (More on this in 23 lines). */
             //var hullCands = new SortedList<double, IVertexConvHull>;
-            var candVertices = new SortedList<double, CandidateHullVertexData>();//new noEqualSort());
+            var candVertices = new SortedList<double, CandidateHullVertexData>(new noEqualSort());
 
             //var candVerticesOverEdge = new SortedList<double, CandidateHullVertexData>();
 
@@ -140,7 +140,7 @@ namespace MIConvexHullPluginNameSpace
             for (int i = 0; i < VCount; i++)
             {
                 double maxDotP = double.NegativeInfinity;
-                SortedList<double, IFaceConvHull> overFaces = new SortedList<double, IFaceConvHull>();//new noEqualSort());
+                SortedList<double, IFaceConvHull> overFaces = new SortedList<double, IFaceConvHull>(new noEqualSort());
                 for (int j = 0; j < cvxFNum; j++)
                 {
                     var bX = origVertices[i].X - convexFaces[j].v1.X;
@@ -171,7 +171,7 @@ namespace MIConvexHullPluginNameSpace
                     {
                         convexHull.Add(vertex);
                         replaceFace(convexFaces, convexFaces.IndexOf(otherFaces.Values[j]), vertex);
-                        FixNonConvexFaces(convexFaces);//, 3);
+                        FixNonConvexFaces(convexFaces, 3);
                         candVertices.RemoveAt(i);
                         break;
                     }
@@ -191,7 +191,7 @@ namespace MIConvexHullPluginNameSpace
                     {
                         convexHull.Add(vertex);
                         replaceFace(convexFaces, j, vertex);
-                        FixNonConvexFaces(convexFaces);//, 3);
+                        FixNonConvexFaces(convexFaces, 3);
                         break;
                     }
                 }
