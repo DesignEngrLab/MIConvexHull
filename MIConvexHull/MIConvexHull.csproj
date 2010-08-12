@@ -44,6 +44,7 @@
     <Compile Include="ConvexHull3D.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ConvexHullMain.cs" />
     <Compile Include="HelperFunctions for 3D.cs" />
     <Compile Include="InterfaceAndDefClassForVertexAndFace.cs" />
     <Compile Include="HelperFunctions for 2D.cs" />
