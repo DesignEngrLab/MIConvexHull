@@ -14,7 +14,7 @@ namespace ExampleWithGraphics
     /// </summary>
     public partial class MainWindow : Window
     {
-        const int NumberOfVertices = 1200;
+        const int NumberOfVertices = 500;
         const double size = 50;
         List<IVertexConvHull> vertices;
         List<IVertexConvHull> convexHullVertices;
@@ -104,7 +104,7 @@ namespace ExampleWithGraphics
                 var vi = new vertex(size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2);
                 vertices.Add(vi);
 
-              //  viewport.Children.Add(vi);
+                viewport.Children.Add(vi);
             }
             /*****************************/
 
@@ -174,7 +174,7 @@ namespace ExampleWithGraphics
                 var vi = new vertex(x, y, z);
                 vertices.Add(vi);
 
-               // viewport.Children.Add(vi);
+                viewport.Children.Add(vi);
             }
             btnRun.IsDefault = true;
             btnDisplay.IsEnabled = false;

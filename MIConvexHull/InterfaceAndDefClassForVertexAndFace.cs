@@ -11,6 +11,11 @@ namespace MIConvexHullPluginNameSpace
     public interface IVertexConvHull
     {
         /// <summary>
+        /// Gets or sets the location.
+        /// </summary>
+        /// <value>The location.</value>
+        double[] location { get; set; }
+        /// <summary>
         /// Gets or sets the X.
         /// </summary>
         /// <value>The X.</value>
@@ -108,6 +113,23 @@ namespace MIConvexHullPluginNameSpace
         /// </summary>
         /// <value>The Z position.</value>
         public double Z { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the location.
+        /// </summary>
+        /// <value>The location.</value>
+        public double[] location
+        {
+            get { return new double[] { X, Y, Z }; }
+            set
+            {
+                X = value[0];
+                Y = value[1];
+                Z = value[2];
+            }
+
+        }
     }
 
 }

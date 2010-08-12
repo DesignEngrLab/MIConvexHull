@@ -39,7 +39,6 @@ namespace MIConvexHullPluginNameSpace
     /// </summary>
     public static partial class ConvexHull
     {
-        static List<IVertexConvHull> origVertices;
         /// <summary>
         /// Finds the convex hull vertices.
         /// </summary>
