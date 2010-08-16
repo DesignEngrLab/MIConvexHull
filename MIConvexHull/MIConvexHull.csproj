@@ -47,11 +47,16 @@
     <Compile Include="ConvexHullMain.cs" />
     <Compile Include="HelperFunctions for 3D.cs" />
     <Compile Include="InterfaceAndDefClassForVertexAndFace.cs" />
-    <Compile Include="HelperFunctions for 2D.cs" />
     <Compile Include="ConvexHull2D.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\StarMath\StarMath\StarMath.csproj">
+      <Project>{8B37DF1E-A3C9-42B6-BF1F-D65180FF556E}</Project>
+      <Name>StarMath</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

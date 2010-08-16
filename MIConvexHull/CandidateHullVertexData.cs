@@ -8,7 +8,6 @@ namespace MIConvexHullPluginNameSpace
     internal class CandidateHullVertexData
     {
         public IVertexConvHull vertex;
-        public IFaceConvHull containedFace;
         public SortedList<double, IFaceConvHull> otherFaces;
     }
 

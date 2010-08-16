@@ -22,61 +22,13 @@ namespace MIConvexHullPluginNameSpace
 {
     using System;
     using System.Collections.Generic;
+    using StarMathLib;
 
     /// <summary>
     /// functions called from Find for the 3D case. 
     /// </summary>
     public static partial class ConvexHull
     {
-        /// <summary>
-        /// Sumproduct of the i,j,k values with the vertex position.
-        /// </summary>
-        /// <param name="i">The i.</param>
-        /// <param name="j">The j.</param>
-        /// <param name="k">The k.</param>
-        /// <param name="n">The n.</param>
-        /// <returns></returns>
-        private static double sumproduct(int i, int j, int k, IVertexConvHull n)
-        {
-            return ((i - 1) * n.X + (j - 1) * n.Y + (k - 1) * n.Z);
-        }
-
-
-        /// <summary>
-        /// The cross product of the two 3D double vectors a and b
-        /// </summary>
-        /// <param name="aX">X-component of the a vector.</param>
-        /// <param name="aY">Y-component of the a vector.</param>
-        /// <param name="aZ">Z-component of the a vector.</param>
-        /// <param name="bX">X-component of the b vector.</param>
-        /// <param name="bY">Y-component of the b vector.</param>
-        /// <param name="bZ">Z-component of the b vector.</param>
-        /// <returns>A IVertexConvHull of the resulting vector.</returns>
-        internal static double[] crossProduct(double aX, double aY, double aZ,
-            double bX, double bY, double bZ)
-        {
-            return new double[] {
-                ((aY * bZ) - (bY * aZ)),
-                ((aZ * bX) - (bZ * aX)),
-                ((aX * bY) - (bX * aY))};
-        }
-
-
-        /// <summary>
-        /// The dot product of the two 3D double vectors a and b
-        /// </summary>
-        /// <param name="aX">X-component of the a vector.</param>
-        /// <param name="aY">Y-component of the a vector.</param>
-        /// <param name="aZ">Z-component of the a vector.</param>
-        /// <param name="bX">X-component of the b vector.</param>
-        /// <param name="bY">Y-component of the b vector.</param>
-        /// <param name="bZ">Z-component of the b vector.</param>
-        /// <returns>A double value that contains the dot product</returns>
-        private static double dotProduct(double aX, double aY, double aZ, double bX, double bY, double bZ)
-        {
-            return (aX * bX) + (aY * bY) + (aZ * bZ);
-        }
-
         /// <summary>
         /// Gets the IVertexConvHull from extreme matrix.
         /// </summary>
@@ -87,7 +39,6 @@ namespace MIConvexHullPluginNameSpace
         {
             return extremeVertices[v[0] + 1, v[1] + 1, v[2] + 1];
         }
-
 
 
         /// <summary>
@@ -103,26 +54,26 @@ namespace MIConvexHullPluginNameSpace
             vFrom = null;
             vTo = null;
             Boolean result = false;
-            if (f1.v1.Equals(f2.v1) || f1.v1.Equals(f2.v2) || f1.v1.Equals(f2.v3))
-                vFrom = f1.v1;
-            if (f1.v2.Equals(f2.v1) || f1.v2.Equals(f2.v2) || f1.v2.Equals(f2.v3))
+            if (f1.vertices[0].Equals(f2.vertices[0]) || f1.vertices[0].Equals(f2.vertices[1]) || f1.vertices[0].Equals(f2.vertices[2]))
+                vFrom = f1.vertices[0];
+            if (f1.vertices[1].Equals(f2.vertices[0]) || f1.vertices[1].Equals(f2.vertices[1]) || f1.vertices[1].Equals(f2.vertices[2]))
             {
                 if (vFrom != null)
                 {
-                    vTo = f1.v2;
+                    vTo = f1.vertices[1];
                     result = true;
                 }
-                else if (f1.v3.Equals(f2.v1) || f1.v3.Equals(f2.v2) || f1.v3.Equals(f2.v3))
+                else if (f1.vertices[2].Equals(f2.vertices[0]) || f1.vertices[2].Equals(f2.vertices[1]) || f1.vertices[2].Equals(f2.vertices[2]))
                 {
-                    vFrom = f1.v2;
-                    vTo = f1.v3;
+                    vFrom = f1.vertices[1];
+                    vTo = f1.vertices[2];
                     result = true;
                 }
             }
-            else if ((vFrom != null) && (f1.v3.Equals(f2.v1) || f1.v3.Equals(f2.v2) || f1.v3.Equals(f2.v3)))
+            else if ((vFrom != null) && (f1.vertices[2].Equals(f2.vertices[0]) || f1.vertices[2].Equals(f2.vertices[1]) || f1.vertices[2].Equals(f2.vertices[2])))
             {
                 vTo = vFrom;
-                vFrom = f1.v3;
+                vFrom = f1.vertices[2];
                 result = true;
             }
             return result;
@@ -140,11 +91,23 @@ namespace MIConvexHullPluginNameSpace
             if (f1.Equals(f2)) return true;
             //if ((f1.normal[0] != f2.normal[0]) || (f1.normal[1] != f2.normal[1]) || (f1.normal[2] != f2.normal[2]))
             //    return false;
-            if (!(f1.v1.Equals(f2.v1) || f1.v1.Equals(f2.v2) || f1.v1.Equals(f2.v3))) return false;
-            if (!(f1.v2.Equals(f2.v1) || f1.v2.Equals(f2.v2) || f1.v2.Equals(f2.v3))) return false;
-            if (!(f1.v3.Equals(f2.v1) || f1.v3.Equals(f2.v2) || f1.v3.Equals(f2.v3))) return false;
+            if (!(f1.vertices[0].Equals(f2.vertices[0]) || f1.vertices[0].Equals(f2.vertices[1]) || f1.vertices[0].Equals(f2.vertices[2]))) return false;
+            if (!(f1.vertices[1].Equals(f2.vertices[0]) || f1.vertices[1].Equals(f2.vertices[1]) || f1.vertices[1].Equals(f2.vertices[2]))) return false;
+            if (!(f1.vertices[2].Equals(f2.vertices[0]) || f1.vertices[2].Equals(f2.vertices[1]) || f1.vertices[2].Equals(f2.vertices[2]))) return false;
             return true;
         }
+
+
+
+        private static double distanceToFaceCenter(IVertexConvHull v, IFaceConvHull f)
+        {
+            var c = new double[dimension];
+            for (int i = 0; i < dimension; i++)
+                for (int j = 0; j < dimension; j++)
+                    c[j] = f.vertices[i].location[j];
+            return StarMath.norm2(c, v.location);                
+        }
+
 
         ///// <summary>
         /// Fixes the non-convex faces.
@@ -161,38 +124,106 @@ namespace MIConvexHullPluginNameSpace
              * with the direction of the first face's edge vector (the one shared with the other face) then we need
              * to rearrange the faces - essentially we change the faces from the 2 offending faces to the other two
              * that make up the simplex (tetrahedron) shape defined by the four vertices. */
-
             for (int i = convexFaces.Count - 1; i >= lastNew; i--)
             {
                 numberToCheck--;
                 for (int j = i - 1; j >= 0; j--)
                 {
                     IVertexConvHull vFrom, vTo;
-                    if (sameFace(convexFaces[i], convexFaces[j])) throw new Exception("Here I am! Your two-week bug. You shouldn't have two" +
-                        " identical faces in the convex hull. Please fix.");
+                    if ((shareEdge(convexFaces[i], convexFaces[j], out vFrom, out vTo)) &&
+                        (facesAreConcave(vTo, vFrom, convexFaces, i, j)))
+                    {
+                        IVertexConvHull viDiff = ConvexHull.findNonSharedVertex(convexFaces[i], vFrom, vTo);
+                        IVertexConvHull vjDiff = ConvexHull.findNonSharedVertex(convexFaces[j], vFrom, vTo);
+                        convexFaces.RemoveAt(i);
+                        convexFaces.RemoveAt(j);
+                        var newFace1 = MakeFace3D(viDiff, vjDiff, vTo);
+                        var newFace2 = MakeFace3D(vjDiff, viDiff, vFrom);
+                        if (!convexFaces.Exists(f => sameFace(f, newFace1)))
+                            convexFaces.Add(newFace1);
+                        else Console.Write("The face already exists. But this is a symptom of something else. What? I don't know.");
+                        if (!convexFaces.Exists(f => sameFace(f, newFace2)))
+                            convexFaces.Add(newFace2);
+                        else Console.Write("The face already exists. But this is a symptom of something else. What? I don't know.");
+                        numberToCheck += 2;
+                        FixNonConvexFaces(convexFaces, numberToCheck);
+                        return;
+                    }
+                }
+            }
+        }
+
+
+
+        private static void updateCenter(List<IVertexConvHull> convexHull, int numberNew = -1)
+        {
+            if (numberNew == 0) return;
+            if (numberNew == -1) numberNew = convexHull.Count;
+            int numberOld = convexHull.Count - numberNew;
+            var newAvg = new double[dimension];
+
+            for (int i = convexHull.Count - 1; i >= numberOld; i--)
+                for (int j = 0; j < dimension; j++)
+                    newAvg[j] += convexHull[i].location[j] / numberNew;
+
+            for (int j = 0; j < dimension; j++)
+                center[j] = ((numberOld * center[j]) + (numberNew * newAvg[j])) / (numberNew + numberOld);
+        }
+
+        private static void maximizeHullFaces(List<IFaceConvHull> convexFaces, int numberNew = -1)
+        {
+            int lastNew = convexFaces.Count - numberNew;
+            if (numberNew < 0) lastNew = 0;
+            /* While these vertices are clearly part of the hull, the faces may not be. Now we quickly run through the
+             * faces to identify if they neighbor with a non-convex face. This can be determined by taking the cross-
+             * product of the normals of the two faces. If the direction of the resulting vector, c, is not aligned
+             * with the direction of the first face's edge vector (the one shared with the other face) then we need
+             * to rearrange the faces - essentially we change the faces from the 2 offending faces to the other two
+             * that make up the simplex (tetrahedron) shape defined by the four vertices. */
+            for (int i = convexFaces.Count - 1; i >= lastNew; i--)
+            {
+                numberNew--;
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    IVertexConvHull vFrom, vTo;
                     if (shareEdge(convexFaces[i], convexFaces[j], out vFrom, out vTo))
                     {
-                        var c = crossProduct(convexFaces[i].normal[0], convexFaces[i].normal[1], convexFaces[i].normal[2],
-                            convexFaces[j].normal[0], convexFaces[j].normal[1], convexFaces[j].normal[2]);
-                        if (!sameDirection(c, new double[] { (vTo.X - vFrom.X), (vTo.Y - vFrom.Y), (vTo.Z - vFrom.Z) }))
+                        IVertexConvHull viDiff = ConvexHull.findNonSharedVertex(convexFaces[i], vFrom, vTo);
+                        IVertexConvHull vjDiff = ConvexHull.findNonSharedVertex(convexFaces[j], vFrom, vTo);
+                        var newFace1 = MakeFace3D(viDiff, vjDiff, vTo);
+                        var newFace2 = MakeFace3D(vjDiff, viDiff, vFrom);
+                        if ((simplexVolumeFromCenter(newFace1) + simplexVolumeFromCenter(newFace2)) >
+                           (simplexVolumeFromCenter(convexFaces[i]) + simplexVolumeFromCenter(convexFaces[j])))
                         {
-                            IVertexConvHull viDiff = ConvexHull.findNonSharedVertex(convexFaces[i], vFrom, vTo);
-                            IVertexConvHull vjDiff = ConvexHull.findNonSharedVertex(convexFaces[j], vFrom, vTo);
-                            var newFace1 = MakeFace3D(viDiff, vjDiff, vTo);
-                            var newFace2 = MakeFace3D(vjDiff, viDiff, vFrom);
-                            if ((newFace1 == null) || (newFace2 == null))
-                                throw new Exception("One of both faces are null.");
-                            convexFaces.Add(newFace1);
-                            convexFaces.Add(newFace2);
-                            numberToCheck += 3;
                             convexFaces.RemoveAt(i);
                             convexFaces.RemoveAt(j);
-                            FixNonConvexFaces(convexFaces, numberToCheck);
+                            if (!convexFaces.Exists(f => sameFace(f, newFace1)))
+                                convexFaces.Add(newFace1);
+                            else Console.Write("The face already exists. But this is a symptom of something else. What? I don't know.");
+                            if (!convexFaces.Exists(f => sameFace(f, newFace2)))
+                                convexFaces.Add(newFace2);
+                            else Console.Write("The face already exists. But this is a symptom of something else. What? I don't know.");
+                            numberNew += 2;
+                            maximizeHullFaces(convexFaces, numberNew);
                             return;
                         }
                     }
                 }
             }
+        }
+
+        private static double simplexVolumeFromCenter(IFaceConvHull face)
+        {
+            double[,] simplex = new double[dimension, dimension];
+            for (int i = 0; i < dimension; i++)
+                StarMath.SetColumn(i, simplex, StarMath.subtract(face.vertices[i].location, center));
+            return StarMath.determinant(simplex);
+        }
+
+        private static Boolean facesAreConcave(IVertexConvHull vTo, IVertexConvHull vFrom, List<IFaceConvHull> convexFaces, int i, int j)
+        {
+            var c = StarMath.multiplyCross(convexFaces[i].normal, convexFaces[j].normal);
+            return !sameDirection(c, new double[] { (vTo.location[0] - vFrom.location[0]), (vTo.location[1] - vFrom.location[1]), (vTo.location[2] - vFrom.location[2]) });
         }
 
         private static Boolean sameDirection(double[] c, double[] p)
@@ -205,26 +236,23 @@ namespace MIConvexHullPluginNameSpace
         }
 
 
-        private static Boolean faceContainsVertex(IFaceConvHull face, IVertexConvHull vertex)
-        {
-            var bX = vertex.X - face.v1.X;
-            var bY = vertex.Y - face.v1.Y;
-            var bZ = vertex.Z - face.v1.Z;
-            var point = crossProduct(face.normal[0], face.normal[1], face.normal[2], bX, bY, bZ);
-            point = crossProduct(point[0], point[1], point[2], face.normal[0], face.normal[1], face.normal[2]);
+        //private static Boolean faceContainsVertex(IFaceConvHull face, IVertexConvHull vertex)
+        //{
+        //    var b = StarMath.subtract(vertex.location, face.vertices[0].location);
+        //    var point = StarMath.multiplyCross(face.normal, b);
+        //    point = StarMath.multiplyCross(point, face.normal);
 
-            if (!sameDirection(crossProduct(face.v2.X - face.v1.X, face.v2.Y - face.v1.Y, face.v2.Z - face.v1.Z,
-                point[0], point[1], point[2]), face.normal))
-                return false;
-            point = new double[] { point[0] + face.v1.X, point[1] + face.v1.Y, point[2] + face.v1.Z };
-            if (!sameDirection(crossProduct(face.v3.X - face.v2.X, face.v3.Y - face.v2.Y, face.v3.Z - face.v2.Z,
-                 point[0] - face.v2.X, point[1] - face.v2.Y, point[2] - face.v2.Z), face.normal))
-                return false;
-            if (!sameDirection(crossProduct(face.v1.X - face.v3.X, face.v1.Y - face.v3.Y, face.v1.Z - face.v3.Z,
-                 point[0] - face.v3.X, point[1] - face.v3.Y, point[2] - face.v3.Z), face.normal))
-                return false;
-            return true;
-        }
+        //    if (!sameDirection(StarMath.multiplyCross(StarMath.subtract(face.vertices[1].location, face.vertices[0].location), point), face.normal))
+        //        return false;
+        //    point = new double[] { point[0] + face.vertices[0].location[0], point[1] + face.vertices[0].location[1], point[2] + face.vertices[0].location[2] };
+        //    if (!sameDirection(StarMath.multiplyCross(StarMath.subtract(face.vertices[2].location, face.vertices[1].location),
+        //        StarMath.subtract(point, face.vertices[1].location)), face.normal))
+        //        return false;
+        //    if (!sameDirection(StarMath.multiplyCross(StarMath.subtract(face.vertices[0].location, face.vertices[2].location),
+        //        StarMath.subtract(point, face.vertices[2].location)), face.normal))
+        //        return false;
+        //    return true;
+        //}
 
 
         /// <summary>
@@ -236,11 +264,11 @@ namespace MIConvexHullPluginNameSpace
         /// <returns></returns>
         private static IVertexConvHull findNonSharedVertex(IFaceConvHull iFaceConvHull, IVertexConvHull vFrom, IVertexConvHull vTo)
         {
-            if (!iFaceConvHull.v1.Equals(vFrom) && !iFaceConvHull.v1.Equals(vTo))
-                return iFaceConvHull.v1;
-            if (!iFaceConvHull.v2.Equals(vFrom) && !iFaceConvHull.v2.Equals(vTo))
-                return iFaceConvHull.v2;
-            return iFaceConvHull.v3;
+            if (!iFaceConvHull.vertices[0].Equals(vFrom) && !iFaceConvHull.vertices[0].Equals(vTo))
+                return iFaceConvHull.vertices[0];
+            if (!iFaceConvHull.vertices[1].Equals(vFrom) && !iFaceConvHull.vertices[1].Equals(vTo))
+                return iFaceConvHull.vertices[1];
+            return iFaceConvHull.vertices[2];
 
         }
 
@@ -255,21 +283,9 @@ namespace MIConvexHullPluginNameSpace
         {
             var oldFace = faces[j];
             faces.RemoveAt(j);
-            var f1 = MakeFace3D(IVertexConvHull, oldFace.v1, oldFace.v2);
-            var f2 = MakeFace3D(IVertexConvHull, oldFace.v2, oldFace.v3);
-            var f3 = MakeFace3D(IVertexConvHull, oldFace.v3, oldFace.v1);
-            if ((f1 == null) || (f2 == null) || (f3 == null))
-                throw new Exception();
-            //if (dotProduct(oldFace.normal[0], oldFace.normal[1], oldFace.normal[2], f1.normal[0], f1.normal[1], f1.normal[2]) < 0)
-            //    throw new Exception();
-            //if (dotProduct(oldFace.normal[0], oldFace.normal[1], oldFace.normal[2], f2.normal[0], f2.normal[1], f2.normal[2]) < 0)
-            //    throw new Exception();
-            //if (dotProduct(oldFace.normal[0], oldFace.normal[1], oldFace.normal[2], f3.normal[0], f3.normal[1], f3.normal[2]) < 0)
-            //    throw new Exception();
-            faces.Add(f1); faces.Add(f2); faces.Add(f3);
-            //faces.Add(MakeFace(IVertexConvHull, oldFace.v1, oldFace.v2));
-            //faces.Add(MakeFace(IVertexConvHull, oldFace.v2, oldFace.v3));
-            //faces.Add(MakeFace(IVertexConvHull, oldFace.v3, oldFace.v1));
+            faces.Add(MakeFace3D(IVertexConvHull, oldFace.vertices[0], oldFace.vertices[1]));
+            faces.Add(MakeFace3D(IVertexConvHull, oldFace.vertices[1], oldFace.vertices[2]));
+            faces.Add(MakeFace3D(IVertexConvHull, oldFace.vertices[2], oldFace.vertices[0]));
         }
 
 
@@ -290,22 +306,17 @@ namespace MIConvexHullPluginNameSpace
                     verts.Add(convexHull[i]);
 
             var f = MakeFace3D(verts);
-            if (dotProduct(f.normal[0], f.normal[1], f.normal[2], outDir[0], outDir[1], outDir[2]) < 0)
+            if (StarMath.multiplyDot(f.normal, outDir) < 0)
             {
                 verts.Reverse();
                 f = MakeFace3D(verts);
-                if (dotProduct(f.normal[0], f.normal[1], f.normal[2], outDir[0], outDir[1], outDir[2]) < 0)
-                    throw new Exception("both negative?!?");
             }
             return f;
         }
 
         static Boolean overFace(IVertexConvHull v, IFaceConvHull f, out double dotP)
         {
-            var bX = v.X - f.v1.X;
-            var bY = v.Y - f.v1.Y;
-            var bZ = v.Z - f.v1.Z;
-            dotP = dotProduct(f.normal[0], f.normal[1], f.normal[2], bX, bY, bZ);
+            dotP = StarMath.multiplyDot(f.normal, StarMath.subtract(v.location, f.vertices[0].location));
             return (dotP >= 0);
         }
 
@@ -321,8 +332,8 @@ namespace MIConvexHullPluginNameSpace
         public static IFaceConvHull MakeFace3D(IVertexConvHull v1, IVertexConvHull v2, IVertexConvHull v3)
         {
             if (v1.Equals(v2) || v2.Equals(v3) || v3.Equals(v1)) return null;
-            double[] n = crossProduct(v2.X - v1.X, v2.Y - v1.Y, v2.Z - v1.Z,
-                v3.X - v2.X, v3.Y - v2.Y, v3.Z - v2.Z);
+            double[] n = StarMath.multiplyCross(StarMath.subtract(v2.location, v1.location),
+                StarMath.subtract(v3.location, v2.location));
             var nMag = Math.Sqrt((n[0] * n[0]) + (n[1] * n[1]) + (n[2] * n[2]));
             if (nMag < epsilon) return null;
             n[0] /= nMag;
@@ -335,15 +346,12 @@ namespace MIConvexHullPluginNameSpace
                 var constructor = faceType.GetConstructor(new Type[0]);
                 newFace = (IFaceConvHull)constructor.Invoke(new object[0]);
             }
-            if (newFace == null) newFace = new defFaceClass();
+            if (newFace == null) newFace = new defFaceClass(dimension);
 
-            newFace.v1 = v1;
-            newFace.v2 = v2;
-            newFace.v3 = v3;
+            newFace.vertices[0] = v1;
+            newFace.vertices[1] = v2;
+            newFace.vertices[2] = v3;
             newFace.normal = n;
-            //newFace.center = new double[]{((v1.X + v2.X + v3.X) / 3),
-            //        ((v1.Y + v2.Y + v3.Y) / 3),
-            //        ((v1.Z + v2.Z + v3.Z) / 3)};
             return newFace;
         }
     }

@@ -66,9 +66,9 @@ namespace ExampleWithGraphics
             Int32Collection faceTris = new Int32Collection();
             foreach (IFaceConvHull f in faces)
             {
-                faceTris.Add(convexHullVertices.IndexOf(((face)f).v1));
-                faceTris.Add(convexHullVertices.IndexOf(((face)f).v2));
-                faceTris.Add(convexHullVertices.IndexOf(((face)f).v3));
+                faceTris.Add(convexHullVertices.IndexOf(((face)f).vertices[0]));
+                faceTris.Add(convexHullVertices.IndexOf(((face)f).vertices[1]));
+                faceTris.Add(convexHullVertices.IndexOf(((face)f).vertices[2]));
             }
             var mg3d = new MeshGeometry3D();
             mg3d.Positions = CVPoints;

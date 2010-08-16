@@ -34,5 +34,6 @@ namespace MIConvexHullPluginNameSpace
         static int dimension;
         const double epsilon = 0.0000001;
         static Type faceType;
+        static double[] center;
     }
 }

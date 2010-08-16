@@ -27,11 +27,11 @@ namespace ExampleWithGraphics
     /// </summary>
     public class face : IFaceConvHull
     {
-        const double epsilon = 0.0000001;
-        public IVertexConvHull v1 { get; set; }
-        public IVertexConvHull v2 { get; set; }
-        public IVertexConvHull v3 { get; set; }
+        public face()
+        {
+            vertices = new IVertexConvHull[3];
+        }
+        public IVertexConvHull[] vertices { get; set; }
         public double[] normal { get; set; }
-        public double[] center { get; set; }
     }
 }
