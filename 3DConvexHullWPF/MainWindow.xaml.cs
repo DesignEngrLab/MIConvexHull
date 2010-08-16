@@ -14,7 +14,7 @@ namespace ExampleWithGraphics
     /// </summary>
     public partial class MainWindow : Window
     {
-        const int NumberOfVertices = 500;
+        const int NumberOfVertices = 1000;
         const double size = 50;
         List<IVertexConvHull> vertices;
         List<IVertexConvHull> convexHullVertices;
@@ -104,53 +104,8 @@ namespace ExampleWithGraphics
                 var vi = new vertex(size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2, size * r.NextDouble() - size / 2);
                 vertices.Add(vi);
 
-                viewport.Children.Add(vi);
+                //viewport.Children.Add(vi);
             }
-            /*****************************/
-
-
-            /****** Debug Set of Vertices ******/
-            //vertices.Add(new vertex(40, 0, 0));
-            //vertices.Add(new vertex(0, 40, 0));
-            //vertices.Add(new vertex(0, 0, 40));
-            //vertices.Add(new vertex(-40, 0, 0));
-            //vertices.Add(new vertex(0, -40, 0));
-            //vertices.Add(new vertex(0, 0, -40));
-
-            //vertices.Add(new vertex(40, 40, 0));
-            //vertices.Add(new vertex(0, 40, 40));
-            //vertices.Add(new vertex(40, 0, 40));
-
-            //vertices.Add(new vertex(-40, -40, 0));
-            //vertices.Add(new vertex(0, -40, -40));
-            //vertices.Add(new vertex(-40, 0, -40));
-
-            //vertices.Add(new vertex(-40, 40, 0));
-            //vertices.Add(new vertex(0, -40, 40));
-            //vertices.Add(new vertex(-40, 0, 40));
-            //vertices.Add(new vertex(40, -40, 0));
-            //vertices.Add(new vertex(0, 40, -40));
-            //vertices.Add(new vertex(40, 0, -40));
-
-            //vertices.Add(new vertex(35, 35, 35));
-            //vertices.Add(new vertex(35, 30,25));
-            //vertices.Add(new vertex(35, 25, 30));
-            //vertices.Add(new vertex(38, 38, 15));
-            //vertices.Add(new vertex(38, 15, 38));
-            //////vertices.Add(new vertex(-25, -25, -25));
-            //////vertices.Add(new vertex(-25, -25, 25));
-            //////vertices.Add(new vertex(-25, 25, -25));
-            //////vertices.Add(new vertex(25, -25, -25));
-            //////vertices.Add(new vertex(25, 25, -25));
-            //////vertices.Add(new vertex(25, -25, 25));
-            //////vertices.Add(new vertex(-25, 25, 25));
-
-
-
-            //foreach (var vi in vertices)
-            //    viewport.Children.Add((vertex)vi);
-
-            /*****************************/
             btnRun.IsDefault = true;
             btnDisplay.IsEnabled = false;
             txtBlkTimer.Text = "00:00:00.000";
@@ -174,7 +129,7 @@ namespace ExampleWithGraphics
                 var vi = new vertex(x, y, z);
                 vertices.Add(vi);
 
-                viewport.Children.Add(vi);
+                //viewport.Children.Add(vi);
             }
             btnRun.IsDefault = true;
             btnDisplay.IsEnabled = false;

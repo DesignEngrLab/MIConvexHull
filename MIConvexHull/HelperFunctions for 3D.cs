@@ -154,26 +154,11 @@ namespace MIConvexHullPluginNameSpace
         }
 
 
-
-        private static void updateCenter(List<IVertexConvHull> convexHull, int numberNew = -1)
-        {
-            if (numberNew == 0) return;
-            if (numberNew == -1) numberNew = convexHull.Count;
-            int numberOld = convexHull.Count - numberNew;
-            var newAvg = new double[dimension];
-
-            for (int i = convexHull.Count - 1; i >= numberOld; i--)
-                for (int j = 0; j < dimension; j++)
-                    newAvg[j] += convexHull[i].location[j] / numberNew;
-
-            for (int j = 0; j < dimension; j++)
-                center[j] = ((numberOld * center[j]) + (numberNew * newAvg[j])) / (numberNew + numberOld);
-        }
-
         private static void maximizeHullFaces(List<IFaceConvHull> convexFaces, int numberNew = -1)
         {
+            if (numberNew == 0) return;
+            if (numberNew < 0) numberNew = convexFaces.Count;
             int lastNew = convexFaces.Count - numberNew;
-            if (numberNew < 0) lastNew = 0;
             /* While these vertices are clearly part of the hull, the faces may not be. Now we quickly run through the
              * faces to identify if they neighbor with a non-convex face. This can be determined by taking the cross-
              * product of the normals of the two faces. If the direction of the resulting vector, c, is not aligned
