@@ -15,22 +15,6 @@ namespace MIConvexHullPluginNameSpace
         /// </summary>
         /// <value>The location.</value>
         double[] location { get; set; }
-        /// <summary>
-        /// Gets or sets the X.
-        /// </summary>
-        /// <value>The X.</value>
-        double X { get; set; }
-        /// <summary>
-        /// Gets or sets the Y.
-        /// </summary>
-        /// <value>The Y.</value>
-        double Y { get; set; }
-        /// <summary>
-        /// Gets or sets the Z.
-        /// </summary>
-        /// <value>The Z.</value>
-        double Z { get; set; }
-
     }
 
     /// <summary>
@@ -39,20 +23,10 @@ namespace MIConvexHullPluginNameSpace
     public interface IFaceConvHull
     {
         /// <summary>
-        /// Gets or sets the vertex, v1.
+        /// Gets or sets the vertices.
         /// </summary>
         /// <value>The vertex, v1.</value>
-        IVertexConvHull v1 { get; set; }
-        /// <summary>
-        /// Gets or sets the vertex, v2.
-        /// </summary>
-        /// <value>The vertex, v2.</value>
-        IVertexConvHull v2 { get; set; }
-        /// <summary>
-        /// Gets or sets the vertex, v3.
-        /// </summary>
-        /// <value>The vertex, v3.</value>
-        IVertexConvHull v3 { get; set; }
+        IVertexConvHull[] vertices { get; set; }
         /// <summary>
         /// Gets or sets the normal vector.
         /// </summary>
@@ -66,70 +40,20 @@ namespace MIConvexHullPluginNameSpace
     /// </summary>
     public class defFaceClass : IFaceConvHull
     {
+        public defFaceClass(int dimension)
+        {
+            vertices = new IVertexConvHull[dimension];
+            normal = new double[dimension];
+        }
         /// <summary>
-        /// Gets or sets the vertex, v1.
+        /// Gets or sets the vertices.
         /// </summary>
         /// <value>The vertex, v1.</value>
-        public IVertexConvHull v1 { get;  set; }
-        /// <summary>
-        /// Gets or sets the vertex, v2.
-        /// </summary>
-        /// <value>The vertex, v2.</value>
-        public IVertexConvHull v2 { get;  set; }
-        /// <summary>
-        /// Gets or sets the vertex, v3.
-        /// </summary>
-        /// <value>The vertex, v3.</value>
-        public IVertexConvHull v3 { get;  set; }
+        public IVertexConvHull[] vertices { get;  set; }
         /// <summary>
         /// Gets or sets the normal vector.
         /// </summary>
         /// <value>The normal.</value>
         public double[] normal { get;  set; }
-        /// <summary>
-        /// Gets or sets the center vector.
-        /// </summary>
-        /// <value>The center.</value>
-        public double[] center { get;  set; }
-
     }
-    internal class defVertexClass : IVertexConvHull
-    {
-        /// <summary>
-        /// Gets or sets the X.
-        /// </summary>
-        /// <value>The X position.</value>
-        public double X { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Y.
-        /// </summary>
-        /// <value>The Y position.</value>
-        public double Y { get; set; }
-
-
-        /// <summary>
-        /// Gets or sets the Z. Not used by MIConvexHull2D.
-        /// </summary>
-        /// <value>The Z position.</value>
-        public double Z { get; set; }
-
-
-        /// <summary>
-        /// Gets or sets the location.
-        /// </summary>
-        /// <value>The location.</value>
-        public double[] location
-        {
-            get { return new double[] { X, Y, Z }; }
-            set
-            {
-                X = value[0];
-                Y = value[1];
-                Z = value[2];
-            }
-
-        }
-    }
-
 }

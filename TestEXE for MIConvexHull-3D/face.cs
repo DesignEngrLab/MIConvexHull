@@ -32,6 +32,6 @@ namespace TestEXE_for_MIConvexHull3D
         public IVertexConvHull v2 { get; set; }
         public IVertexConvHull v3 { get; set; }
         public double[] normal { get; set; }
-        public double[] center { get; set; }
+        public IVertexConvHull[] vertices { get; set; }
     }
 }

@@ -23,6 +23,7 @@ namespace MIConvexHullPluginNameSpace
     using System;
     using System.Collections.Generic;
     using System.Collections;
+    using StarMathLib;
 
     /// <summary>
     /// MIConvexHull ("my convex hull", my initials are MIC) is built to be fast for large numbers of
@@ -67,14 +68,14 @@ namespace MIConvexHullPluginNameSpace
             for (int i = 0; i < origVNum; i++)
             {
                 var n = origVertices[i];
-                if (n.X < minX) { extremeVertices[0] = n; minX = n.X; }
-                if ((n.X + n.Y) < minSum) { extremeVertices[1] = n; minSum = n.X + n.Y; }
-                if (n.Y < minY) { extremeVertices[2] = n; minY = n.Y; }
-                if ((n.X - n.Y) > maxDiff) { extremeVertices[3] = n; maxDiff = n.X - n.Y; }
-                if (n.X > maxX) { extremeVertices[4] = n; maxX = n.X; }
-                if ((n.X + n.Y) > maxSum) { extremeVertices[5] = n; maxSum = n.X + n.Y; }
-                if (n.Y > maxY) { extremeVertices[6] = n; maxY = n.Y; }
-                if ((n.X - n.Y) < minDiff) { extremeVertices[7] = n; minDiff = n.X - n.Y; }
+                if (n.location[0] < minX) { extremeVertices[0] = n; minX = n.location[0]; }
+                if ((n.location[0] + n.location[1]) < minSum) { extremeVertices[1] = n; minSum = n.location[0] + n.location[1]; }
+                if (n.location[1] < minY) { extremeVertices[2] = n; minY = n.location[1]; }
+                if ((n.location[0] - n.location[1]) > maxDiff) { extremeVertices[3] = n; maxDiff = n.location[0] - n.location[1]; }
+                if (n.location[0] > maxX) { extremeVertices[4] = n; maxX = n.location[0]; }
+                if ((n.location[0] + n.location[1]) > maxSum) { extremeVertices[5] = n; maxSum = n.location[0] + n.location[1]; }
+                if (n.location[1] > maxY) { extremeVertices[6] = n; maxY = n.location[1]; }
+                if ((n.location[0] - n.location[1]) < minDiff) { extremeVertices[7] = n; minDiff = n.location[0] - n.location[1]; }
             }
 
             /* convexHullCCW is the result of this function. It is a list of 
@@ -106,15 +107,15 @@ namespace MIConvexHullPluginNameSpace
             double magnitude;
             for (int i = 0; i < last; i++)
             {
-                edgeUnitVectors[i, 0] = (convexHullCCW[i + 1].X - convexHullCCW[i].X);
-                edgeUnitVectors[i, 1] = (convexHullCCW[i + 1].Y - convexHullCCW[i].Y);
+                edgeUnitVectors[i, 0] = (convexHullCCW[i + 1].location[0] - convexHullCCW[i].location[0]);
+                edgeUnitVectors[i, 1] = (convexHullCCW[i + 1].location[1] - convexHullCCW[i].location[1]);
                 magnitude = Math.Sqrt(edgeUnitVectors[i, 0] * edgeUnitVectors[i, 0] +
                     edgeUnitVectors[i, 1] * edgeUnitVectors[i, 1]);
                 edgeUnitVectors[i, 0] /= magnitude;
                 edgeUnitVectors[i, 1] /= magnitude;
             }
-            edgeUnitVectors[last, 0] = convexHullCCW[0].X - convexHullCCW[last].X;
-            edgeUnitVectors[last, 1] = convexHullCCW[0].Y - convexHullCCW[last].Y;
+            edgeUnitVectors[last, 0] = convexHullCCW[0].location[0] - convexHullCCW[last].location[0];
+            edgeUnitVectors[last, 1] = convexHullCCW[0].location[1] - convexHullCCW[last].location[1];
             magnitude = Math.Sqrt(edgeUnitVectors[last, 0] * edgeUnitVectors[last, 0] +
                 edgeUnitVectors[last, 1] * edgeUnitVectors[last, 1]);
             edgeUnitVectors[last, 0] /= magnitude;
@@ -139,8 +140,8 @@ namespace MIConvexHullPluginNameSpace
             {
                 for (int j = 0; j < cvxVNum; j++)
                 {
-                    var bX = origVertices[i].X - convexHullCCW[j].X;
-                    var bY = origVertices[i].Y - convexHullCCW[j].Y;
+                    var b = new double[]{ origVertices[i].location[0] - convexHullCCW[j].location[0],
+                    origVertices[i].location[1] - convexHullCCW[j].location[1]};
                     //signedDists[0, k, i] = signedDistance(convexVectInfo[i, 0], convexVectInfo[i, 1], bX, bY, convexVectInfo[i, 2]);
                     //signedDists[1, k, i] = positionAlong(convexVectInfo[i, 0], convexVectInfo[i, 1], bX, bY, convexVectInfo[i, 2]);
                     //if (signedDists[0, k, i] <= 0)
@@ -148,9 +149,9 @@ namespace MIConvexHullPluginNameSpace
                      * other applications though. In the condition below, any signed distance that is negative is outside of the
                      * original polygon. It is only possible for the IVertexConvHull to be outside one of the 3 to 8 edges, so once we
                      * add it, we break out of the inner loop (gotta save time where we can!). */
-                    if (crossProduct(edgeUnitVectors[j, 0], edgeUnitVectors[j, 1], bX, bY) <= 0)
+                    if (StarMath.multiplyCross2D(StarMath.GetRow(j, edgeUnitVectors), b) <= 0)
                     {
-                        hullCands[j].Add(dotProduct(edgeUnitVectors[j, 0], edgeUnitVectors[j, 1], bX, bY), origVertices[i]);
+                        hullCands[j].Add(StarMath.multiplyDot(StarMath.GetRow(j, edgeUnitVectors), b), origVertices[i]);
                         break;
                     }
                 }
@@ -187,10 +188,8 @@ namespace MIConvexHullPluginNameSpace
                     int i = hc.Count - 2;
                     while (i > 0)
                     {
-                        var zValue = crossProduct(hc[i].X - hc[i - 1].X,
-                            hc[i].Y - hc[i - 1].Y,
-                            hc[i + 1].X - hc[i].X,
-                            hc[i + 1].Y - hc[i].Y);
+                        var zValue = StarMath.multiplyCross2D(StarMath.subtract(hc[i].location, hc[i - 1].location),
+                            StarMath.subtract(hc[i + 1].location, hc[i].location));
                         if (zValue < 0)
                         {
                             /* remove any vertices that create concave angles. */
