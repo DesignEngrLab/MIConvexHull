@@ -12,16 +12,28 @@ namespace MIConvexHullPluginNameSpace
     }
 
 
-    /// <summary>
-    /// A comparer for optimization that can be used for either 
-    /// minimization or maximization.
-    /// </summary>
-    internal class noEqualSort : IComparer<double>
+    internal class noEqualSortMaxtoMinDouble : IComparer<double>
     {
         public int Compare(double x, double y)
         {
             if (x > y) return -1;
             else return 1;
         }
+    }
+
+
+    internal class noEqualSortMaxtoMinInt : IEqualityComparer<int>
+    {
+        public bool Equals(int x, int y)
+        {
+            return false;
+        }
+
+
+        public int GetHashCode(int x)
+        {
+            return -x;
+        }
+
     }
 }

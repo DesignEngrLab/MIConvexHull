@@ -23,6 +23,7 @@ namespace MIConvexHullPluginNameSpace
     using System;
     using System.Collections.Generic;
     using StarMathLib;
+    using System.Linq;
 
     /// <summary>
     /// functions called from Find for the 3D case. 
@@ -80,6 +81,60 @@ namespace MIConvexHullPluginNameSpace
         }
 
 
+
+
+        private static SortedList<double, IFaceConvHull> findOverFaces(List<IFaceConvHull> convexFaces, IVertexConvHull currentVertex)
+        {
+            var overFaces = new SortedList<double, IFaceConvHull>(new noEqualSortMaxtoMinDouble());
+            foreach (var face in convexFaces)
+            {
+                double dotP;
+                if (overFace(currentVertex, face, out dotP))
+                    overFaces.Add(dotP, face);
+            }
+            return overFaces;
+        }
+
+        private static void replaceFace(List<IFaceConvHull> faces, IList<IFaceConvHull> intersectFaces, IVertexConvHull currentVertex)
+        {
+            if (intersectFaces.Count == 0) return;
+            else if (intersectFaces.Count == 1) replaceOneFace(faces, intersectFaces[0], currentVertex);
+            else if (intersectFaces.Count == 2) replaceTwoFaces(faces, intersectFaces, currentVertex);
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private static void replaceTwoFaces(List<IFaceConvHull> faces, IList<IFaceConvHull> intersectFaces, IVertexConvHull v)
+        {
+            var faceVerts = intersectFaces[0].vertices.Union(intersectFaces[1].vertices).ToList();
+            foreach (var f in intersectFaces)
+            {
+                faces.Remove(f);
+                faces.Add(MakeFace3D(v, faceVerts[0], faceVerts[1]));
+                faces.Add(MakeFace3D(v, faceVerts[1], faceVerts[2]));
+                faces.Add(MakeFace3D(v, faceVerts[2], faceVerts[3]));
+                faces.Add(MakeFace3D(v, faceVerts[3], faceVerts[0]));
+            }
+        }
+
+
+
+        /// <summary>
+        /// Replace IFaceConvHull, j, in the list with three new faces.
+        /// </summary>
+        /// <param name="faces">The convex faces.</param>
+        /// <param name="j">The index, j.</param>
+        /// <param name="v">The IVertexConvHull.</param>
+        private static void replaceOneFace(List<IFaceConvHull> faces, IFaceConvHull oldFace, IVertexConvHull v)
+        {
+            faces.Remove(oldFace);
+            faces.Add(MakeFace3D(v, oldFace.vertices[0], oldFace.vertices[1]));
+            faces.Add(MakeFace3D(v, oldFace.vertices[1], oldFace.vertices[2]));
+            faces.Add(MakeFace3D(v, oldFace.vertices[2], oldFace.vertices[0]));
+        }
+
         /// <summary>
         /// Checks if faces are the same.
         /// </summary>
@@ -105,112 +160,9 @@ namespace MIConvexHullPluginNameSpace
             for (int i = 0; i < dimension; i++)
                 for (int j = 0; j < dimension; j++)
                     c[j] = f.vertices[i].location[j];
-            return StarMath.norm2(c, v.location);                
+            return StarMath.norm2(c, v.location);
         }
 
-
-        ///// <summary>
-        /// Fixes the non-convex faces.
-        /// </summary>
-        /// <param name="convexFaces">The convex faces.</param>
-        /// <param name="numberToCheck">The number to check.</param>
-        private static void FixNonConvexFaces(List<IFaceConvHull> convexFaces, int numberToCheck = -1)
-        {
-            int lastNew = convexFaces.Count - numberToCheck;
-            if (numberToCheck < 0) lastNew = 0;
-            /* While these vertices are clearly part of the hull, the faces may not be. Now we quickly run through the
-             * faces to identify if they neighbor with a non-convex face. This can be determined by taking the cross-
-             * product of the normals of the two faces. If the direction of the resulting vector, c, is not aligned
-             * with the direction of the first face's edge vector (the one shared with the other face) then we need
-             * to rearrange the faces - essentially we change the faces from the 2 offending faces to the other two
-             * that make up the simplex (tetrahedron) shape defined by the four vertices. */
-            for (int i = convexFaces.Count - 1; i >= lastNew; i--)
-            {
-                numberToCheck--;
-                for (int j = i - 1; j >= 0; j--)
-                {
-                    IVertexConvHull vFrom, vTo;
-                    if ((shareEdge(convexFaces[i], convexFaces[j], out vFrom, out vTo)) &&
-                        (facesAreConcave(vTo, vFrom, convexFaces, i, j)))
-                    {
-                        IVertexConvHull viDiff = ConvexHull.findNonSharedVertex(convexFaces[i], vFrom, vTo);
-                        IVertexConvHull vjDiff = ConvexHull.findNonSharedVertex(convexFaces[j], vFrom, vTo);
-                        convexFaces.RemoveAt(i);
-                        convexFaces.RemoveAt(j);
-                        var newFace1 = MakeFace3D(viDiff, vjDiff, vTo);
-                        var newFace2 = MakeFace3D(vjDiff, viDiff, vFrom);
-                        if (!convexFaces.Exists(f => sameFace(f, newFace1)))
-                            convexFaces.Add(newFace1);
-                        else Console.Write("The face already exists. But this is a symptom of something else. What? I don't know.");
-                        if (!convexFaces.Exists(f => sameFace(f, newFace2)))
-                            convexFaces.Add(newFace2);
-                        else Console.Write("The face already exists. But this is a symptom of something else. What? I don't know.");
-                        numberToCheck += 2;
-                        FixNonConvexFaces(convexFaces, numberToCheck);
-                        return;
-                    }
-                }
-            }
-        }
-
-
-
-        private static void updateCenter(List<IVertexConvHull> convexHull, int numberNew = -1)
-        {
-            if (numberNew == 0) return;
-            if (numberNew == -1) numberNew = convexHull.Count;
-            int numberOld = convexHull.Count - numberNew;
-            var newAvg = new double[dimension];
-
-            for (int i = convexHull.Count - 1; i >= numberOld; i--)
-                for (int j = 0; j < dimension; j++)
-                    newAvg[j] += convexHull[i].location[j] / numberNew;
-
-            for (int j = 0; j < dimension; j++)
-                center[j] = ((numberOld * center[j]) + (numberNew * newAvg[j])) / (numberNew + numberOld);
-        }
-
-        private static void maximizeHullFaces(List<IFaceConvHull> convexFaces, int numberNew = -1)
-        {
-            int lastNew = convexFaces.Count - numberNew;
-            if (numberNew < 0) lastNew = 0;
-            /* While these vertices are clearly part of the hull, the faces may not be. Now we quickly run through the
-             * faces to identify if they neighbor with a non-convex face. This can be determined by taking the cross-
-             * product of the normals of the two faces. If the direction of the resulting vector, c, is not aligned
-             * with the direction of the first face's edge vector (the one shared with the other face) then we need
-             * to rearrange the faces - essentially we change the faces from the 2 offending faces to the other two
-             * that make up the simplex (tetrahedron) shape defined by the four vertices. */
-            for (int i = convexFaces.Count - 1; i >= lastNew; i--)
-            {
-                numberNew--;
-                for (int j = i - 1; j >= 0; j--)
-                {
-                    IVertexConvHull vFrom, vTo;
-                    if (shareEdge(convexFaces[i], convexFaces[j], out vFrom, out vTo))
-                    {
-                        IVertexConvHull viDiff = ConvexHull.findNonSharedVertex(convexFaces[i], vFrom, vTo);
-                        IVertexConvHull vjDiff = ConvexHull.findNonSharedVertex(convexFaces[j], vFrom, vTo);
-                        var newFace1 = MakeFace3D(viDiff, vjDiff, vTo);
-                        var newFace2 = MakeFace3D(vjDiff, viDiff, vFrom);
-                        if ((simplexVolumeFromCenter(newFace1) + simplexVolumeFromCenter(newFace2)) >
-                           (simplexVolumeFromCenter(convexFaces[i]) + simplexVolumeFromCenter(convexFaces[j])))
-                        {
-                            convexFaces.RemoveAt(i);
-                            convexFaces.RemoveAt(j);
-                            if (!convexFaces.Exists(f => sameFace(f, newFace1)))
-                                convexFaces.Add(newFace1);
-                            else Console.Write("The face already exists. But this is a symptom of something else. What? I don't know.");
-                            if (!convexFaces.Exists(f => sameFace(f, newFace2)))
-                                convexFaces.Add(newFace2);
-                            else Console.Write("The face already exists. But this is a symptom of something else. What? I don't know.");
-                            numberNew += 2;
-                            maximizeHullFaces(convexFaces, numberNew);
-                            return;
-                        }
-                    }
-                }
-            }
-        }
 
         private static double simplexVolumeFromCenter(IFaceConvHull face)
         {
@@ -236,24 +188,6 @@ namespace MIConvexHullPluginNameSpace
         }
 
 
-        //private static Boolean faceContainsVertex(IFaceConvHull face, IVertexConvHull vertex)
-        //{
-        //    var b = StarMath.subtract(vertex.location, face.vertices[0].location);
-        //    var point = StarMath.multiplyCross(face.normal, b);
-        //    point = StarMath.multiplyCross(point, face.normal);
-
-        //    if (!sameDirection(StarMath.multiplyCross(StarMath.subtract(face.vertices[1].location, face.vertices[0].location), point), face.normal))
-        //        return false;
-        //    point = new double[] { point[0] + face.vertices[0].location[0], point[1] + face.vertices[0].location[1], point[2] + face.vertices[0].location[2] };
-        //    if (!sameDirection(StarMath.multiplyCross(StarMath.subtract(face.vertices[2].location, face.vertices[1].location),
-        //        StarMath.subtract(point, face.vertices[1].location)), face.normal))
-        //        return false;
-        //    if (!sameDirection(StarMath.multiplyCross(StarMath.subtract(face.vertices[0].location, face.vertices[2].location),
-        //        StarMath.subtract(point, face.vertices[2].location)), face.normal))
-        //        return false;
-        //    return true;
-        //}
-
 
         /// <summary>
         /// Finds the vertex that is NOT shared (that is, not the two provided).
@@ -272,21 +206,6 @@ namespace MIConvexHullPluginNameSpace
 
         }
 
-
-        /// <summary>
-        /// Replace IFaceConvHull, j, in the list with three new faces.
-        /// </summary>
-        /// <param name="faces">The convex faces.</param>
-        /// <param name="j">The index, j.</param>
-        /// <param name="IVertexConvHull">The IVertexConvHull.</param>
-        private static void replaceFace(List<IFaceConvHull> faces, int j, IVertexConvHull IVertexConvHull)
-        {
-            var oldFace = faces[j];
-            faces.RemoveAt(j);
-            faces.Add(MakeFace3D(IVertexConvHull, oldFace.vertices[0], oldFace.vertices[1]));
-            faces.Add(MakeFace3D(IVertexConvHull, oldFace.vertices[1], oldFace.vertices[2]));
-            faces.Add(MakeFace3D(IVertexConvHull, oldFace.vertices[2], oldFace.vertices[0]));
-        }
 
 
 

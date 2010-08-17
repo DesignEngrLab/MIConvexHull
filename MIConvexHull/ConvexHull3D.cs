@@ -23,6 +23,7 @@ namespace MIConvexHullPluginNameSpace
     using System;
     using System.Collections.Generic;
     using System.Collections;
+    using System.Linq;
     using StarMathLib;
 
     /// <summary>
@@ -63,6 +64,7 @@ namespace MIConvexHullPluginNameSpace
             for (int m = 0; m < VCount; m++)
             {
                 var n = origVertices[m];
+                center = StarMath.add(center, n.location);
                 for (int i = 0; i < 3; i++)
                     for (int j = 0; j < 3; j++)
                         for (int k = 0; k < 3; k++)
@@ -77,57 +79,44 @@ namespace MIConvexHullPluginNameSpace
                             }
             }
             #endregion
-
+            for (int i = 0; i < dimension; i++) center[i] /= VCount;
             #region Step #2: Define up to 48 faces of the Disdyakis dodecahedron
-            var sortedIndices = new List<int>();
+            var AklToussaintIndices = new List<int>();
+            var indicesToDelete = new Dictionary<int, Boolean>(new noEqualSortMaxtoMinInt());
+
             /* store vertices */
             for (int i = 0; i < 3; i++)
                 for (int j = 0; j < 3; j++)
                     for (int k = 0; k < 3; k++)
                         if ((!((i == 1) && (j == 1) && (k == 1)))
-                        && !sortedIndices.Contains(extremeVertexIndices[i, j, k]))
-                            sortedIndices.Add(extremeVertexIndices[i, j, k]);
+                        && !AklToussaintIndices.Contains(extremeVertexIndices[i, j, k]))
+                            AklToussaintIndices.Add(extremeVertexIndices[i, j, k]);
 
             int numInSimplex = dimension + 1;
-            int stepSize = (sortedIndices.Count - 1) / dimension;
+            double stepSize = ((double)(AklToussaintIndices.Count - 1)) / dimension;
 
             var convexHull = new List<IVertexConvHull>();
-            for (int i = 0; i < numInSimplex; i++)
-                convexHull.Add(origVertices[sortedIndices[i * stepSize]]);
-            updateCenter(convexHull);
+            for (int i = numInSimplex - 1; i >= 0; i--)
+            {
+                int index = (int)(i * stepSize);
+                convexHull.Add(origVertices[AklToussaintIndices[index]]);
+                indicesToDelete.Add(AklToussaintIndices[index], false);
+                AklToussaintIndices.RemoveAt(index);
+            }
             convexFaces = new List<IFaceConvHull>();
             for (int i = 0; i < numInSimplex; i++)
                 convexFaces.Add(MakeFace(convexHull, i));
-            foreach (int i in sortedIndices)
-                if (!convexHull.Contains(origVertices[i]))
-                {
-                    int overFaceIndex = -1;
-                    double minDistantce = double.PositiveInfinity;
-                    for (int j = 0; j < convexFaces.Count; j++)
-                    {
-                        double dotP;
-                        overFace(origVertices[i], convexFaces[j], out dotP);
-                        if (dotP >= 0.0)
-                        {
-                            var dist = distanceToFaceCenter(origVertices[i], convexFaces[j]);
-                            if (dist < minDistantce)
-                            {
-                                minDistantce = dist;
-                                overFaceIndex = j;
-                            }
-                        }
-                    }
-                    convexHull.Add(origVertices[i]);
-                    updateCenter(convexHull, 1);
-                    replaceFace(convexFaces, overFaceIndex, origVertices[i]);
-                    maximizeHullFaces(convexFaces, 3);
-                   //  FixNonConvexFaces(convexFaces, 3);
-                }
+            foreach (int i in AklToussaintIndices)
+            {
+                var currentVertex = origVertices[i];
+                indicesToDelete.Add(i, false);
+                convexHull.Add(currentVertex);
+                var overFaces = findOverFaces(convexFaces, currentVertex);
+                replaceFace(convexFaces, overFaces.Values, currentVertex);
+            }
 
-
-
-            sortedIndices.Sort();
-            for (int i = sortedIndices.Count - 1; i >= 0; i--) origVertices.RemoveAt(sortedIndices[i]);
+            foreach (int i in indicesToDelete.Keys)
+                origVertices.RemoveAt(i);
 
             // FixNonConvexFaces(convexFaces);
             VCount = origVertices.Count;
@@ -142,75 +131,46 @@ namespace MIConvexHullPluginNameSpace
              * the distance perpendicular to the IFaceConvHull (cross-product). This is used to order the vertices that
              * are found for a particular side (More on this in 23 lines). */
             //var hullCands = new SortedList<double, IVertexConvHull>;
-            //var candVertices = new SortedList<double, CandidateHullVertexData>(new noEqualSort());
-            ///* Now a big loop. For each of the original vertices, check them with the 4 to 48 faces to see if they 
-            // * are inside or out. If they are out, add them to the proper row of the hullCands array. */
-            //for (int i = 0; i < VCount; i++)
-            //{
-            //    var currentVertex = origVertices[i];
-            //    double maxDotP = double.NegativeInfinity;
-            //    IFaceConvHull containFace = null;
-            //    SortedList<double, IFaceConvHull> overFaces = new SortedList<double, IFaceConvHull>(new noEqualSort());
-            //    for (int j = 0; j < convexFaces.Count; j++)
-            //    {
-            //        var face = convexFaces[j];
-            //        double dotP;
-            //        if (overFace(currentVertex, face, out dotP))
-            //        {
-            //            if (dotP >= maxDotP) maxDotP = dotP;
-            //            overFaces.Add(dotP, face);
-            //        }
-            //    }
-            //    if (maxDotP >= 0)
-            //        candVertices.Add(maxDotP, new CandidateHullVertexData()
-            //        {
-            //            vertex = currentVertex,
-            //            otherFaces = overFaces
-            //        });
-            //}
-
-            //while (candVertices.Count > 0)
-            //{
-            //    var currentVertex = candVertices.Values[0].vertex;
-            //    var overFaces = candVertices.Values[0].otherFaces;
-            //    candVertices.RemoveAt(0);
-            //    var faceFound = false;
-            //    for (int i = 0; i < overFaces.Count; i++)
-            //    {
-            //        if (convexFaces.Contains(overFaces.Values[i]))
-            //        {
-            //            convexHull.Add(currentVertex);
-            //            updateCenter(convexHull, 1);
-            //            replaceFace(convexFaces, convexFaces.IndexOf(overFaces.Values[i]), currentVertex);
-            //            // FixNonConvexFaces(convexFaces, 3);
-            //            faceFound = true;
-            //            break;
-            //        }
-            //    }
-            //    if (!faceFound)
-            //    {
-            //        double maxDotP = double.NegativeInfinity;
-            //        overFaces.Clear();
-            //        for (int j = 0; j < convexFaces.Count; j++)
-            //        {
-            //            var face = convexFaces[j];
-            //            double dotP;
-            //            if (overFace(currentVertex, face, out dotP))
-            //            {
-            //                if (dotP >= maxDotP) maxDotP = dotP;
-            //                overFaces.Add(dotP, face);
-            //            }
-            //        }
-            //        if (maxDotP >= 0)
-            //        {
-            //            candVertices.Add(maxDotP, new CandidateHullVertexData()
-            //            {
-            //                vertex = currentVertex,
-            //                otherFaces = overFaces
-            //            });
-            //        }
-            //    }
-            //}
+            var candVertices = new SortedList<double, CandidateHullVertexData>(new noEqualSortMaxtoMinDouble());
+            /* Now a big loop. For each of the original vertices, check them with the 4 to 48 faces to see if they 
+             * are inside or out. If they are out, add them to the proper row of the hullCands array. */
+            for (int i = 0; i < VCount; i++)
+            {
+                var currentVertex = origVertices[i];
+                var overFaces = findOverFaces(convexFaces, currentVertex);
+                if (overFaces.Count > 0)
+                    candVertices.Add(overFaces.Keys[0], new CandidateHullVertexData()
+                    {
+                        vertex = currentVertex,
+                        otherFaces = overFaces
+                    });
+            }
+            while (candVertices.Count > 0)
+            {
+                var currentVertex = candVertices.Values[0].vertex;
+                var intersectFaces = convexFaces.Intersect(candVertices.Values[0].otherFaces.Values).ToList();
+                candVertices.RemoveAt(0);
+                if (intersectFaces.Count() > 0)
+                {
+                    convexHull.Add(currentVertex);
+                    var affectedCands = (from c in candVertices
+                                         where (c.Value.otherFaces.Values.Intersect(intersectFaces).Count() > 0)
+                                         select c).ToList();
+                    replaceFace(convexFaces, intersectFaces, currentVertex);
+                    foreach (var affectedCand in affectedCands)
+                    {
+                        candVertices.Remove(affectedCand.Key);
+                        var affectedVertex = affectedCand.Value.vertex;
+                        var overFaces = findOverFaces(convexFaces, affectedVertex);
+                        if (overFaces.Count > 0)
+                            candVertices.Add(overFaces.Keys[0], new CandidateHullVertexData()
+                            {
+                                vertex = affectedVertex,
+                                otherFaces = overFaces
+                            });
+                    }
+                }
+            }
             #endregion
             return convexHull;
         }
