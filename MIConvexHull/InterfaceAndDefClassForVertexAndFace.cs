@@ -40,6 +40,10 @@ namespace MIConvexHullPluginNameSpace
     /// </summary>
     public class defFaceClass : IFaceConvHull
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="defFaceClass"/> class.
+        /// </summary>
+        /// <param name="dimension">The dimension.</param>
         public defFaceClass(int dimension)
         {
             vertices = new IVertexConvHull[dimension];
