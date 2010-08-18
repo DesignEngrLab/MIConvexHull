@@ -47,9 +47,11 @@ namespace ExampleWithGraphics
             btnDisplay.IsDefault = true;
 
         }
-
+        ModelVisual3D modViz;
         private void btnDisplay_Click(object sender, RoutedEventArgs e)
         {
+            viewport.Children.Remove(modViz);
+
             Point3DCollection CVPoints = new Point3DCollection();
             foreach (var chV in convexHullVertices)
             {
@@ -85,7 +87,7 @@ namespace ExampleWithGraphics
                     new SpecularMaterial(Brushes.Beige, 2.0) }
                 }
             };
-            var modViz = new ModelVisual3D();
+            modViz = new ModelVisual3D();
             modViz.Content = geoMod;
 
             viewport.Children.Add(modViz);

@@ -21,19 +21,12 @@ namespace MIConvexHullPluginNameSpace
         }
     }
 
-
-    internal class noEqualSortMaxtoMinInt : IEqualityComparer<int>
+    internal class noEqualSortMaxtoMinInt : IComparer<int>
     {
-        public bool Equals(int x, int y)
+        public int Compare(int x, int y)
         {
-            return false;
+            if (x > y) return -1;
+            else return 1;
         }
-
-
-        public int GetHashCode(int x)
-        {
-            return -x;
-        }
-
     }
 }
