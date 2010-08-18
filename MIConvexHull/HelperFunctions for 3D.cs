@@ -185,8 +185,6 @@ namespace MIConvexHullPluginNameSpace
         }
 
         private static void maximizeHullFaces(IList<IFaceConvHull> convexFaces, int numberNew = -1)
-        {
-            if (numberNew == 0) return;
             if (numberNew < 0) numberNew = convexFaces.Count;
             int lastNew = convexFaces.Count - numberNew;
             /* While these vertices are clearly part of the hull, the faces may not be. Now we quickly run through the

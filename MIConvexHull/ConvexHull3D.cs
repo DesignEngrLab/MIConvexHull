@@ -64,6 +64,7 @@ namespace MIConvexHullPluginNameSpace
             for (int m = 0; m < VCount; m++)
             {
                 var n = origVertices[m];
+                center = StarMath.add(center, n.location);
                 for (int i = 0; i < 3; i++)
                     for (int j = 0; j < 3; j++)
                         for (int k = 0; k < 3; k++)
@@ -77,6 +78,8 @@ namespace MIConvexHullPluginNameSpace
                                 }
                             }
             }
+            for (int i = 0; i < dimension; i++)
+                center[i] /= VCount;
             #endregion
             #region Step #2: Define up to 48 faces of the Disdyakis dodecahedron
             var AklToussaintIndices = new List<int>();
@@ -118,7 +121,6 @@ namespace MIConvexHullPluginNameSpace
             foreach (int i in indicesToDelete)
                 origVertices.RemoveAt(i);
 
-            // FixNonConvexFaces(convexFaces);
             VCount = origVertices.Count;
             #endregion
 
