@@ -14,7 +14,7 @@ namespace ExampleWithGraphics
     /// </summary>
     public partial class MainWindow : Window
     {
-        const int NumberOfVertices = 1000;
+        const int NumberOfVertices = 500;
         const double size = 50;
         List<IVertexConvHull> vertices;
         List<IVertexConvHull> convexHullVertices;
@@ -122,7 +122,8 @@ namespace ExampleWithGraphics
             /****** Random Vertices ******/
             for (int i = 0; i < NumberOfVertices; i++)
             {
-                var radius = size + r.NextDouble() / 2;
+                var radius = size;// +r.NextDouble() / 2;
+                if (i < NumberOfVertices / 2) radius /= 2;
                 var theta = 2 * Math.PI * r.NextDouble();
                 var azimuth = Math.PI * r.NextDouble();
                 var x = radius * Math.Cos(theta) * Math.Sin(azimuth);

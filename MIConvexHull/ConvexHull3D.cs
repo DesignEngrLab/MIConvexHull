@@ -155,11 +155,11 @@ namespace MIConvexHullPluginNameSpace
                 {
                     convexHull.Add(currentVertex);
                     updateCenter(convexHull, currentVertex);
+                    replaceFace(convexFaces, intersectFaces, currentVertex);
                     var affectedCands = (from c in candVertices
                                          where (c.Value.otherFaces.Values.Intersect(intersectFaces).Count() > 0)
                                          select (candVertices.IndexOfValue(c.Value))).ToList();
                     affectedCands.Sort(new noEqualSortMaxtoMinInt());
-                    replaceFace(convexFaces, intersectFaces, currentVertex);
                     foreach (var affectedCand in affectedCands)
                     {
                         var affectedVertex = candVertices.Values[affectedCand].vertex;
@@ -178,7 +178,7 @@ namespace MIConvexHullPluginNameSpace
             return convexHull;
         }
 
-        private static void updateCenter(List<IVertexConvHull> convexHull, IVertexConvHull currentVertex)
+        static void updateCenter(List<IVertexConvHull> convexHull, IVertexConvHull currentVertex)
         {
             center = StarMath.multiply((1.0 / (double)convexHull.Count), StarMath.add(
                 StarMath.multiply(convexHull.Count - 1, center),
