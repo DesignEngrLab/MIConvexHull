@@ -115,7 +115,7 @@ namespace MIConvexHullPluginNameSpace
                 convexHull.Add(currentVertex);
                 updateCenter(convexHull, currentVertex);
                 var overFaces = findOverFaces(convexFaces, currentVertex);
-                replaceFace(convexFaces, overFaces.Values, currentVertex);
+                convexFaces.AddRange(replaceFace(convexFaces, overFaces.Values, currentVertex));
             }
             indicesToDelete.Sort(new noEqualSortMaxtoMinInt());
             foreach (int i in indicesToDelete)
@@ -132,58 +132,35 @@ namespace MIConvexHullPluginNameSpace
              * IFaceConvHull. This manhattan distance is comprised of the distance parallel to the IFaceConvHull (dot-product) plus
              * the distance perpendicular to the IFaceConvHull (cross-product). This is used to order the vertices that
              * are found for a particular side (More on this in 23 lines). */
-            var candVertices = new SortedList<double, CandidateHullVertexData>(new noEqualSortMaxtoMinDouble());
-            /* Now a big loop. For each of the original vertices, check them with the 4 to 48 faces to see if they 
-             * are inside or out. If they are out, add them to the proper row of the hullCands array. */
-            for (int i = 0; i < VCount; i++)
+            var faceDatabase = new SortedList<double, CandidateHullFaceData>(new noEqualSortMaxtoMinDouble());
+            updateFaceDatabase(convexFaces, faceDatabase,ref origVertices);
+
+            while (faceDatabase.Count > 0)
             {
-                var currentVertex = origVertices[i];
-                var overFaces = findOverFaces(convexFaces, currentVertex);
-                if (overFaces.Count > 0)
-                    candVertices.Add(overFaces.Keys[0], new CandidateHullVertexData()
-                    {
-                        vertex = currentVertex,
-                        otherFaces = overFaces
-                    });
-            }
-            while (candVertices.Count > 0)
-            {
-                var currentVertex = candVertices.Values[0].vertex;
-                var intersectFaces = convexFaces.Intersect(candVertices.Values[0].otherFaces.Values).ToList();
-                candVertices.RemoveAt(0);
-                if (intersectFaces.Count() > 0)
+                var currentFaceData = faceDatabase.Values[0];
+                var currentVertex = currentFaceData.verticesBeyond.Values[0];
+                var affectedFaceIndices = (from fD in faceDatabase
+                                           where fD.Value.verticesBeyond.Values.Contains(currentVertex)
+                                           select faceDatabase.IndexOfValue(fD.Value)).ToList();
+                var affectedFaces = new List<IFaceConvHull>();
+                affectedFaceIndices.Sort(new noEqualSortMaxtoMinInt());
+                foreach (var affectedIndex in affectedFaceIndices)
                 {
-                    convexHull.Add(currentVertex);
-                    updateCenter(convexHull, currentVertex);
-                    replaceFace(convexFaces, intersectFaces, currentVertex);
-                    var affectedCands = (from c in candVertices
-                                         where (c.Value.otherFaces.Values.Intersect(intersectFaces).Count() > 0)
-                                         select (candVertices.IndexOfValue(c.Value))).ToList();
-                    affectedCands.Sort(new noEqualSortMaxtoMinInt());
-                    foreach (var affectedCand in affectedCands)
-                    {
-                        var affectedVertex = candVertices.Values[affectedCand].vertex;
-                        candVertices.RemoveAt(affectedCand);
-                        var overFaces = findOverFaces(convexFaces, affectedVertex);
-                        if (overFaces.Count > 0)
-                            candVertices.Add(overFaces.Keys[0], new CandidateHullVertexData()
-                            {
-                                vertex = affectedVertex,
-                                otherFaces = overFaces
-                            });
-                    }
+                    affectedFaces.Add(faceDatabase.Values[affectedIndex].face);
+                    faceDatabase.RemoveAt(affectedIndex);
                 }
+                origVertices.Remove(currentVertex);
+                convexHull.Add(currentVertex);
+                updateCenter(convexHull, currentVertex);
+                var newFaces = replaceFace(convexFaces, affectedFaces, currentVertex);
+                convexFaces.AddRange(newFaces);
+                updateFaceDatabase(newFaces, faceDatabase, ref origVertices);
             }
             #endregion
             return convexHull;
         }
 
-        static void updateCenter(List<IVertexConvHull> convexHull, IVertexConvHull currentVertex)
-        {
-            center = StarMath.multiply((1.0 / (double)convexHull.Count), StarMath.add(
-                StarMath.multiply(convexHull.Count - 1, center),
-                currentVertex.location));
-        }
+
 
         /// <summary>
         /// Find the convex hull for the 3D vertices.
