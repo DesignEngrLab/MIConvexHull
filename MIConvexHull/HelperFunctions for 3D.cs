@@ -31,15 +31,16 @@ namespace MIConvexHullPluginNameSpace
     public static partial class ConvexHull
     {
         #region Make functions
-        static void replaceFace(List<IFaceConvHull> faces, IList<IFaceConvHull> oldFaces, IVertexConvHull currentVertex)
+        static List<IFaceConvHull> replaceFace(List<IFaceConvHull> faces, IList<IFaceConvHull> oldFaces, IVertexConvHull currentVertex)
         {
             faces.RemoveAll(f => oldFaces.Contains(f));
             var edges = findFreeEdges(oldFaces);
+            var newFaces = new List<IFaceConvHull>();
             foreach (var edge in edges)
             {
-                faces.Add(MakeFace(currentVertex, edge));
+                newFaces.Add(MakeFace(currentVertex, edge));
             }
-
+            return newFaces;
         }
         static IFaceConvHull MakeFace(List<IVertexConvHull> convexHull, int notFaceIndex)
         {
@@ -86,7 +87,7 @@ namespace MIConvexHullPluginNameSpace
 
 
         #endregion
-        #region Find and Get functions
+        #region Find, Get and Update functions
         /// <summary>
         /// Gets the IVertexConvHull from extreme matrix.
         /// </summary>
@@ -157,6 +158,48 @@ namespace MIConvexHullPluginNameSpace
         }
 
 
+        private static SortedList<double, IVertexConvHull> findBeyondVertices(IFaceConvHull face, List<IVertexConvHull> vertices)
+        {
+            var beyondVertices = new SortedList<double, IVertexConvHull>(new noEqualSortMaxtoMinDouble());
+            foreach (var v in vertices)
+            {
+                double dotP;
+                if (overFace(v, face, out dotP)) beyondVertices.Add(dotP, v);
+            }
+            return beyondVertices;
+        }
+
+        private static void updateFaceDatabase(List<IFaceConvHull> faces, SortedList<double, CandidateHullFaceData> faceData, ref List<IVertexConvHull> vertices)
+        {
+            foreach (var fD in faceData)
+                vertices.Union(fD.Value.verticesBeyond.Values).ToList();
+            foreach (var face in faces)
+            {
+                var faceEntry = (from fD in faceData
+                                 where fD.Value.face.Equals(face)
+                                 select fD.Value).FirstOrDefault();
+                if (faceEntry == null)
+                    faceEntry = new CandidateHullFaceData(face);
+                else faceData.RemoveAt(faceData.IndexOfValue(faceEntry));
+                var beyondVertices = findBeyondVertices(face, vertices);
+                if (beyondVertices.Count > 0)
+                {
+                    faceEntry.verticesBeyond = beyondVertices;
+                    faceData.Add(beyondVertices.Keys[0], faceEntry);
+                }
+            }
+            vertices.Clear();
+            foreach (var fD in faceData)
+                vertices = vertices.Union(fD.Value.verticesBeyond.Values).ToList();
+        }
+
+
+        static void updateCenter(List<IVertexConvHull> convexHull, IVertexConvHull currentVertex)
+        {
+            center = StarMath.multiply((1.0 / (double)convexHull.Count), StarMath.add(
+                StarMath.multiply(convexHull.Count - 1, center),
+                currentVertex.location));
+        }
         #endregion
         #region Predicates
         /// <summary>
@@ -206,13 +249,5 @@ namespace MIConvexHullPluginNameSpace
         }
 
         #endregion
-
-
-
-
-
-
-
-
     }
 }
