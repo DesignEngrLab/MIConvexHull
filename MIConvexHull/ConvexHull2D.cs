@@ -213,48 +213,5 @@ namespace MIConvexHullPluginNameSpace
             /* finally return the hull points. */
             return convexHullCCW;
         }
-
-        /// <summary>
-        /// Find the convex hull for the 2D vertices.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <returns></returns>
-        public static List<IVertexConvHull> Find2D(List<IVertexConvHull> vertices)
-        {
-            /* first, the original vertices are copied as they will be modified
-             * by this function. */
-            origVertices = new List<IVertexConvHull>(vertices);
-            return Find2D();
-        }
-
-        /* These two overloads take longer than the one above. They are provided in cases
-         * where the users classes and collections are more like these. Ideally, the
-         * user should declare there list of vertices as a List<IVertexConvHull>, but 
-         * this is an unrealistic requirement. At any rate, these methods take about 50  
-         * nano-second to add each one.  */
-        /// <summary>
-        /// Find the convex hull for the 2D vertices.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <returns></returns>
-        public static List<IVertexConvHull> Find2D(IList vertices)
-        {
-            origVertices = new List<IVertexConvHull>();
-            foreach (object o in vertices)
-                origVertices.Add((IVertexConvHull)o);
-            return Find2D();
-        }
-        /// <summary>
-        /// Find the convex hull for the 2D vertices.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <returns></returns>
-        public static List<IVertexConvHull> Find2D(object[] vertices)
-        {
-            origVertices = new List<IVertexConvHull>();
-            for (int i = 0; i < vertices.GetLength(0); i++)
-                origVertices.Add((IVertexConvHull)vertices[i]);
-            return Find2D();
-        }
     }
 }

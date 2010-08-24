@@ -30,10 +30,20 @@ namespace MIConvexHullPluginNameSpace
     public static partial class ConvexHull
     {
         static List<IVertexConvHull> origVertices;
-        static List<IFaceConvHull> convexFaces;
+        static List<IVertexConvHull> convexHull;
+        static SortedList<double, FaceData> convexFaces;
         static int dimension;
         const double epsilon = 0.0000001;
         static Type faceType;
         static double[] center;
+
+        static void Initialize(int dimensions)
+        {
+            dimension = dimensions;
+            convexHull = new List<IVertexConvHull>();
+            convexFaces = new SortedList<double, FaceData>(new noEqualSortMaxtoMinDouble());
+            faceType = null;
+            center = new double[dimension];
+        }
     }
 }

@@ -6,6 +6,7 @@ using System.Windows.Media.Media3D;
 using Petzold.Media3D;
 using MIConvexHullPluginNameSpace;
 using System.Collections.Generic;
+using StarMathLib;
 
 namespace ExampleWithGraphics
 {
@@ -39,7 +40,7 @@ namespace ExampleWithGraphics
             Console.WriteLine("Running...");
             DateTime now = DateTime.Now;
             faces = new List<IFaceConvHull>();
-            convexHullVertices = ConvexHull.Find3D(vertices, typeof(face), out faces);
+            convexHullVertices = ConvexHull.FindConvexHull(vertices, out faces, typeof(face),3);
             TimeSpan interval = DateTime.Now - now;
             txtBlkTimer.Text = interval.Hours.ToString() + ":" + interval.Minutes.ToString()
                 + ":" + interval.Seconds.ToString() + "." + interval.TotalMilliseconds.ToString();
@@ -68,9 +69,15 @@ namespace ExampleWithGraphics
             Int32Collection faceTris = new Int32Collection();
             foreach (IFaceConvHull f in faces)
             {
-                faceTris.Add(convexHullVertices.IndexOf(((face)f).vertices[0]));
-                faceTris.Add(convexHullVertices.IndexOf(((face)f).vertices[1]));
-                faceTris.Add(convexHullVertices.IndexOf(((face)f).vertices[2]));
+                var orderImpliedNormal = StarMath.multiplyCross(
+                    StarMath.subtract(f.vertices[1].location,f.vertices[0].location),
+                    StarMath.subtract(f.vertices[2].location,f.vertices[1].location)
+                    );
+                if (StarMath.multiplyDot(f.normal, orderImpliedNormal) < 0)
+                    Array.Reverse(f.vertices);
+                faceTris.Add(convexHullVertices.IndexOf(f.vertices[0]));
+                faceTris.Add(convexHullVertices.IndexOf(f.vertices[1]));
+                faceTris.Add(convexHullVertices.IndexOf(f.vertices[2]));
             }
             var mg3d = new MeshGeometry3D();
             mg3d.Positions = CVPoints;
