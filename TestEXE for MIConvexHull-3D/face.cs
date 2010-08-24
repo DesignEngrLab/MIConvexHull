@@ -18,7 +18,6 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-using System;
 namespace TestEXE_for_MIConvexHull3D
 {
     using MIConvexHullPluginNameSpace;
@@ -27,10 +26,6 @@ namespace TestEXE_for_MIConvexHull3D
     /// </summary>
     public class face : IFaceConvHull
     {
-        const double epsilon = 0.0000001;
-        public IVertexConvHull v1 { get; set; }
-        public IVertexConvHull v2 { get; set; }
-        public IVertexConvHull v3 { get; set; }
         public double[] normal { get; set; }
         public IVertexConvHull[] vertices { get; set; }
     }

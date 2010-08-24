@@ -29,13 +29,7 @@ namespace ExampleWithGraphics
     /// </summary>
     public class vertex : Sphere, IVertexConvHull
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="vertex"/> class.
-        /// </summary>
-        public vertex()
-        {
-        }
-
+        
 
         /// <summary>
         /// Initializes a new instance of the <see cref="vertex"/> class.
@@ -45,33 +39,33 @@ namespace ExampleWithGraphics
         /// <param name="z">The z position.</param>
         public vertex(double x, double y, double z)
         {
-            this.X = x;
-            this.Y = y;
-            this.Z = z;
-            this.Center = new System.Windows.Media.Media3D.Point3D(X, Y, Z);
-            this.Radius = 0.25;
+            X = x;
+            Y = y;
+            Z = z;
+            Center = new Point3D(X, Y, Z);
+            Radius = 0.25;
 
-            this.BackMaterial = new DiffuseMaterial(Brushes.Black);
+            BackMaterial = new DiffuseMaterial(Brushes.Black);
         }
 
         /// <summary>
         /// Gets or sets the X.
         /// </summary>
         /// <value>The X position.</value>
-        public double X { get; set; }
+        private double X { get; set; }
 
         /// <summary>
         /// Gets or sets the Y.
         /// </summary>
         /// <value>The Y position.</value>
-        public double Y { get; set; }
+        private double Y { get; set; }
 
 
         /// <summary>
         /// Gets or sets the Z. Not used by MIConvexHull2D.
         /// </summary>
         /// <value>The Z position.</value>
-        public double Z { get; set; }
+        private double Z { get; set; }
 
         /// <summary>
         /// Gets or sets the location.
@@ -79,14 +73,7 @@ namespace ExampleWithGraphics
         /// <value>The location.</value>
         public double[] location
         {
-            get { return new double[] { X, Y, Z }; }
-            set
-            {
-                X = value[0];
-                Y = value[1];
-                Z = value[2];
-            }
-
+            get { return new[] { X, Y, Z }; }
         }
     }
 }

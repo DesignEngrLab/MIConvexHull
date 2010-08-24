@@ -21,35 +21,34 @@
 namespace TestEXE_for_MIConvexHull2D
 {
     using System;
-    using System.Collections.Generic;
     using MIConvexHullPluginNameSpace;
 
 
-    class Program
+    static class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            int NumberOfVertices = 100000;
-            double size = 1000;
+            const int NumberOfVertices = 100000;
+            const double size = 1000;
 
-            Random r = new Random();
+            var r = new Random();
             Console.WriteLine("Ready? Push Return/Enter to start.");
             Console.ReadLine();
 
-            Console.WriteLine("Making " + NumberOfVertices.ToString() + " random vertices.");
+            Console.WriteLine("Making " + NumberOfVertices + " random vertices.");
             //var vertices = new List<IVertexConvHull>();
             //for (int i = 0; i < NumberOfVertices; i++)
             //    vertices.Add(new vertex(size * r.NextDouble(), size * r.NextDouble()));
 
             var vertices = new object[NumberOfVertices];
-            for (int i=0; i<NumberOfVertices; i++)
+            for (var i=0; i<NumberOfVertices; i++)
                 vertices[i] = new vertex(size * r.NextDouble(), size * r.NextDouble());
             Console.WriteLine("Running...");
-            DateTime now = DateTime.Now;
+            var now = DateTime.Now;
             var convexHullVertices = ConvexHull.FindConvexHull(vertices);
-            TimeSpan interval = DateTime.Now - now;
-            Console.WriteLine("Out of the " + NumberOfVertices.ToString() + " vertices, there are " +
-                convexHullVertices.Count.ToString() + " in the convex hull.");
+            var interval = DateTime.Now - now;
+            Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
+                convexHullVertices.Count + " in the convex hull.");
             Console.WriteLine("time = " + interval);
             Console.ReadLine();
         }

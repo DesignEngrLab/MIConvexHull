@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace MIConvexHullPluginNameSpace
+﻿namespace MIConvexHullPluginNameSpace
 {
-    public class defaultVertex : IVertexConvHull
+    /// <summary>
+    /// A default vertex class in cases where the user provides 
+    /// only a vector of coordinates.
+    /// </summary>
+    internal class defaultVertex : IVertexConvHull
     {
         public double[] location { get; set; }
 

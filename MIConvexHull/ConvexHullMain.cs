@@ -22,7 +22,6 @@ namespace MIConvexHullPluginNameSpace
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections;
 
     /// <summary>
     /// MIConvexHull.
@@ -33,7 +32,6 @@ namespace MIConvexHullPluginNameSpace
         static List<IVertexConvHull> convexHull;
         static SortedList<double, FaceData> convexFaces;
         static int dimension;
-        const double epsilon = 0.0000001;
         static Type faceType;
         static double[] center;
 

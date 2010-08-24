@@ -18,7 +18,6 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-using System;
 namespace ExampleWithGraphics
 {
     using MIConvexHullPluginNameSpace;
