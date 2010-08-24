@@ -29,54 +29,34 @@ namespace TestEXE_for_MIConvexHull3D
         /// <summary>
         /// Initializes a new instance of the <see cref="vertex"/> class.
         /// </summary>
-        public vertex()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="vertex"/> class.
-        /// </summary>
-        /// <param name="x">The x position.</param>
-        /// <param name="y">The y position.</param>
-        public vertex(double x, double y)
-        {
-            this.X = x;
-            this.Y = y;
-            this.Z = 0.0;
-        }
-
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="vertex"/> class.
-        /// </summary>
         /// <param name="x">The x position.</param>
         /// <param name="y">The y position.</param>
         /// <param name="z">The z position.</param>
         public vertex(double x, double y, double z)
         {
-            this.X = x;
-            this.Y = y;
-            this.Z = z;
+            X = x;
+            Y = y;
+            Z = z;
         }
 
         /// <summary>
         /// Gets or sets the X.
         /// </summary>
         /// <value>The X position.</value>
-        public double X { get; set; }
+        private double X { get; set; }
 
         /// <summary>
         /// Gets or sets the Y.
         /// </summary>
         /// <value>The Y position.</value>
-        public double Y { get; set; }
+        private double Y { get; set; }
 
 
         /// <summary>
         /// Gets or sets the Z. Not used by MIConvexHull2D.
         /// </summary>
         /// <value>The Z position.</value>
-        public double Z { get; set; }
+        private double Z { get; set; }
 
 
         /// <summary>
@@ -85,14 +65,7 @@ namespace TestEXE_for_MIConvexHull3D
         /// <value>The location.</value>
         public double[] location
         {
-            get { return new double[] { X, Y, Z }; }
-            set
-            {
-                X = value[0];
-                Y = value[1];
-                Z = value[2];
-            }
-
+            get { return new[] { X, Y, Z }; }
         }
     }
 }

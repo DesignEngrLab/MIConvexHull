@@ -1,83 +1,67 @@
-﻿/*************************************************************************
- *     This file & class is part of the MIConvexHull Library Project. 
- *     Copyright 2006, 2010 Matthew Ira Campbell, PhD.
- *
- *     MIConvexHull is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *  
- *     MIConvexHull is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *  
- *     You should have received a copy of the GNU General Public License
- *     along with MIConvexHull.  If not, see <http://www.gnu.org/licenses/>.
- *     
- *     Please find further details and contact information on GraphSynth
- *     at http://miconvexhull.codeplex.com
- *************************************************************************/
+﻿#region
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+#endregion
+
 namespace MIConvexHullPluginNameSpace
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections;
-    using System.Linq;
-    using StarMathLib;
-
     /// <summary>
-    /// MIConvexHull for 3D.
+    ///   MIConvexHull for 3D.
     /// </summary>
     public static partial class ConvexHull
     {
         /// <summary>
-        /// Find the convex hull for the 3D vertices.
+        ///   Finds the convex hull.
         /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <param name="face_Type">Type of the face_.</param>
+        /// <param name = "vertices">The vertices.</param>
+        /// <param name = "dimensions">The dimension.</param>
         /// <returns></returns>
-        public static List<IVertexConvHull> FindConvexHull(IList vertices, int dimension = -1)
+        public static List<IVertexConvHull> FindConvexHull(IList vertices, int dimensions = -1)
         {
             if (vertices as List<IVertexConvHull> != null)
                 origVertices = new List<IVertexConvHull>(vertices.Count);
             else if (vertices as List<double[]> != null)
             {
                 origVertices = new List<IVertexConvHull>(vertices.Count);
-                for (int i = 0; i < vertices.Count; i++)
-                    origVertices.Add(new defaultVertex() { location = (double[])vertices[i] });
+                foreach (var v in vertices)
+                    origVertices.Add(new defaultVertex {location = (double[]) v});
             }
             else throw new Exception("List must be made up of IVertexConvHull objects or 1D double arrays.");
-            if (dimension == -1) determineDimension(origVertices);
-            Initialize(dimension);
-            if (dimension == 2) Find2D();
+            if (dimensions == -1) determineDimension(origVertices);
+            Initialize(dimensions);
+            if (dimensions == 2) Find2D();
             else FindConvexHull();
             return convexHull;
         }
 
+
         /// <summary>
-        /// Find the convex hull for the 3D vertices.
+        ///   Finds the convex hull.
         /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <param name="face_Type">Type of the face_.</param>
-        /// <param name="faces">The faces.</param>
+        /// <param name = "vertices">The vertices.</param>
+        /// <param name = "faces">The faces.</param>
+        /// <param name = "face_Type">Type of the face_.</param>
+        /// <param name = "dimensions">The dimension.</param>
         /// <returns></returns>
         public static List<IVertexConvHull> FindConvexHull(IList vertices, out List<IFaceConvHull> faces,
-            Type face_Type = null, int dimension = -1)
+                                                           Type face_Type = null, int dimensions = -1)
         {
             if (vertices as List<IVertexConvHull> != null)
-                origVertices = new List<IVertexConvHull>((List<IVertexConvHull>)vertices);
+                origVertices = new List<IVertexConvHull>((List<IVertexConvHull>) vertices);
             else if (vertices as List<double[]> != null)
             {
                 origVertices = new List<IVertexConvHull>(vertices.Count);
-                for (int i = 0; i < vertices.Count; i++)
-                    origVertices.Add(new defaultVertex() { location = (double[])vertices[i] });
+                foreach (var v in vertices)
+                    origVertices.Add(new defaultVertex {location = (double[]) v});
             }
             else throw new Exception("List must be made up of IVertexConvHull objects or 1D double arrays.");
-            if (dimension == -1) determineDimension(origVertices);
-            Initialize(dimension);
+            if (dimensions == -1) determineDimension(origVertices);
+            Initialize(dimensions);
             faceType = face_Type;
-            if (dimension == 2) Find2D();
+            if (dimensions == 2) Find2D();
             else FindConvexHull();
 
             faces = new List<IFaceConvHull>(convexFaces.Count);
@@ -86,7 +70,7 @@ namespace MIConvexHullPluginNameSpace
                 foreach (var f in convexFaces)
                 {
                     var constructor = faceType.GetConstructor(new Type[0]);
-                    var newFace = (IFaceConvHull)constructor.Invoke(new object[0]);
+                    var newFace = (IFaceConvHull) constructor.Invoke(new object[0]);
                     newFace.normal = f.Value.normal;
                     newFace.vertices = f.Value.vertices;
                     faces.Add(newFace);
@@ -96,56 +80,57 @@ namespace MIConvexHullPluginNameSpace
         }
 
 
-
         /* These three overloads take longer than the ones above. They are provided in cases
          * where the users classes and collections are more like these. Ideally, the
          * user should declare there list of vertices as a List<IVertexConvHull>, but 
          * this is an unrealistic requirement. At any rate, these methods take about 50  
          * nano-second to add each one. */
+
         /// <summary>
-        /// Find the convex hull for the 3D vertices.
+        ///   Finds the convex hull.
         /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <param name="face_Type">Type of the face_.</param>
+        /// <param name = "vertices">The vertices.</param>
+        /// <param name = "dimensions">The dimension.</param>
         /// <returns></returns>
-        public static List<IVertexConvHull> FindConvexHull(object[] vertices, int dimension = -1)
+        public static List<IVertexConvHull> FindConvexHull(object[] vertices, int dimensions = -1)
         {
             var ListVerts = new List<IVertexConvHull>();
             if (vertices[0] as IFaceConvHull != null)
             {
-                for (int i = 0; i < vertices.GetLength(0); i++)
-                    ListVerts.Add((IVertexConvHull)vertices[i]);
+                for (var i = 0; i < vertices.GetLength(0); i++)
+                    ListVerts.Add((IVertexConvHull) vertices[i]);
             }
             else if ((vertices[0] as double[] != null) || (vertices[0] as float[] != null))
             {
-                for (int i = 0; i < vertices.GetLength(0); i++)
-                    ListVerts.Add(new defaultVertex() { location = (double[])vertices[i] });
+                for (var i = 0; i < vertices.GetLength(0); i++)
+                    ListVerts.Add(new defaultVertex {location = (double[]) vertices[i]});
             }
-            return FindConvexHull(ListVerts, dimension);
-        }
-        /// <summary>
-        /// Find the convex hull for the 3D vertices.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <param name="face_Type">Type of the face_.</param>
-        /// <param name="faces">The faces.</param>
-        /// <returns></returns>
-        public static List<IVertexConvHull> FindConvexHull(object[] vertices, out List<IFaceConvHull> faces,
-            Type face_Type = null, int dimension = -1)
-        {
-            var ListVerts = new List<IVertexConvHull>();
-            if (vertices[0] as IFaceConvHull != null)
-            {
-                for (int i = 0; i < vertices.GetLength(0); i++)
-                    ListVerts.Add((IVertexConvHull)vertices[i]);
-            }
-            else if ((vertices[0] as double[] != null) || (vertices[0] as float[] != null))
-            {
-                for (int i = 0; i < vertices.GetLength(0); i++)
-                    ListVerts.Add(new defaultVertex() { location = (double[])vertices[i] });
-            }
-            return FindConvexHull(ListVerts, out faces, face_Type, dimension);
+            return FindConvexHull(ListVerts, dimensions);
         }
 
+        /// <summary>
+        ///   Finds the convex hull.
+        /// </summary>
+        /// <param name = "vertices">The vertices.</param>
+        /// <param name = "faces">The faces.</param>
+        /// <param name = "face_Type">Type of the face_.</param>
+        /// <param name = "dimensions">The dimension.</param>
+        /// <returns></returns>
+        public static List<IVertexConvHull> FindConvexHull(object[] vertices, out List<IFaceConvHull> faces,
+                                                           Type face_Type = null, int dimensions = -1)
+        {
+            var ListVerts = new List<IVertexConvHull>();
+            if (vertices[0] as IFaceConvHull != null)
+            {
+                for (var i = 0; i < vertices.GetLength(0); i++)
+                    ListVerts.Add((IVertexConvHull) vertices[i]);
+            }
+            else if ((vertices[0] as double[] != null) || (vertices[0] as float[] != null))
+            {
+                for (var i = 0; i < vertices.GetLength(0); i++)
+                    ListVerts.Add(new defaultVertex {location = (double[]) vertices[i]});
+            }
+            return FindConvexHull(ListVerts, out faces, face_Type, dimensions);
+        }
     }
 }

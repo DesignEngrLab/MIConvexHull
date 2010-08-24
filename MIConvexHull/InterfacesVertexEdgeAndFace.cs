@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace MIConvexHullPluginNameSpace
+﻿namespace MIConvexHullPluginNameSpace
 {
     /// <summary>
     /// The interface for vertices that must be used in your program so that MIConvexHull can access you methods.
@@ -14,7 +9,7 @@ namespace MIConvexHullPluginNameSpace
         /// Gets or sets the location.
         /// </summary>
         /// <value>The location.</value>
-        double[] location { get; set; }
+        double[] location { get; }
     }
 
     /// <summary>

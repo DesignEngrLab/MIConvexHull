@@ -1,81 +1,95 @@
-﻿/*************************************************************************
- *     This file & class is part of the MIConvexHull Library Project. 
- *     Copyright 2006, 2010 Matthew Ira Campbell, PhD.
- *
- *     MIConvexHull is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *  
- *     MIConvexHull is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *  
- *     You should have received a copy of the GNU General Public License
- *     along with MIConvexHull.  If not, see <http://www.gnu.org/licenses/>.
- *     
- *     Please find further details and contact information on GraphSynth
- *     at http://miconvexhull.codeplex.com
- *************************************************************************/
+﻿#region
+
+using System;
+using System.Collections.Generic;
+using StarMathLib;
+
+#endregion
+
 namespace MIConvexHullPluginNameSpace
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections;
-    using StarMathLib;
-
     /// <summary>
-    /// MIConvexHull ("my convex hull", my initials are MIC) is built to be fast for large numbers of
-    /// 2D points. Well, it should be fast for small numbers as well with the exception that C# is perhaps
-    /// a little slower than C++ for the small amount of array math that'd happen for a small number
-    /// (l.t.20) of vertices.
-    /// This reasons it is fast are:
-    /// 1. implementing the Akl-Toussaint "octagon" heuristic
-    /// 2. using quick dot- and cross-products instead of more expensie sine and cosine functions.
-    /// 3. the data structure (an array of sorted-lists of tuples) is calculated and stored to avoid
-    /// future recalculation.
-    /// 4. a single break function to further speed up inter-vectex checking
-    /// 5. an ordered list reduces the number of checks for new convex candidates.
+    ///   MIConvexHull ("my convex hull", my initials are MIC) is built to be fast for large numbers of
+    ///   2D points. Well, it should be fast for small numbers as well with the exception that C# is perhaps
+    ///   a little slower than C++ for the small amount of array math that'd happen for a small number
+    ///   (l.t.20) of vertices.
+    ///   This reasons it is fast are:
+    ///   1. implementing the Akl-Toussaint "octagon" heuristic
+    ///   2. using quick dot- and cross-products instead of more expensie sine and cosine functions.
+    ///   3. the data structure (an array of sorted-lists of tuples) is calculated and stored to avoid
+    ///   future recalculation.
+    ///   4. a single break function to further speed up inter-vectex checking
+    ///   5. an ordered list reduces the number of checks for new convex candidates.
     /// </summary>
     public static partial class ConvexHull
     {
         /// <summary>
-        /// Finds the convex hull vertices.
+        ///   Finds the convex hull vertices.
         /// </summary>
         /// <returns></returns>
-        static List<IVertexConvHull> Find2D()
+        private static void Find2D()
         {
             var origVNum = origVertices.Count;
 
             #region Step 1 : Define Convex Octogon
+
             /* The first step is to quickly identify the three to eight vertices based on the
              * Akl-Toussaint heuristic. */
-            double maxX = double.NegativeInfinity;
-            double maxY = double.NegativeInfinity;
-            double maxSum = double.NegativeInfinity;
-            double maxDiff = double.NegativeInfinity;
-            double minX = double.PositiveInfinity;
-            double minY = double.PositiveInfinity;
-            double minSum = double.PositiveInfinity;
-            double minDiff = double.PositiveInfinity;
+            var maxX = double.NegativeInfinity;
+            var maxY = double.NegativeInfinity;
+            var maxSum = double.NegativeInfinity;
+            var maxDiff = double.NegativeInfinity;
+            var minX = double.PositiveInfinity;
+            var minY = double.PositiveInfinity;
+            var minSum = double.PositiveInfinity;
+            var minDiff = double.PositiveInfinity;
 
             /* the array of extreme is comprised of: 0.minX, 1. minSum, 2. minY, 3. maxDiff, 4. MaxX, 5. MaxSum, 6. MaxY, 7. MinDiff. */
-            IVertexConvHull[] extremeVertices = new IVertexConvHull[8];
+            var extremeVertices = new IVertexConvHull[8];
             //  int[] extremeVertexIndices = new int[8]; I thought that this might speed things up. That is, to use this to RemoveAt
             // as oppoaws to the Remove in line 91, which I thought might be slow. Turns out I was wrong - plus code is more succinct
             // way.
-            for (int i = 0; i < origVNum; i++)
+            for (var i = 0; i < origVNum; i++)
             {
                 var n = origVertices[i];
-                if (n.location[0] < minX) { extremeVertices[0] = n; minX = n.location[0]; }
-                if ((n.location[0] + n.location[1]) < minSum) { extremeVertices[1] = n; minSum = n.location[0] + n.location[1]; }
-                if (n.location[1] < minY) { extremeVertices[2] = n; minY = n.location[1]; }
-                if ((n.location[0] - n.location[1]) > maxDiff) { extremeVertices[3] = n; maxDiff = n.location[0] - n.location[1]; }
-                if (n.location[0] > maxX) { extremeVertices[4] = n; maxX = n.location[0]; }
-                if ((n.location[0] + n.location[1]) > maxSum) { extremeVertices[5] = n; maxSum = n.location[0] + n.location[1]; }
-                if (n.location[1] > maxY) { extremeVertices[6] = n; maxY = n.location[1]; }
-                if ((n.location[0] - n.location[1]) < minDiff) { extremeVertices[7] = n; minDiff = n.location[0] - n.location[1]; }
+                if (n.location[0] < minX)
+                {
+                    extremeVertices[0] = n;
+                    minX = n.location[0];
+                }
+                if ((n.location[0] + n.location[1]) < minSum)
+                {
+                    extremeVertices[1] = n;
+                    minSum = n.location[0] + n.location[1];
+                }
+                if (n.location[1] < minY)
+                {
+                    extremeVertices[2] = n;
+                    minY = n.location[1];
+                }
+                if ((n.location[0] - n.location[1]) > maxDiff)
+                {
+                    extremeVertices[3] = n;
+                    maxDiff = n.location[0] - n.location[1];
+                }
+                if (n.location[0] > maxX)
+                {
+                    extremeVertices[4] = n;
+                    maxX = n.location[0];
+                }
+                if ((n.location[0] + n.location[1]) > maxSum)
+                {
+                    extremeVertices[5] = n;
+                    maxSum = n.location[0] + n.location[1];
+                }
+                if (n.location[1] > maxY)
+                {
+                    extremeVertices[6] = n;
+                    maxY = n.location[1];
+                }
+                if ((n.location[0] - n.location[1]) >= minDiff) continue;
+                extremeVertices[7] = n;
+                minDiff = n.location[0] - n.location[1];
             }
 
             /* convexHullCCW is the result of this function. It is a list of 
@@ -83,12 +97,13 @@ namespace MIConvexHullPluginNameSpace
              * counter-clockwise loop beginning with the leftmost (minimum
              * value of X) IVertexConvHull. */
             var convexHullCCW = new List<IVertexConvHull>();
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
                 if (!convexHullCCW.Contains(extremeVertices[i]))
                 {
                     convexHullCCW.Add(extremeVertices[i]);
                     origVertices.Remove(extremeVertices[i]);
                 }
+
             #endregion
 
             /* the following limits are used extensively in for-loop below. In order to reduce the arithmetic calls and
@@ -98,26 +113,27 @@ namespace MIConvexHullPluginNameSpace
             var last = cvxVNum - 1;
 
             #region Step 2 : Find Signed-Distance to each convex edge
+
             /* Of the 3 to 8 vertices identified in the convex hull, we now define a matrix called edgeUnitVectors, 
              * which includes the unit vectors of the edges that connect the vertices in a counter-clockwise loop. 
              * The first column corresponds to the X-value,and  the second column to the Y-value. Calculating this 
              * should not take long since there are only 3 to 8 members currently in hull, and it will save time 
              * comparing to all the result vertices. */
-            var edgeUnitVectors = new double[cvxVNum, 2];
+            var edgeUnitVectors = new double[cvxVNum,2];
             double magnitude;
-            for (int i = 0; i < last; i++)
+            for (var i = 0; i < last; i++)
             {
                 edgeUnitVectors[i, 0] = (convexHullCCW[i + 1].location[0] - convexHullCCW[i].location[0]);
                 edgeUnitVectors[i, 1] = (convexHullCCW[i + 1].location[1] - convexHullCCW[i].location[1]);
-                magnitude = Math.Sqrt(edgeUnitVectors[i, 0] * edgeUnitVectors[i, 0] +
-                    edgeUnitVectors[i, 1] * edgeUnitVectors[i, 1]);
+                magnitude = Math.Sqrt(edgeUnitVectors[i, 0]*edgeUnitVectors[i, 0] +
+                                      edgeUnitVectors[i, 1]*edgeUnitVectors[i, 1]);
                 edgeUnitVectors[i, 0] /= magnitude;
                 edgeUnitVectors[i, 1] /= magnitude;
             }
             edgeUnitVectors[last, 0] = convexHullCCW[0].location[0] - convexHullCCW[last].location[0];
             edgeUnitVectors[last, 1] = convexHullCCW[0].location[1] - convexHullCCW[last].location[1];
-            magnitude = Math.Sqrt(edgeUnitVectors[last, 0] * edgeUnitVectors[last, 0] +
-                edgeUnitVectors[last, 1] * edgeUnitVectors[last, 1]);
+            magnitude = Math.Sqrt(edgeUnitVectors[last, 0]*edgeUnitVectors[last, 0] +
+                                  edgeUnitVectors[last, 1]*edgeUnitVectors[last, 1]);
             edgeUnitVectors[last, 0] /= magnitude;
             edgeUnitVectors[last, 1] /= magnitude;
 
@@ -132,16 +148,19 @@ namespace MIConvexHullPluginNameSpace
              * are found for a particular side (More on this in 23 lines). */
             var hullCands = new SortedList<double, IVertexConvHull>[cvxVNum];
             /* initialize the 3 to 8 Lists s.t. members can be added below. */
-            for (int j = 0; j < cvxVNum; j++) hullCands[j] = new SortedList<double, IVertexConvHull>();
+            for (var j = 0; j < cvxVNum; j++) hullCands[j] = new SortedList<double, IVertexConvHull>();
 
             /* Now a big loop. For each of the original vertices, check them with the 3 to 8 edges to see if they 
              * are inside or out. If they are out, add them to the proper row of the hullCands array. */
-            for (int i = 0; i < origVNum; i++)
+            for (var i = 0; i < origVNum; i++)
             {
-                for (int j = 0; j < cvxVNum; j++)
+                for (var j = 0; j < cvxVNum; j++)
                 {
-                    var b = new double[]{ origVertices[i].location[0] - convexHullCCW[j].location[0],
-                    origVertices[i].location[1] - convexHullCCW[j].location[1]};
+                    var b = new[]
+                                {
+                                    origVertices[i].location[0] - convexHullCCW[j].location[0],
+                                    origVertices[i].location[1] - convexHullCCW[j].location[1]
+                                };
                     //signedDists[0, k, i] = signedDistance(convexVectInfo[i, 0], convexVectInfo[i, 1], bX, bY, convexVectInfo[i, 2]);
                     //signedDists[1, k, i] = positionAlong(convexVectInfo[i, 0], convexVectInfo[i, 1], bX, bY, convexVectInfo[i, 2]);
                     //if (signedDists[0, k, i] <= 0)
@@ -149,19 +168,19 @@ namespace MIConvexHullPluginNameSpace
                      * other applications though. In the condition below, any signed distance that is negative is outside of the
                      * original polygon. It is only possible for the IVertexConvHull to be outside one of the 3 to 8 edges, so once we
                      * add it, we break out of the inner loop (gotta save time where we can!). */
-                    if (StarMath.multiplyCross2D(StarMath.GetRow(j, edgeUnitVectors), b) <= 0)
-                    {
-                        hullCands[j].Add(StarMath.multiplyDot(StarMath.GetRow(j, edgeUnitVectors), b), origVertices[i]);
-                        break;
-                    }
+                    if (StarMath.multiplyCross2D(StarMath.GetRow(j, edgeUnitVectors), b) > 0) continue;
+                    hullCands[j].Add(StarMath.multiplyDot(StarMath.GetRow(j, edgeUnitVectors), b), origVertices[i]);
+                    break;
                 }
             }
+
             #endregion
 
             #region Step 3: now check the remaining hull candidates
+
             /* Now it's time to go through our array of sorted lists of tuples. We search backwards through
              * the current convex hull points s.t. any additions will not confuse our for-loop indexers. */
-            for (int j = cvxVNum; j > 0; j--)
+            for (var j = cvxVNum; j > 0; j--)
             {
                 if (hullCands[j - 1].Count == 1)
                     /* If there is one and only one candidate, it must be in the convex hull. Add it now. */
@@ -185,11 +204,11 @@ namespace MIConvexHullPluginNameSpace
 
                     /* Now starting from second from end, work backwards looks for places where the angle 
                      * between the vertices in concave (which would produce a negative value of z). */
-                    int i = hc.Count - 2;
+                    var i = hc.Count - 2;
                     while (i > 0)
                     {
                         var zValue = StarMath.multiplyCross2D(StarMath.subtract(hc[i].location, hc[i - 1].location),
-                            StarMath.subtract(hc[i + 1].location, hc[i].location));
+                                                              StarMath.subtract(hc[i + 1].location, hc[i].location));
                         if (zValue < 0)
                         {
                             /* remove any vertices that create concave angles. */
@@ -198,7 +217,7 @@ namespace MIConvexHullPluginNameSpace
                              * if you're back to the end you do need to reduce k (hence the line below). */
                             if (i == hc.Count - 1) i--;
                         }
-                        /* if the angle is convex, then continue toward the start, k-- */
+                            /* if the angle is convex, then continue toward the start, k-- */
                         else i--;
                     }
                     /* for each of the remaining vertices in hullCands[i-1], add them to the convexHullCCW. 
@@ -208,10 +227,8 @@ namespace MIConvexHullPluginNameSpace
                         convexHullCCW.Insert(j, hc[i]);
                 }
             }
-            #endregion
 
-            /* finally return the hull points. */
-            return convexHullCCW;
+            #endregion
         }
     }
 }

@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace MIConvexHullPluginNameSpace
 {
+    /// <summary>
+    /// This internal class manages the faces of the convex hull. It is a 
+    /// separate class from the desired user class.
+    /// </summary>
     internal class FaceData
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="defFaceClass"/> class.
+        /// Initializes a new instance of the <see cref="FaceData"/> class.
         /// </summary>
         /// <param name="dimension">The dimension.</param>
-        public FaceData(int dimension)
+        internal FaceData(int dimension)
         {
             adjacentFaces = new FaceData[dimension];
             /* the following initiations are commented out because they are redundant with other parts
@@ -24,7 +25,7 @@ namespace MIConvexHullPluginNameSpace
         /// Gets or sets the adjacent face data.
         /// </summary>
         /// <value>The adjacent face data.</value>
-        public FaceData[] adjacentFaces { get; set; }
+        public FaceData[] adjacentFaces { get; private set; }
         /// <summary>
         /// Gets or sets the vertices beyond.
         /// </summary>
