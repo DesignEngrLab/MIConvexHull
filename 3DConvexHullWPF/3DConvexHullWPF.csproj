@@ -125,6 +125,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\StarMath\StarMath\StarMath.csproj">
+      <Project>{8B37DF1E-A3C9-42B6-BF1F-D65180FF556E}</Project>
+      <Name>StarMath</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MIConvexHull\MIConvexHull.csproj">
       <Project>{2337776D-7D0C-40AA-A439-C26C3CE24FAB}</Project>
       <Name>MIConvexHull</Name>

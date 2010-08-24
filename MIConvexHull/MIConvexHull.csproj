@@ -40,13 +40,16 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CandidateHullVertexData.cs" />
-    <Compile Include="ConvexHull3D.cs">
+    <Compile Include="defaultVertex.cs" />
+    <Compile Include="FaceData.cs" />
+    <Compile Include="ConvexHullPublicFunctions.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ConvexHullMain.cs" />
+    <Compile Include="ConvexHull nD.cs" />
+    <Compile Include="SortRoutines.cs" />
     <Compile Include="HelperFunctions for 3D.cs" />
-    <Compile Include="InterfaceAndDefClassForVertexAndFace.cs" />
+    <Compile Include="InterfacesVertexEdgeAndFace.cs" />
     <Compile Include="ConvexHull2D.cs" />
   </ItemGroup>
   <ItemGroup>

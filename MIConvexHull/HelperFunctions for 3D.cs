@@ -30,31 +30,76 @@ namespace MIConvexHullPluginNameSpace
     /// </summary>
     public static partial class ConvexHull
     {
+
+        private static void determineDimension(List<IVertexConvHull> vertices)
+        {
+            var r = new Random();
+            var VCount = vertices.Count;
+            var dimensions = new List<int>();
+            for (int i = 0; i < 10; i++)
+                dimensions.Add(vertices[r.Next(VCount)].location.GetLength(0));
+            dimension = dimensions.Min();
+            if (dimensions.Min() != dimensions.Max())
+                Console.WriteLine("\n\n\n*******************************************\n" +
+                    "Differing dimensions to vertex locations." +
+                    "\nBased on a small sample, a value of " +
+                    dimension.ToString() + "  will be used." +
+                    "\n*******************************************\n\n\n");
+        }
         #region Make functions
-        static List<IFaceConvHull> replaceFace(List<IFaceConvHull> faces, IList<IFaceConvHull> oldFaces, IVertexConvHull currentVertex)
+
+
+
+
+
+        private static SortedList<double, FaceData> initiateFaceDatabase()
         {
-            faces.RemoveAll(f => oldFaces.Contains(f));
-            var edges = findFreeEdges(oldFaces);
-            var newFaces = new List<IFaceConvHull>();
-            foreach (var edge in edges)
+            for (int i = 0; i < dimension + 1; i++)
             {
-                newFaces.Add(MakeFace(currentVertex, edge));
+                var vertices = new List<IVertexConvHull>(convexHull);
+                vertices.RemoveAt(i);
+                var newFace = MakeFace(vertices);
+                /* the next line initialization of "verticesBeyond" is just to allow the line of
+                 * code in updateFaces ("edge.Item2.verticesBeyond.Values).ToList());")
+                 * to not crash when filling out the initial polygon. */
+                newFace.verticesBeyond = new SortedList<double, IVertexConvHull>();
+                convexFaces.Add(0.0, newFace);
             }
-            return newFaces;
+            for (int i = 0; i < dimension; i++)
+                for (int j = i + 1; j < dimension + 1; j++)
+                {
+                    var edge = new List<IVertexConvHull>(convexHull);
+                    edge.RemoveAt(j);
+                    edge.RemoveAt(i);
+                    var betweenFaces = (from f in convexFaces.Values
+                                        where f.vertices.Intersect(edge).Count() == edge.Count()
+                                        select f).ToList();
+                    recordAdjacentFaces(betweenFaces[0], betweenFaces[1], edge);
+                }
+            return convexFaces;
         }
-        static IFaceConvHull MakeFace(List<IVertexConvHull> convexHull, int notFaceIndex)
+
+        private static void recordAdjacentFaces(FaceData face1, FaceData face2, List<IVertexConvHull> edge)
         {
-            var vertices = new List<IVertexConvHull>(convexHull);
-            vertices.RemoveAt(notFaceIndex);
-            return MakeFace(vertices);
+            var vertexIndexNotOnEdge = (from v in face1.vertices
+                                        where (!edge.Contains(v))
+                                        select Array.IndexOf(face1.vertices, v)).FirstOrDefault();
+            face1.adjacentFaces[vertexIndexNotOnEdge] = face2;
+
+            vertexIndexNotOnEdge = (from v in face2.vertices
+                                    where (!edge.Contains(v))
+                                    select Array.IndexOf(face2.vertices, v)).FirstOrDefault();
+            face2.adjacentFaces[vertexIndexNotOnEdge] = face1;
         }
-        static IFaceConvHull MakeFace(IVertexConvHull currentVertex, IVertexConvHull[] edge)
+
+
+        static FaceData MakeFace(IVertexConvHull currentVertex, List<IVertexConvHull> edge)
         {
             var vertices = new List<IVertexConvHull>(edge);
-            vertices.Add(currentVertex);
+            vertices.Insert(0, currentVertex);
             return MakeFace(vertices);
         }
-        static IFaceConvHull MakeFace(List<IVertexConvHull> vertices)
+        static FaceData MakeFace(List<IVertexConvHull> vertices)
         {
             var outDir = new double[dimension];
             foreach (var v in vertices)
@@ -63,87 +108,91 @@ namespace MIConvexHullPluginNameSpace
             outDir = StarMath.subtract(outDir, center);
             double[] normal = findNormalVector(vertices);
             if (StarMath.multiplyDot(normal, outDir) < 0)
-            {
-                if (dimension == 3 || dimension == 7)
-                    vertices.Reverse();
                 normal = StarMath.subtract(StarMath.makeZeroVector(dimension), normal);
-            }
-            IFaceConvHull newFace = null;
-            if (faceType != null)
+            FaceData newFace = new FaceData(dimension)
             {
-                var constructor = faceType.GetConstructor(new Type[0]);
-                newFace = (IFaceConvHull)constructor.Invoke(new object[0]);
-            }
-            if (newFace == null) newFace = new defFaceClass(dimension);
-
-            if (newFace == null)
-                throw new Exception("Face was not created. Problem with constructor.");
-            if (StarMath.norm2(normal) < 0.9)
-                throw new Exception("Face was not created. Probably repeat vertices in list.");
-            newFace.vertices = vertices.ToArray();
-            newFace.normal = normal;
+                normal = normal,
+                vertices = vertices.ToArray()
+            };
             return newFace;
         }
 
 
         #endregion
         #region Find, Get and Update functions
-        /// <summary>
-        /// Gets the IVertexConvHull from extreme matrix.
-        /// </summary>
-        /// <param name="extremeVertices">The extreme vertices matrix.</param>
-        /// <param name="v">The three indices but these are from -1 to 1, need to adjust to 0 to 2.</param>
-        /// <returns>the IVertexConvHull at the location in  extremeVertices</returns>
-        static IVertexConvHull getVertexFromExtreme(IVertexConvHull[, ,] extremeVertices, int[] v)
+
+        static List<FaceData> findFacesBeneathInitialVertices(SortedList<double, FaceData> convexFaces, IVertexConvHull currentVertex)
         {
-            return extremeVertices[v[0] + 1, v[1] + 1, v[2] + 1];
+            var facesUnder = new List<FaceData>();
+            foreach (var face in convexFaces.Values)
+            {
+                double dummy;
+                if (isVertexOverFace(currentVertex, face, out dummy))
+                    facesUnder.Add(face);
+            }
+            return facesUnder;
         }
 
-        static SortedList<double, IFaceConvHull> findOverFaces(List<IFaceConvHull> convexFaces, IVertexConvHull currentVertex)
+
+        private static List<FaceData> findAffectedFaces(FaceData currentFaceData, IVertexConvHull currentVertex,
+    List<FaceData> primaryFaces = null)
         {
-            var overFaces = new SortedList<double, IFaceConvHull>(new noEqualSortMaxtoMinDouble());
-            foreach (var face in convexFaces)
+            if (primaryFaces == null) return findAffectedFaces(currentFaceData, currentVertex, new List<FaceData>() { currentFaceData });
+            else
             {
-                double dotP;
-                if (overFace(currentVertex, face, out dotP))
-                    overFaces.Add(dotP, face);
+                foreach (var adjFace in currentFaceData.adjacentFaces)
+                    if (!primaryFaces.Contains(adjFace) &&
+                        (adjFace.verticesBeyond.Values.Contains(currentVertex)))
+                    {
+                        primaryFaces.Add(adjFace);
+                        findAffectedFaces(adjFace, currentVertex, primaryFaces);
+                    }
+                return primaryFaces;
             }
-            return overFaces;
         }
 
-        static List<IVertexConvHull[]> findFreeEdges(IList<IFaceConvHull> faces)
+        private static void updateFaces(List<FaceData> oldFaces, IVertexConvHull currentVertex)
         {
-            var edges = new List<IVertexConvHull[]>();
-            foreach (var f in faces)
+            var newFaces = new List<FaceData>();
+            var affectedVertices = new List<IVertexConvHull>();
+            var freeEdges = new List<Tuple<List<IVertexConvHull>, FaceData>>();
+            foreach (var oldFace in oldFaces)
             {
-                var edge = new IVertexConvHull[dimension - 1];
-                Array.Copy(f.vertices, 0, edge, 0, (dimension - 1));
-                edges.Add((IVertexConvHull[])edge.Clone());
-                Array.Copy(f.vertices, 1, edge, 0, (dimension - 1));
-                edges.Add((IVertexConvHull[])edge.Clone());
-                for (int i = 2; i < f.vertices.GetLength(0); i++)
+                affectedVertices = affectedVertices.Union(oldFace.verticesBeyond.Values).ToList();
+                convexFaces.RemoveAt(convexFaces.IndexOfValue(oldFace));
+                for (int i = 0; i < oldFace.adjacentFaces.GetLength(0); i++)
+                    if (!oldFaces.Contains(oldFace.adjacentFaces[i]))
+                    {
+                        var freeEdge = new List<IVertexConvHull>(oldFace.vertices);
+                        freeEdge.RemoveAt(i);
+                        freeEdges.Add(Tuple.Create(freeEdge, oldFace.adjacentFaces[i]));
+                    }
+            }
+            affectedVertices.Remove(currentVertex);
+            foreach (var edge in freeEdges)
+            {
+                var newFace = MakeFace(currentVertex, edge.Item1);
+                recordAdjacentFaces(newFace, edge.Item2, edge.Item1);
+                newFace.adjacentFaces[0] = edge.Item2;
+                newFace.verticesBeyond = findBeyondVertices(newFace,
+                    affectedVertices.Union(edge.Item2.verticesBeyond.Values).ToList());
+                newFaces.Add(newFace);
+            }
+            for (int i = 0; i < newFaces.Count - 1; i++)
+            {
+                for (int j = i + 1; j < newFaces.Count; j++)
                 {
-                    Array.Copy(f.vertices, i, edge, 0, (dimension - i));
-                    Array.Copy(f.vertices, 0, edge, (dimension - i), (i - 1));
-                    edges.Add((IVertexConvHull[])edge.Clone());
+                    var edge = newFaces[i].vertices.Intersect(newFaces[j].vertices).ToList();
+                    if (edge.Count == dimension - 1)
+                        recordAdjacentFaces(newFaces[i], newFaces[j], edge);
                 }
             }
-            for (int i = 0; i < faces.Count - 1; i++)
-                for (int j = i + 1; j < faces.Count; j++)
-                {
-                    IVertexConvHull[] sharedEdge = null;
-                    if (shareEdge(faces[i], faces[j], out sharedEdge))
-                        edges.RemoveAll(e => sameEdge(e, sharedEdge));
-                }
-            return edges;
+            foreach (var newFace in newFaces)
+                if (newFace.verticesBeyond.Count == 0)
+                    convexFaces.Add(-1.0, newFace);
+                else convexFaces.Add(newFace.verticesBeyond.Keys[0], newFace);
         }
-        static double simplexVolumeFromCenter(IFaceConvHull face)
-        {
-            double[,] simplex = new double[dimension, dimension];
-            for (int i = 0; i < dimension; i++)
-                StarMath.SetColumn(i, simplex, StarMath.subtract(face.vertices[i].location, center));
-            return StarMath.determinant(simplex);
-        }
+
         private static double[] findNormalVector(List<IVertexConvHull> vertices)
         {
             double[] normal;
@@ -152,102 +201,40 @@ namespace MIConvexHullPluginNameSpace
                     StarMath.subtract(vertices[2].location, vertices[1].location));
             else
             {
-                throw new NotImplementedException();
+                var b = new double[dimension];
             }
             return StarMath.normalize(normal);
         }
 
 
-        private static SortedList<double, IVertexConvHull> findBeyondVertices(IFaceConvHull face, List<IVertexConvHull> vertices)
+        private static SortedList<double, IVertexConvHull> findBeyondVertices(FaceData face, List<IVertexConvHull> vertices)
         {
             var beyondVertices = new SortedList<double, IVertexConvHull>(new noEqualSortMaxtoMinDouble());
             foreach (var v in vertices)
             {
                 double dotP;
-                if (overFace(v, face, out dotP)) beyondVertices.Add(dotP, v);
+                if (isVertexOverFace(v, face, out dotP)) beyondVertices.Add(dotP, v);
             }
             return beyondVertices;
         }
 
-        private static void updateFaceDatabase(List<IFaceConvHull> faces, SortedList<double, CandidateHullFaceData> faceData, ref List<IVertexConvHull> vertices)
-        {
-            foreach (var fD in faceData)
-                vertices.Union(fD.Value.verticesBeyond.Values).ToList();
-            foreach (var face in faces)
-            {
-                var faceEntry = (from fD in faceData
-                                 where fD.Value.face.Equals(face)
-                                 select fD.Value).FirstOrDefault();
-                if (faceEntry == null)
-                    faceEntry = new CandidateHullFaceData(face);
-                else faceData.RemoveAt(faceData.IndexOfValue(faceEntry));
-                var beyondVertices = findBeyondVertices(face, vertices);
-                if (beyondVertices.Count > 0)
-                {
-                    faceEntry.verticesBeyond = beyondVertices;
-                    faceData.Add(beyondVertices.Keys[0], faceEntry);
-                }
-            }
-            vertices.Clear();
-            foreach (var fD in faceData)
-                vertices = vertices.Union(fD.Value.verticesBeyond.Values).ToList();
-        }
+
 
 
         static void updateCenter(List<IVertexConvHull> convexHull, IVertexConvHull currentVertex)
         {
-            center = StarMath.multiply((1.0 / (double)convexHull.Count), StarMath.add(
+            center = StarMath.divide(StarMath.add(
                 StarMath.multiply(convexHull.Count - 1, center),
-                currentVertex.location));
+                currentVertex.location),
+                convexHull.Count);
         }
         #endregion
-        #region Predicates
-        /// <summary>
-        /// Checks if faces are the same.
-        /// </summary>
-        /// <param name="f1">The f1.</param>
-        /// <param name="f2">The f2.</param>
-        /// <returns></returns>
-        static Boolean sameFace(IFaceConvHull f1, IFaceConvHull f2)
-        {
-            if (f1.Equals(f2)) return true;
-            if (f1.vertices.Intersect(f2.vertices).Count() == dimension) return true;
-            return false;
-        }
 
-
-        static Boolean sameEdge(IVertexConvHull[] e1, IVertexConvHull[] e2)
-        {
-            if (e1.Equals(e2)) return true;
-            if (e1.Intersect(e2).Count() == (dimension - 1)) return true;
-            return false;
-        }
-
-
-        static Boolean shareEdge(IFaceConvHull f1, IFaceConvHull f2, out IVertexConvHull[] edge)
-        {
-            edge = null;
-            var sharedVerts = f1.vertices.Intersect(f2.vertices);
-            if (sharedVerts.Count() < (dimension - 1)) return false;
-            //sharedVerts.OrderBy(v => Array.IndexOf(f1.vertices, v));
-            edge = sharedVerts.ToArray();
-            return true;
-        }
-
-        static Boolean overFace(IVertexConvHull v, IFaceConvHull f, out double dotP)
+        static Boolean isVertexOverFace(IVertexConvHull v, FaceData f, out double dotP)
         {
             dotP = StarMath.multiplyDot(f.normal, StarMath.subtract(v.location, f.vertices[0].location));
             return (dotP >= 0);
         }
-        static Boolean sameDirection(double[] c, double[] p)
-        {
-            if (c.GetLength(0) != p.GetLength(0)) return false;
-            for (int i = 0; i < c.GetLength(0); i++)
-                if (c[i] / p[i] > 0) return true;
-                else if (c[i] / p[i] < 0) return false;
-            return false;
-        }
 
-        #endregion
     }
 }

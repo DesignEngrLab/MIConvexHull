@@ -46,7 +46,7 @@ namespace TestEXE_for_MIConvexHull2D
                 vertices[i] = new vertex(size * r.NextDouble(), size * r.NextDouble());
             Console.WriteLine("Running...");
             DateTime now = DateTime.Now;
-            var convexHullVertices = ConvexHull.Find2D(vertices);
+            var convexHullVertices = ConvexHull.FindConvexHull(vertices);
             TimeSpan interval = DateTime.Now - now;
             Console.WriteLine("Out of the " + NumberOfVertices.ToString() + " vertices, there are " +
                 convexHullVertices.Count.ToString() + " in the convex hull.");
