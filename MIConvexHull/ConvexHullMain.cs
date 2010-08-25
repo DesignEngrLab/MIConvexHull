@@ -35,9 +35,8 @@ namespace MIConvexHullPluginNameSpace
         static Type faceType;
         static double[] center;
 
-        static void Initialize(int dimensions)
+        static void Initialize()
         {
-            dimension = dimensions;
             convexHull = new List<IVertexConvHull>();
             convexFaces = new SortedList<double, FaceData>(new noEqualSortMaxtoMinDouble());
             faceType = null;

@@ -227,8 +227,9 @@ namespace MIConvexHullPluginNameSpace
                         convexHullCCW.Insert(j, hc[i]);
                 }
             }
-
             #endregion
+
+            convexHull = convexHullCCW;
         }
     }
 }

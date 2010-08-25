@@ -28,7 +28,7 @@ namespace TestEXE_for_MIConvexHull2D
     {
         static void Main()
         {
-            const int NumberOfVertices = 100000;
+            const int NumberOfVertices = 1000000;
             const double size = 1000;
 
             var r = new Random();

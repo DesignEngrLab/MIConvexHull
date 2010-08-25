@@ -187,6 +187,7 @@ namespace MIConvexHullPluginNameSpace
             else
             {
                 var b = new double[dimension];
+                for (int i = 0; i < dimension; i++) b[i] = 1.0;
                 var A = new double[dimension,dimension];
                 for (var i = 0; i < dimension; i++)
                     StarMath.SetRow(i, A, vertices[i].location);

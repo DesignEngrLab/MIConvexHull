@@ -1,5 +1,6 @@
 ﻿#region
-
+using System;
+using System.Linq;
 using System.Collections.Generic;
 using StarMathLib;
 
@@ -22,6 +23,7 @@ namespace MIConvexHullPluginNameSpace
 
             #region Step 1 : Define Convex Rhombicuboctahedron
 
+            var numExtremes = (int)Math.Pow(3, dimension);
             /* The first step is to quickly identify the four to 26 vertices based on the
              * Akl-Toussaint heuristic. In order to do this, I use a 3D matrix to help keep
              * track of the extremse. The 26 extrema can be see as approaching the cloud of 
@@ -32,46 +34,35 @@ namespace MIConvexHullPluginNameSpace
              * to base-3 (min,center,max) in three dimensions. Three raised to the third power
              * though is 27. the point at the center (0,0,0) is not used therefore 27 - 1 = 26.
              */
-            var extremeVertexIndices = new int[3,3,3];
-            var extremeValues = new double[3,3,3];
-
-            for (var i = 0; i < 3; i++)
-                for (var j = 0; j < 3; j++)
-                    for (var k = 0; k < 3; k++)
-                        extremeValues[i, j, k] = double.NegativeInfinity;
-
-
-            for (var m = 0; m < VCount; m++)
+            var AklToussaintIndices = new List<int>(numExtremes);
+            var extremeValues = new double[numExtremes];
+            for (var k = 0; k < numExtremes; k++)
             {
-                var n = origVertices[m];
-                for (var i = 0; i < 3; i++)
-                    for (var j = 0; j < 3; j++)
-                        for (var k = 0; k < 3; k++)
-                            if (!((i == 1) && (j == 1) && (k == 1)))
-                            {
-                                var extreme = StarMath.multiplyDot(new double[] {i - 1, j - 1, k - 1}, n.location);
-                                if (extreme > extremeValues[i, j, k])
-                                {
-                                    extremeVertexIndices[i, j, k] = m;
-                                    extremeValues[i, j, k] = extreme;
-                                }
-                            }
+                AklToussaintIndices.Add(-1);
+                extremeValues[k] = double.NegativeInfinity;
             }
-
+            var ternaryPosition = new int[dimension];
+            for (var k = 0; k < dimension; k++)
+                ternaryPosition[k] = -1;
+            int midPoint = (numExtremes - 1) / 2;
+            do
+            {
+                var index = findIndex(ternaryPosition, midPoint);
+                if (index == midPoint) continue;
+                for (var m = 0; m < VCount; m++)
+                {
+                    var extreme = StarMath.multiplyDot(ternaryPosition, origVertices[m].location);
+                    if (extreme <= extremeValues[index]) continue;
+                    AklToussaintIndices[index] = m;
+                    extremeValues[index] = extreme;
+                }
+            } while (incrementTernaryPosition(ternaryPosition));
+            AklToussaintIndices.RemoveAt(midPoint);
+            AklToussaintIndices = AklToussaintIndices.Distinct().ToList();
+            AklToussaintIndices.Sort(new noEqualSortMaxtoMinInt());
             #endregion
 
             #region Step #2: Define up to 48 faces of the Disdyakis dodecahedron
-
-            var AklToussaintIndices = new List<int>();
-
-            /* store vertices */
-            for (var i = 0; i < 3; i++)
-                for (var j = 0; j < 3; j++)
-                    for (var k = 0; k < 3; k++)
-                        if ((!((i == 1) && (j == 1) && (k == 1)))
-                            && !AklToussaintIndices.Contains(extremeVertexIndices[i, j, k]))
-                            AklToussaintIndices.Add(extremeVertexIndices[i, j, k]);
-            AklToussaintIndices.Sort(new noEqualSortMaxtoMinInt());
             for (var i = 0; i < AklToussaintIndices.Count; i++)
             {
                 var currentVertex = origVertices[AklToussaintIndices[i]];
@@ -90,7 +81,6 @@ namespace MIConvexHullPluginNameSpace
             #endregion
 
             #region Step #3: Consider all remaining vertices. Store them with the faces that they are 'beyond'
-
             var justTheFaces = new List<FaceData>(convexFaces.Values);
             foreach (var face in justTheFaces)
             {
@@ -117,6 +107,30 @@ namespace MIConvexHullPluginNameSpace
             }
 
             #endregion
+        }
+
+        private static Boolean incrementTernaryPosition(int[] ternaryPosition, int position = 0)
+        {
+            if (position == ternaryPosition.GetLength(0)) return false;
+            ternaryPosition[position]++;
+            if (ternaryPosition[position] == 2)
+            {
+                ternaryPosition[position] = -1;
+                return incrementTernaryPosition(ternaryPosition, ++position);
+            }
+            return true;
+        }
+
+        private static int findIndex(IList<int> ternaryPosition, int midPoint)
+        {
+            var index = midPoint;
+            var power = 1;
+            for (var i = 0; i < dimension; i++)
+            {
+                index += power * ternaryPosition[i];
+                power *= 3;
+            }
+            return index;
         }
     }
 }
