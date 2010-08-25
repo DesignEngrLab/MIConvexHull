@@ -32,40 +32,17 @@ namespace TestEXE_for_MIConvexHull3D
         /// <param name="x">The x position.</param>
         /// <param name="y">The y position.</param>
         /// <param name="z">The z position.</param>
-        public vertex(double x, double y, double z)
+        public vertex(double[] location)
         {
-            X = x;
-            Y = y;
-            Z = z;
+            this.location = location;
         }
 
-        /// <summary>
-        /// Gets or sets the X.
-        /// </summary>
-        /// <value>The X position.</value>
-        private double X { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Y.
-        /// </summary>
-        /// <value>The Y position.</value>
-        private double Y { get; set; }
-
-
-        /// <summary>
-        /// Gets or sets the Z. Not used by MIConvexHull2D.
-        /// </summary>
-        /// <value>The Z position.</value>
-        private double Z { get; set; }
 
 
         /// <summary>
         /// Gets or sets the location.
         /// </summary>
         /// <value>The location.</value>
-        public double[] location
-        {
-            get { return new[] { X, Y, Z }; }
-        }
+        public double[] location { get; private set; }
     }
 }

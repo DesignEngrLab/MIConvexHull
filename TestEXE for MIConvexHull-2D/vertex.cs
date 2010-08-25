@@ -35,7 +35,6 @@ namespace TestEXE_for_MIConvexHull2D
         {
             X = x;
             Y = y;
-            Z = 0.0;
         }
 
 
@@ -52,11 +51,6 @@ namespace TestEXE_for_MIConvexHull2D
         private double Y { get; set; }
 
 
-        /// <summary>
-        /// Gets or sets the Z. Not used by MIConvexHull2D.
-        /// </summary>
-        /// <value>The Z position.</value>
-        private double Z { get; set; }
 
 
         /// <summary>
@@ -65,7 +59,7 @@ namespace TestEXE_for_MIConvexHull2D
         /// <value>The location.</value>
         public double[] location
         {
-            get { return new[] { X, Y, Z }; }
+            get { return new[] { X, Y }; }
         }
     }
 }

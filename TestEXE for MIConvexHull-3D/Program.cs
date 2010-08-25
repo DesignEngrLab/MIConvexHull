@@ -29,8 +29,9 @@ namespace TestEXE_for_MIConvexHull3D
     {
         static void Main()
         {
-            const int NumberOfVertices = 1000000;
+            const int NumberOfVertices = 10000;
             const double size = 1000;
+            const int dimension = 15;
 
             var r = new Random();
             Console.WriteLine("Ready? Push Return/Enter to start.");
@@ -39,8 +40,12 @@ namespace TestEXE_for_MIConvexHull3D
             Console.WriteLine("Making " + NumberOfVertices + " random vertices.");
             var vertices = new List<vertex>();
             for (var i = 0; i < NumberOfVertices; i++)
-                vertices.Add(new vertex(size * r.NextDouble(), size * r.NextDouble(), size * r.NextDouble()));
-
+            {
+                var location = new double[dimension];
+                for (int j = 0; j < dimension; j++)
+                    location[j] = size*r.NextDouble();
+                vertices.Add(new vertex(location));
+            }
             Console.WriteLine("Running...");
             var now = DateTime.Now;
             var convexHullVertices = ConvexHull.FindConvexHull(vertices);
