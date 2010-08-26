@@ -1,9 +1,7 @@
 ﻿#region
-
 using System;
 using System.Collections.Generic;
 using StarMathLib;
-
 #endregion
 
 namespace MIConvexHullPluginNameSpace
@@ -52,44 +50,44 @@ namespace MIConvexHullPluginNameSpace
             for (var i = 0; i < origVNum; i++)
             {
                 var n = origVertices[i];
-                if (n.location[0] < minX)
+                if (n.coordinates[0] < minX)
                 {
                     extremeVertices[0] = n;
-                    minX = n.location[0];
+                    minX = n.coordinates[0];
                 }
-                if ((n.location[0] + n.location[1]) < minSum)
+                if ((n.coordinates[0] + n.coordinates[1]) < minSum)
                 {
                     extremeVertices[1] = n;
-                    minSum = n.location[0] + n.location[1];
+                    minSum = n.coordinates[0] + n.coordinates[1];
                 }
-                if (n.location[1] < minY)
+                if (n.coordinates[1] < minY)
                 {
                     extremeVertices[2] = n;
-                    minY = n.location[1];
+                    minY = n.coordinates[1];
                 }
-                if ((n.location[0] - n.location[1]) > maxDiff)
+                if ((n.coordinates[0] - n.coordinates[1]) > maxDiff)
                 {
                     extremeVertices[3] = n;
-                    maxDiff = n.location[0] - n.location[1];
+                    maxDiff = n.coordinates[0] - n.coordinates[1];
                 }
-                if (n.location[0] > maxX)
+                if (n.coordinates[0] > maxX)
                 {
                     extremeVertices[4] = n;
-                    maxX = n.location[0];
+                    maxX = n.coordinates[0];
                 }
-                if ((n.location[0] + n.location[1]) > maxSum)
+                if ((n.coordinates[0] + n.coordinates[1]) > maxSum)
                 {
                     extremeVertices[5] = n;
-                    maxSum = n.location[0] + n.location[1];
+                    maxSum = n.coordinates[0] + n.coordinates[1];
                 }
-                if (n.location[1] > maxY)
+                if (n.coordinates[1] > maxY)
                 {
                     extremeVertices[6] = n;
-                    maxY = n.location[1];
+                    maxY = n.coordinates[1];
                 }
-                if ((n.location[0] - n.location[1]) >= minDiff) continue;
+                if ((n.coordinates[0] - n.coordinates[1]) >= minDiff) continue;
                 extremeVertices[7] = n;
-                minDiff = n.location[0] - n.location[1];
+                minDiff = n.coordinates[0] - n.coordinates[1];
             }
 
             /* convexHullCCW is the result of this function. It is a list of 
@@ -123,15 +121,15 @@ namespace MIConvexHullPluginNameSpace
             double magnitude;
             for (var i = 0; i < last; i++)
             {
-                edgeUnitVectors[i, 0] = (convexHullCCW[i + 1].location[0] - convexHullCCW[i].location[0]);
-                edgeUnitVectors[i, 1] = (convexHullCCW[i + 1].location[1] - convexHullCCW[i].location[1]);
+                edgeUnitVectors[i, 0] = (convexHullCCW[i + 1].coordinates[0] - convexHullCCW[i].coordinates[0]);
+                edgeUnitVectors[i, 1] = (convexHullCCW[i + 1].coordinates[1] - convexHullCCW[i].coordinates[1]);
                 magnitude = Math.Sqrt(edgeUnitVectors[i, 0]*edgeUnitVectors[i, 0] +
                                       edgeUnitVectors[i, 1]*edgeUnitVectors[i, 1]);
                 edgeUnitVectors[i, 0] /= magnitude;
                 edgeUnitVectors[i, 1] /= magnitude;
             }
-            edgeUnitVectors[last, 0] = convexHullCCW[0].location[0] - convexHullCCW[last].location[0];
-            edgeUnitVectors[last, 1] = convexHullCCW[0].location[1] - convexHullCCW[last].location[1];
+            edgeUnitVectors[last, 0] = convexHullCCW[0].coordinates[0] - convexHullCCW[last].coordinates[0];
+            edgeUnitVectors[last, 1] = convexHullCCW[0].coordinates[1] - convexHullCCW[last].coordinates[1];
             magnitude = Math.Sqrt(edgeUnitVectors[last, 0]*edgeUnitVectors[last, 0] +
                                   edgeUnitVectors[last, 1]*edgeUnitVectors[last, 1]);
             edgeUnitVectors[last, 0] /= magnitude;
@@ -158,8 +156,8 @@ namespace MIConvexHullPluginNameSpace
                 {
                     var b = new[]
                                 {
-                                    origVertices[i].location[0] - convexHullCCW[j].location[0],
-                                    origVertices[i].location[1] - convexHullCCW[j].location[1]
+                                    origVertices[i].coordinates[0] - convexHullCCW[j].coordinates[0],
+                                    origVertices[i].coordinates[1] - convexHullCCW[j].coordinates[1]
                                 };
                     //signedDists[0, k, i] = signedDistance(convexVectInfo[i, 0], convexVectInfo[i, 1], bX, bY, convexVectInfo[i, 2]);
                     //signedDists[1, k, i] = positionAlong(convexVectInfo[i, 0], convexVectInfo[i, 1], bX, bY, convexVectInfo[i, 2]);
@@ -207,8 +205,8 @@ namespace MIConvexHullPluginNameSpace
                     var i = hc.Count - 2;
                     while (i > 0)
                     {
-                        var zValue = StarMath.multiplyCross2D(StarMath.subtract(hc[i].location, hc[i - 1].location),
-                                                              StarMath.subtract(hc[i + 1].location, hc[i].location));
+                        var zValue = StarMath.multiplyCross2D(StarMath.subtract(hc[i].coordinates, hc[i - 1].coordinates),
+                                                              StarMath.subtract(hc[i + 1].coordinates, hc[i].coordinates));
                         if (zValue < 0)
                         {
                             /* remove any vertices that create concave angles. */

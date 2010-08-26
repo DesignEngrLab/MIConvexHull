@@ -6,7 +6,7 @@
     /// </summary>
     internal class defaultVertex : IVertexConvHull
     {
-        public double[] location { get; set; }
+        public double[] coordinates { get; set; }
 
     }
 }

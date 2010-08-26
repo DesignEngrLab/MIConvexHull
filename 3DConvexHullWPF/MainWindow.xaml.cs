@@ -45,7 +45,8 @@ namespace ExampleWithGraphics
             Console.WriteLine("Running...");
             var now = DateTime.Now;
             faces = new List<IFaceConvHull>();
-            convexHullVertices = ConvexHull.FindConvexHull(vertices, out faces, typeof(face), 3);
+            ConvexHull.InputVertices(vertices);
+            convexHullVertices = ConvexHull.FindConvexHull(out faces, typeof(face), 3);
             var interval = DateTime.Now - now;
             txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
                                + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
@@ -74,8 +75,8 @@ namespace ExampleWithGraphics
             foreach (var f in faces)
             {
                 var orderImpliedNormal = StarMath.multiplyCross(
-                    StarMath.subtract(f.vertices[1].location, f.vertices[0].location),
-                    StarMath.subtract(f.vertices[2].location, f.vertices[1].location)
+                    StarMath.subtract(f.vertices[1].coordinates, f.vertices[0].coordinates),
+                    StarMath.subtract(f.vertices[2].coordinates, f.vertices[1].coordinates)
                     );
                 if (StarMath.multiplyDot(f.normal, orderImpliedNormal) < 0)
                     Array.Reverse(f.vertices);

@@ -20,7 +20,7 @@ namespace MIConvexHullPluginNameSpace
             var VCount = vertices.Count;
             var dimensions = new List<int>();
             for (var i = 0; i < 10; i++)
-                dimensions.Add(vertices[r.Next(VCount)].location.GetLength(0));
+                dimensions.Add(vertices[r.Next(VCount)].coordinates.GetLength(0));
             dimension = dimensions.Min();
             if (dimensions.Min() != dimensions.Max())
                 Console.WriteLine("\n\n\n*******************************************\n" +
@@ -30,9 +30,9 @@ namespace MIConvexHullPluginNameSpace
                                   "\n*******************************************\n\n\n");
         }
 
-        private static Boolean isVertexOverFace(IVertexConvHull v, FaceData f, out double dotP)
+        private static Boolean isVertexOverFace(IVertexConvHull v, IFaceConvHull f, out double dotP)
         {
-            dotP = StarMath.multiplyDot(f.normal, StarMath.subtract(v.location, f.vertices[0].location));
+            dotP = StarMath.multiplyDot(f.normal, StarMath.subtract(v.coordinates, f.vertices[0].coordinates));
             return (dotP >= 0);
         }
 
@@ -89,7 +89,7 @@ namespace MIConvexHullPluginNameSpace
         private static FaceData MakeFace(List<IVertexConvHull> vertices)
         {
             var outDir = new double[dimension];
-            outDir = vertices.Aggregate(outDir, (current, v) => StarMath.add(current, v.location));
+            outDir = vertices.Aggregate(outDir, (current, v) => StarMath.add(current, v.coordinates));
             outDir = StarMath.divide(outDir, dimension);
             outDir = StarMath.subtract(outDir, center);
             var normal = findNormalVector(vertices);
@@ -182,15 +182,15 @@ namespace MIConvexHullPluginNameSpace
         {
             double[] normal;
             if (dimension == 3 || dimension == 7)
-                normal = StarMath.multiplyCross(StarMath.subtract(vertices[1].location, vertices[0].location),
-                                                StarMath.subtract(vertices[2].location, vertices[1].location));
+                normal = StarMath.multiplyCross(StarMath.subtract(vertices[1].coordinates, vertices[0].coordinates),
+                                                StarMath.subtract(vertices[2].coordinates, vertices[1].coordinates));
             else
             {
                 var b = new double[dimension];
-                for (int i = 0; i < dimension; i++) b[i] = 1.0;
+                for (var i = 0; i < dimension; i++) b[i] = 1.0;
                 var A = new double[dimension,dimension];
                 for (var i = 0; i < dimension; i++)
-                    StarMath.SetRow(i, A, vertices[i].location);
+                    StarMath.SetRow(i, A, vertices[i].coordinates);
                 normal = StarMath.normalize(StarMath.solve(A, b));
             }
             return StarMath.normalize(normal);
@@ -214,7 +214,7 @@ namespace MIConvexHullPluginNameSpace
         {
             center = StarMath.divide(StarMath.add(
                 StarMath.multiply(convexHull.Count - 1, center),
-                currentVertex.location),
+                currentVertex.coordinates),
                                      convexHull.Count);
         }
 
