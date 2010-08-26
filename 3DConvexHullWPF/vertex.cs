@@ -68,12 +68,18 @@ namespace ExampleWithGraphics
         private double Z { get; set; }
 
         /// <summary>
-        /// Gets or sets the location.
+        /// Gets or sets the coordinates.
         /// </summary>
-        /// <value>The location.</value>
-        public double[] location
+        /// <value>The coordinates.</value>
+        public double[] coordinates
         {
             get { return new[] { X, Y, Z }; }
+            set
+            {
+                X = value[0];
+                Y = value[1];
+                Z = value[2];
+            }
         }
     }
 }

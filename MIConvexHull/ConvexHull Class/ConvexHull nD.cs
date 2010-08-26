@@ -9,7 +9,7 @@ using StarMathLib;
 namespace MIConvexHullPluginNameSpace
 {
     /// <summary>
-    ///   MIConvexHull for 3D.
+    ///   MIConvexHull for 3and higher dimensions.
     /// </summary>
     public static partial class ConvexHull
     {
@@ -20,6 +20,7 @@ namespace MIConvexHullPluginNameSpace
         private static void FindConvexHull()
         {
             var VCount = origVertices.Count;
+            var maxAklTousNumber = Math.Min(VCount*maxFractionInOrigPolygon, dimension*dimensionFctorForMaxPolygon);
 
             #region Step 1 : Define Convex Rhombicuboctahedron
 
@@ -45,20 +46,23 @@ namespace MIConvexHullPluginNameSpace
             for (var k = 0; k < dimension; k++)
                 ternaryPosition[k] = -1;
             int midPoint = (numExtremes - 1) / 2;
+            int flip = 1;
             do
             {
                 var index = findIndex(ternaryPosition, midPoint);
                 if (index == midPoint) continue;
                 for (var m = 0; m < VCount; m++)
                 {
-                    var extreme = StarMath.multiplyDot(ternaryPosition, origVertices[m].location);
+                    var extreme = flip*StarMath.multiplyDot(ternaryPosition, origVertices[m].coordinates);
                     if (extreme <= extremeValues[index]) continue;
                     AklToussaintIndices[index] = m;
                     extremeValues[index] = extreme;
                 }
+                flip *= -1;
+                if (AklToussaintIndices.Distinct().Count() > maxAklTousNumber) break;
             } while (incrementTernaryPosition(ternaryPosition));
-            AklToussaintIndices.RemoveAt(midPoint);
             AklToussaintIndices = AklToussaintIndices.Distinct().ToList();
+            AklToussaintIndices.Remove(-1);
             AklToussaintIndices.Sort(new noEqualSortMaxtoMinInt());
             #endregion
 

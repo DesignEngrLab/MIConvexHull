@@ -6,7 +6,7 @@ namespace MIConvexHullPluginNameSpace
     /// This internal class manages the faces of the convex hull. It is a 
     /// separate class from the desired user class.
     /// </summary>
-    internal class FaceData
+    internal class FaceData : IFaceConvHull
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FaceData"/> class.

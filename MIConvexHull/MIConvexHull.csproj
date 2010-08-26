@@ -40,17 +40,17 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="defaultVertex.cs" />
-    <Compile Include="FaceData.cs" />
-    <Compile Include="ConvexHullPublicFunctions.cs">
+    <Compile Include="Auxiliary Classes\defaultVertex.cs" />
+    <Compile Include="Auxiliary Classes\FaceData.cs" />
+    <Compile Include="ConvexHull Class\ConvexHullPublicFunctions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ConvexHullMain.cs" />
-    <Compile Include="ConvexHull nD.cs" />
-    <Compile Include="SortRoutines.cs" />
-    <Compile Include="HelperFunctions for 3D.cs" />
-    <Compile Include="InterfacesVertexEdgeAndFace.cs" />
-    <Compile Include="ConvexHull2D.cs" />
+    <Compile Include="ConvexHull Class\ConvexHullMain.cs" />
+    <Compile Include="ConvexHull Class\ConvexHull nD.cs" />
+    <Compile Include="Auxiliary Classes\SortRoutines.cs" />
+    <Compile Include="ConvexHull Class\HelperFunctions for nD.cs" />
+    <Compile Include="Auxiliary Classes\InterfacesVertexEdgeAndFace.cs" />
+    <Compile Include="ConvexHull Class\ConvexHull2D.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

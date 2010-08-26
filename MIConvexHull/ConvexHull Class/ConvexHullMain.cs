@@ -30,16 +30,20 @@ namespace MIConvexHullPluginNameSpace
     {
         static List<IVertexConvHull> origVertices;
         static List<IVertexConvHull> convexHull;
+        static List<IVertexConvHull> voronoiNodes;
+        static List<Tuple<IVertexConvHull, IVertexConvHull>> voronoiEdges;
         static SortedList<double, FaceData> convexFaces;
+        static List<FaceData> delaunayFaces;
         static int dimension;
-        static Type faceType;
         static double[] center;
+        private const double maxFractionInOrigPolygon = 0.05;
+        private const double dimensionFctorForMaxPolygon = 10;
+        private static Boolean convexHullAnalysisComplete;
 
         static void Initialize()
         {
             convexHull = new List<IVertexConvHull>();
             convexFaces = new SortedList<double, FaceData>(new noEqualSortMaxtoMinDouble());
-            faceType = null;
             center = new double[dimension];
         }
     }

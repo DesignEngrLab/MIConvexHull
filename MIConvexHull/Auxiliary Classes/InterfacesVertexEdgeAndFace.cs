@@ -6,10 +6,10 @@
     public interface IVertexConvHull
     {
         /// <summary>
-        /// Gets or sets the location.
+        /// Gets or sets the coordinates.
         /// </summary>
-        /// <value>The location.</value>
-        double[] location { get; }
+        /// <value>The coordinates.</value>
+        double[] coordinates { get; set; }
     }
 
     /// <summary>

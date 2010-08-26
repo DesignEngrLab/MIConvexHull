@@ -54,12 +54,17 @@ namespace TestEXE_for_MIConvexHull2D
 
 
         /// <summary>
-        /// Gets or sets the location.
+        /// Gets or sets the coordinates.
         /// </summary>
-        /// <value>The location.</value>
-        public double[] location
+        /// <value>The coordinates.</value>
+        public double[] coordinates
         {
             get { return new[] { X, Y }; }
+            set
+            {
+                X = value[0];
+                Y = value[1];
+            }
         }
     }
 }

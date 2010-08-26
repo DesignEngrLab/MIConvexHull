@@ -29,20 +29,18 @@ namespace TestEXE_for_MIConvexHull3D
         /// <summary>
         /// Initializes a new instance of the <see cref="vertex"/> class.
         /// </summary>
-        /// <param name="x">The x position.</param>
-        /// <param name="y">The y position.</param>
-        /// <param name="z">The z position.</param>
+        /// <param name="location">The location.</param>
         public vertex(double[] location)
         {
-            this.location = location;
+            coordinates = location;
         }
 
 
 
         /// <summary>
-        /// Gets or sets the location.
+        /// Gets or sets the coordinates.
         /// </summary>
-        /// <value>The location.</value>
-        public double[] location { get; private set; }
+        /// <value>The coordinates.</value>
+        public double[] coordinates { get; set; }
     }
 }
