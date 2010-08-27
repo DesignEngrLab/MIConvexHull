@@ -36,6 +36,16 @@ namespace TestEXE_for_MIConvexHull3D
         }
 
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="vertex"/> class.
+        /// **** You must have a constructor that takes 0 arguments for 
+        /// **** both the IVertexConvHull and IFaceConvHull inherited
+        /// **** classes! ******
+        /// </summary>
+        public vertex()
+        {
+        }
+
 
         /// <summary>
         /// Gets or sets the coordinates.

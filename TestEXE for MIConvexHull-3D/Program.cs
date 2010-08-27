@@ -31,7 +31,7 @@ namespace TestEXE_for_MIConvexHull3D
         {
             const int NumberOfVertices = 1000;
             const double size = 1000;
-            const int dimension = 6;
+            const int dimension = 2;
 
             var r = new Random();
             Console.WriteLine("Ready? Push Return/Enter to start.");
@@ -49,10 +49,13 @@ namespace TestEXE_for_MIConvexHull3D
             Console.WriteLine("Running...");
             var now = DateTime.Now;
             ConvexHull.InputVertices(vertices);
-            var convexHullVertices = ConvexHull.FindConvexHull();
+            List<IVertexConvHull> vnodes;
+            List<Tuple<IVertexConvHull, IVertexConvHull>> vedges;
+            ConvexHull.FindVoronoiGraph(out vnodes, out vedges, typeof (vertex));
+          //  var convexHullVertices = ConvexHull.FindConvexHull();
             var interval = DateTime.Now - now;
-            Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
-                convexHullVertices.Count + " in the convex hull.");
+            //Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
+            //    convexHullVertices.Count + " in the convex hull.");
             Console.WriteLine("time = " + interval);
             Console.ReadLine();
         }
