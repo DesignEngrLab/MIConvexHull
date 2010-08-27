@@ -105,7 +105,6 @@ namespace MIConvexHullPluginNameSpace
             if (dimension < 2) throw new Exception("Dimensions of space must be 2 or greater.");
             if (dimension == 2) Find2D();
             else FindConvexHull();
-            convexHullAnalysisComplete = true;
             return convexHull;
         }
 
@@ -138,7 +137,6 @@ namespace MIConvexHullPluginNameSpace
                 newFace.vertices = f.Value.vertices;
                 faces.Add(newFace);
             }
-            convexHullAnalysisComplete = true;
             return convexHull;
         }
         #endregion
@@ -166,9 +164,20 @@ namespace MIConvexHullPluginNameSpace
                         size += (v.coordinates[i] * v.coordinates[i]);
                     var coord = v.coordinates;
                     Array.Resize(ref coord, dimension + 1);
-                    v.coordinates[dimension] = size;
+                    coord[dimension] = size;
+                    v.coordinates = coord;
                 }
+                dimension++;
+                Initialize();
                 FindConvexHull();
+                dimension--;
+
+                foreach (var v in convexHull)
+                {
+                    var coord = v.coordinates;
+                    Array.Resize(ref coord, dimension);
+                    v.coordinates = coord;
+                }
             }
             delaunayFaces = new List<FaceData>(convexFaces.Values);
             for (var i = delaunayFaces.Count - 1; i >= 0; i--)

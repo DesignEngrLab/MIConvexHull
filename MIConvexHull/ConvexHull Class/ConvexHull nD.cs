@@ -20,8 +20,14 @@ namespace MIConvexHullPluginNameSpace
         private static void FindConvexHull()
         {
             var VCount = origVertices.Count;
+            /* as a heuristic, we limit the number of solutions created in the first loop, by two albeit, 
+             * artificial limits. This is to prevent the process from stagnating in this step in higher 
+             * dimensions when the number of solutions on the Akl-Toussaint polygon gets too high (3^dimension).*/
             var maxAklTousNumber = Math.Min(VCount*maxFractionInOrigPolygon, dimension*dimensionFctorForMaxPolygon);
-
+            /* of course, this limit is a moot point if there simply aren't enough points in the original
+             * set of vertices. Therefore, it should at least be dimension + 1, the number of vertices in the
+             * simplex. */
+            maxAklTousNumber = Math.Max(maxAklTousNumber, dimension + 1);
             #region Step 1 : Define Convex Rhombicuboctahedron
 
             var numExtremes = (int)Math.Pow(3, dimension);
@@ -109,8 +115,8 @@ namespace MIConvexHullPluginNameSpace
                 var primaryFaces = findAffectedFaces(currentFace, currentVertex);
                 updateFaces(primaryFaces, currentVertex);
             }
-
             #endregion
+            convexHullAnalysisComplete = true;
         }
 
         private static Boolean incrementTernaryPosition(int[] ternaryPosition, int position = 0)
