@@ -38,9 +38,10 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="StarMath, Version=1.0.10.902, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="StarMath, Version=1.0.10.908, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>StarMath (compiled)\StarMath.dll</HintPath>
+      <HintPath>Resources\StarMath.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
@@ -58,11 +59,10 @@
     <Compile Include="ConvexHull Class\ConvexHull2D.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Content Include="StarMath %28compiled%29\StarMath.dll" />
-    <Content Include="StarMath %28compiled%29\StarMath.pdb" />
-    <Content Include="StarMath %28compiled%29\StarMath.XML" />
+    <Content Include="Resources\StarMath.dll" />
+    <Content Include="Resources\StarMath.pdb" />
+    <Content Include="Resources\StarMath.XML" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
