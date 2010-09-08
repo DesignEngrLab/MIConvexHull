@@ -120,7 +120,7 @@ namespace ExampleWithGraphics
                                     size * r.NextDouble() - size / 2);
                 vertices.Add(vi);
 
-                //viewport.Children.Add(vi);
+                viewport.Children.Add(vi);
             }
             btnRun.IsDefault = true;
             btnDisplay.IsEnabled = false;
@@ -145,8 +145,20 @@ namespace ExampleWithGraphics
                 var z = radius * Math.Cos(azimuth);
                 var vi = new vertex(x, y, z);
                 vertices.Add(vi);
+                /*
+                 *          do {
+                 x1 = 2.0 * ranf() - 1.0;
+                 x2 = 2.0 * ranf() - 1.0;
+                 w = x1 * x1 + x2 * x2;
+         } while ( w >= 1.0 );
 
-                //viewport.Children.Add(vi);
+         w = sqrt( (-2.0 * ln( w ) ) / w );
+         y1 = x1 * w;
+         y2 = x2 * w;
+
+                 */
+
+                viewport.Children.Add(vi);
             }
             btnRun.IsDefault = true;
             btnDisplay.IsEnabled = false;

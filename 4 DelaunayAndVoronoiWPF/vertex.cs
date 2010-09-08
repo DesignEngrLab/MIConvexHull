@@ -18,34 +18,35 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
+using System.Windows.Shapes;
+
 namespace ExampleWithGraphics
 {
     using MIConvexHullPluginNameSpace;
-    using Petzold.Media3D;
-    using System.Windows.Media.Media3D;
     using System.Windows.Media;
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class vertex : Sphere, IVertexConvHull
+    public class vertex : Shape, IVertexConvHull
     {
-        
 
+        protected override Geometry DefiningGeometry
+        {
+            get { throw new System.NotImplementedException(); }
+        }
         /// <summary>
         /// Initializes a new instance of the <see cref="vertex"/> class.
         /// </summary>
         /// <param name="x">The x position.</param>
         /// <param name="y">The y position.</param>
-        /// <param name="z">The z position.</param>
-        public vertex(double x, double y, double z)
+        public vertex(double x, double y)
         {
             X = x;
             Y = y;
-            Z = z;
-            Center = new Point3D(X, Y, Z);
-            Radius = 0.25;
+            //Center = new Point3D(X, Y, Z);
+            //Radius = 0.25;
 
-            BackMaterial = new DiffuseMaterial(Brushes.Black);
+            //BackMaterial = new DiffuseMaterial(Brushes.Black);
         }
 
         /// <summary>

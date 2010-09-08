@@ -1,6 +1,6 @@
 ﻿/*************************************************************************
  *     This file & class is part of the MIConvexHull Library Project. 
- *     Copyright 2006, 2010 Matthew Ira Campbell, PhD.
+ *     Copyright 2010 Matthew Ira Campbell, PhD.
  *
  *     MIConvexHull is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,16 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace TestEXE_for_MIConvexHull3D
+
+/*
+ * Note: this will take 15-20 minutes to complete!
+ * It will create around 14 thousand voronoi points, and 26 thousand voronoi
+ * edges.
+ * Why is this even included?! The idea was in path-planning where you have 
+ * to maneuver in full 3-D space, and you have 6 variables: x, y, z, and rotations
+ * about x, y, and z. The resulting graph could be used by a path-planning search process.
+ */
+namespace TestEXE_for_MIConvexHull_Voronoi
 {
     using System;
     using System.Collections.Generic;
@@ -29,9 +38,9 @@ namespace TestEXE_for_MIConvexHull3D
     {
         static void Main()
         {
-            const int NumberOfVertices = 1000;
+            const int NumberOfVertices = 500;
             const double size = 1000;
-            const int dimension = 2;
+            const int dimension = 6;
 
             var r = new Random();
             Console.WriteLine("Ready? Push Return/Enter to start.");
@@ -43,7 +52,7 @@ namespace TestEXE_for_MIConvexHull3D
             {
                 var location = new double[dimension];
                 for (var j = 0; j < dimension; j++)
-                    location[j] = size*r.NextDouble();
+                    location[j] = size * r.NextDouble();
                 vertices.Add(new vertex(location));
             }
             Console.WriteLine("Running...");
@@ -51,11 +60,10 @@ namespace TestEXE_for_MIConvexHull3D
             ConvexHull.InputVertices(vertices);
             List<IVertexConvHull> vnodes;
             List<Tuple<IVertexConvHull, IVertexConvHull>> vedges;
-            ConvexHull.FindVoronoiGraph(out vnodes, out vedges, typeof (vertex));
-          //  var convexHullVertices = ConvexHull.FindConvexHull();
+            ConvexHull.FindVoronoiGraph(out vnodes, out vedges, typeof(vertex));
             var interval = DateTime.Now - now;
-            //Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
-            //    convexHullVertices.Count + " in the convex hull.");
+            Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
+                vnodes.Count + " voronoi points and " + vedges.Count + " voronoi edges.");
             Console.WriteLine("time = " + interval);
             Console.ReadLine();
         }

@@ -20,10 +20,10 @@ namespace MIConvexHullPluginNameSpace
         private static void FindConvexHull()
         {
             var VCount = origVertices.Count;
-            /* as a heuristic, we limit the number of solutions created in the first loop, by two albeit, 
-             * artificial limits. This is to prevent the process from stagnating in this step in higher 
+            /* as a heuristic, we limit the number of solutions created in the first loop, by an albeit, 
+             * artificial formulation. This is to prevent the process from stagnating in this step in higher 
              * dimensions when the number of solutions on the Akl-Toussaint polygon gets too high (3^dimension).*/
-            var maxAklTousNumber = Math.Min(VCount*maxFractionInOrigPolygon, dimension*dimensionFctorForMaxPolygon);
+            var maxAklTousNumber = coeffDimensions * dimension + coeffNumVertices * VCount + coeffOffset;
             /* of course, this limit is a moot point if there simply aren't enough points in the original
              * set of vertices. Therefore, it should at least be dimension + 1, the number of vertices in the
              * simplex. */
@@ -59,7 +59,7 @@ namespace MIConvexHullPluginNameSpace
                 if (index == midPoint) continue;
                 for (var m = 0; m < VCount; m++)
                 {
-                    var extreme = flip*StarMath.multiplyDot(ternaryPosition, origVertices[m].coordinates);
+                    var extreme = flip * StarMath.multiplyDot(ternaryPosition, origVertices[m].coordinates);
                     if (extreme <= extremeValues[index]) continue;
                     AklToussaintIndices[index] = m;
                     extremeValues[index] = extreme;
