@@ -20,7 +20,7 @@
         /// <summary>
         /// Gets or sets the vertices.
         /// </summary>
-        /// <value>The vertex, v1.</value>
+        /// <value>The vertices.</value>
         IVertexConvHull[] vertices { get; set; }
         /// <summary>
         /// Gets or sets the normal vector.

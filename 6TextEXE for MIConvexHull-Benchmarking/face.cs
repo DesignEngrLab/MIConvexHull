@@ -18,34 +18,15 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace MIConvexHullPluginNameSpace
+namespace TestEXE_for_MIConvexHull_Benchmarking
 {
-    using System;
-    using System.Collections.Generic;
-
+    using MIConvexHullPluginNameSpace;
     /// <summary>
-    /// MIConvexHull.
+    /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public static partial class ConvexHull
+    public class face : IFaceConvHull
     {
-        static List<IVertexConvHull> origVertices;
-        static List<IVertexConvHull> convexHull;
-        static List<IVertexConvHull> voronoiNodes;
-        static List<Tuple<IVertexConvHull, IVertexConvHull>> voronoiEdges;
-        static SortedList<double, FaceData> convexFaces;
-        static List<FaceData> delaunayFaces;
-        static int dimension;
-        static double[] center;
-        private const double coeffNumVertices = 0.001;
-        private const double coeffDimensions = 2;
-        private const double coeffOffset = 1250;
-        private static Boolean convexHullAnalysisComplete;
-
-        static void Initialize()
-        {
-            convexHull = new List<IVertexConvHull>();
-            convexFaces = new SortedList<double, FaceData>(new noEqualSortMaxtoMinDouble());
-            center = new double[dimension];
-        }
+        public double[] normal { get; set; }
+        public IVertexConvHull[] vertices { get; set; }
     }
 }

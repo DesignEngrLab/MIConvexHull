@@ -1,0 +1,28 @@
+﻿<Window x:Class="ExampleWithGraphics.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2010/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2010/xaml"        
+        Title="MainWindow" Height="800" Width="800">
+<!--xmlns:cp="http://schemas.charlespetzold.com/2007/xaml"-->
+    <DockPanel>
+        <Viewbox DockPanel.Dock="Top" Height="720">
+            <Canvas Name="drawingCanvas"></Canvas>
+        </Viewbox>
+        <Grid DockPanel.Dock="Bottom" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Name="btnMakePoints" Click="btnMakePoints_Click"  Content="Make Rnd Points" IsDefault="True"/>
+            <Button Grid.Column="1" Name="btnFindDelaunay" Click="btnFindDelaunay_Click"  Content="Find Delaunay" />
+            <Button Grid.Column="2" Name="btnDisplayDelaunay" Click="btnDisplayDelaunay_Click" Content="Display Delaunay" />
+            <Button Grid.Column="3" Name="btnFindVoronoi" Click="btnFindVoronoi_Click"  Content="Find Voronoi" />
+            <Button Grid.Column="4" Name="btnDisplayVoronoi" Click="btnDisplayVoronoi_Click" Content="Display Voronoi" />
+            <TextBlock Grid.Column="5" Name="txtBlkTimer" Text="00:00:00.000" 
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Grid>
+    </DockPanel>
+</Window>

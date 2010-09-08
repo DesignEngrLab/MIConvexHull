@@ -107,7 +107,7 @@ namespace MIConvexHullPluginNameSpace
 
         #region Find, Get and Update functions
 
-        private static List<FaceData> findFacesBeneathInitialVertices(IVertexConvHull currentVertex)
+        private static IEnumerable<FaceData> findFacesBeneathInitialVertices(IVertexConvHull currentVertex)
         {
             var facesUnder = new List<FaceData>();
             foreach (var face in convexFaces.Values)
@@ -135,7 +135,7 @@ namespace MIConvexHullPluginNameSpace
             return primaryFaces;
         }
 
-        private static void updateFaces(ICollection<FaceData> oldFaces, IVertexConvHull currentVertex)
+        private static void updateFaces(IEnumerable<FaceData> oldFaces, IVertexConvHull currentVertex)
         {
             var newFaces = new List<FaceData>();
             var affectedVertices = new List<IVertexConvHull>();
@@ -144,8 +144,9 @@ namespace MIConvexHullPluginNameSpace
             {
                 affectedVertices = affectedVertices.Union(oldFace.verticesBeyond.Values).ToList();
                 convexFaces.RemoveAt(convexFaces.IndexOfValue(oldFace));
+                var internalFaces = oldFace.adjacentFaces.Intersect(oldFaces);
                 for (var i = 0; i < oldFace.adjacentFaces.GetLength(0); i++)
-                    if (!oldFaces.Contains(oldFace.adjacentFaces[i]))
+                    if (!internalFaces.Contains(oldFace.adjacentFaces[i]))
                     {
                         var freeEdge = new List<IVertexConvHull>(oldFace.vertices);
                         freeEdge.RemoveAt(i);
@@ -181,7 +182,7 @@ namespace MIConvexHullPluginNameSpace
         private static double[] findNormalVector(IList<IVertexConvHull> vertices)
         {
             double[] normal;
-            if (dimension == 3 || dimension == 7)
+            if (dimension == 3)
                 normal = StarMath.multiplyCross(StarMath.subtract(vertices[1].coordinates, vertices[0].coordinates),
                                                 StarMath.subtract(vertices[2].coordinates, vertices[1].coordinates));
             else
@@ -191,13 +192,13 @@ namespace MIConvexHullPluginNameSpace
                 var A = new double[dimension,dimension];
                 for (var i = 0; i < dimension; i++)
                     StarMath.SetRow(i, A, vertices[i].coordinates);
-                normal = StarMath.normalize(StarMath.solve(A, b));
+                normal = StarMath.solve(A, b);
             }
             return StarMath.normalize(normal);
         }
 
 
-        private static SortedList<double, IVertexConvHull> findBeyondVertices(FaceData face,
+        private static SortedList<double, IVertexConvHull> findBeyondVertices(IFaceConvHull face,
                                                                               IEnumerable<IVertexConvHull> vertices)
         {
             var beyondVertices = new SortedList<double, IVertexConvHull>(new noEqualSortMaxtoMinDouble());

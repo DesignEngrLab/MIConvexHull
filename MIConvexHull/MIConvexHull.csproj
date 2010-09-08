@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\MIConvexHullPlugin.xml</DocumentationFile>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,6 +38,10 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="StarMath, Version=1.0.10.902, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>StarMath (compiled)\StarMath.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
@@ -51,15 +56,13 @@
     <Compile Include="ConvexHull Class\HelperFunctions for nD.cs" />
     <Compile Include="Auxiliary Classes\InterfacesVertexEdgeAndFace.cs" />
     <Compile Include="ConvexHull Class\ConvexHull2D.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\StarMath\StarMath\StarMath.csproj">
-      <Project>{8B37DF1E-A3C9-42B6-BF1F-D65180FF556E}</Project>
-      <Name>StarMath</Name>
-    </ProjectReference>
+    <Content Include="StarMath %28compiled%29\StarMath.dll" />
+    <Content Include="StarMath %28compiled%29\StarMath.pdb" />
+    <Content Include="StarMath %28compiled%29\StarMath.XML" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -93,7 +93,7 @@ namespace MIConvexHullPluginNameSpace
         /// <summary>
         /// Finds the convex hull.
         /// </summary>
-        /// <param name="dimensions">The dimensions.</param>
+        /// <param name="dimensions">The dimensions of the system. It will be automatically determined if not provided.</param>
         /// <returns></returns>
         public static List<IVertexConvHull> FindConvexHull(int dimensions = -1)
         {
@@ -107,6 +107,19 @@ namespace MIConvexHullPluginNameSpace
             else FindConvexHull();
             return convexHull;
         }
+        /// <summary>
+        /// Returns the convex hull as array of double arrays.
+        /// </summary>
+        /// <param name="dimensions">The dimensions of the system. It will be automatically determined if not provided.</param>
+        /// <returns></returns>
+        public static double[][] FindConvexHull_AsDoubleArray(int dimensions = -1)
+        {
+            var vertices = FindConvexHull(dimensions);
+            var result = new double[vertices.Count][];
+            for (int i = 0; i < vertices.Count; i++)
+                result[i] = vertices[i].coordinates;
+            return result;
+        }
 
 
 
@@ -114,8 +127,8 @@ namespace MIConvexHullPluginNameSpace
         /// Finds the convex hull.
         /// </summary>
         /// <param name="faces">The faces.</param>
-        /// <param name="face_Type">Type of the face_.</param>
-        /// <param name="dimensions">The dimensions.</param>
+        /// <param name="face_Type">Type of the face.</param>
+        /// <param name="dimensions">The dimensions of the system. It will be automatically determined if not provided.</param>
         /// <returns></returns>
         public static List<IVertexConvHull> FindConvexHull(out List<IFaceConvHull> faces, Type face_Type, int dimensions = -1)
         {
@@ -139,6 +152,8 @@ namespace MIConvexHullPluginNameSpace
             }
             return convexHull;
         }
+
+
         #endregion
 
 
@@ -159,9 +174,7 @@ namespace MIConvexHullPluginNameSpace
             {
                 foreach (var v in origVertices)
                 {
-                    var size = 0.0;
-                    for (var i = 0; i < dimension; i++)
-                        size += (v.coordinates[i] * v.coordinates[i]);
+                    var size = StarMath.norm2(v.coordinates, true);
                     var coord = v.coordinates;
                     Array.Resize(ref coord, dimension + 1);
                     coord[dimension] = size;
@@ -183,7 +196,8 @@ namespace MIConvexHullPluginNameSpace
             for (var i = delaunayFaces.Count - 1; i >= 0; i--)
                 if (delaunayFaces[i].normal[dimension] <= 0)
                     delaunayFaces.RemoveAt(i);
-            var userDelaunayFaces = new List<IFaceConvHull>();
+
+            List<IFaceConvHull> userDelaunayFaces;
             if (face_Type != null)
             {
                 userDelaunayFaces = new List<IFaceConvHull>(delaunayFaces.Count);
@@ -195,6 +209,7 @@ namespace MIConvexHullPluginNameSpace
                     userDelaunayFaces.Add(newFace);
                 }
             }
+            else userDelaunayFaces = new List<IFaceConvHull>(delaunayFaces);
             return userDelaunayFaces;
         }
 
@@ -256,5 +271,6 @@ namespace MIConvexHullPluginNameSpace
         }
 
         #endregion
+
     }
 }

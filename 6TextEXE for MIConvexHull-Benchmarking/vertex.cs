@@ -1,6 +1,6 @@
 ﻿/*************************************************************************
  *     This file & class is part of the MIConvexHull Library Project. 
- *     Copyright 2006, 2010 Matthew Ira Campbell, PhD.
+ *     Copyright 2010 Matthew Ira Campbell, PhD.
  *
  *     MIConvexHull is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace TestEXE_for_MIConvexHull2D
+namespace TestEXE_for_MIConvexHull_Benchmarking
 {
     using MIConvexHullPluginNameSpace;
     /// <summary>
@@ -29,42 +29,28 @@ namespace TestEXE_for_MIConvexHull2D
         /// <summary>
         /// Initializes a new instance of the <see cref="vertex"/> class.
         /// </summary>
-        /// <param name="x">The x position.</param>
-        /// <param name="y">The y position.</param>
-        public vertex(double x, double y)
+        /// <param name="location">The location.</param>
+        public vertex(double[] location)
         {
-            X = x;
-            Y = y;
+            coordinates = location;
         }
 
 
         /// <summary>
-        /// Gets or sets the X.
+        /// Initializes a new instance of the <see cref="vertex"/> class.
+        /// **** You must have a constructor that takes 0 arguments for 
+        /// **** both the IVertexConvHull and IFaceConvHull inherited
+        /// **** classes! ******
         /// </summary>
-        /// <value>The X position.</value>
-        private double X { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Y.
-        /// </summary>
-        /// <value>The Y position.</value>
-        private double Y { get; set; }
-
-
+        public vertex()
+        {
+        }
 
 
         /// <summary>
         /// Gets or sets the coordinates.
         /// </summary>
         /// <value>The coordinates.</value>
-        public double[] coordinates
-        {
-            get { return new[] { X, Y }; }
-            set
-            {
-                X = value[0];
-                Y = value[1];
-            }
-        }
+        public double[] coordinates { get; set; }
     }
 }
