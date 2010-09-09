@@ -61,7 +61,8 @@
     <Reference Include="Petzold.Media3D">
       <HintPath>References\Petzold.Media3D.dll</HintPath>
     </Reference>
-    <Reference Include="StarMath">
+    <Reference Include="StarMath, Version=1.0.10.901, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>References\StarMath.dll</HintPath>
     </Reference>
     <Reference Include="System" />
