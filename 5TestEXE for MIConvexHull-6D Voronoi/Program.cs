@@ -20,7 +20,7 @@
  *************************************************************************/
 
 /*
- * Note: this will take 15-20 minutes to complete!
+ * Note: this will take 55-100 minutes to complete!
  * It will create around 14 thousand voronoi points, and 26 thousand voronoi
  * edges.
  * Why is this even included?! The idea was in path-planning where you have 
@@ -38,7 +38,7 @@ namespace TestEXE_for_MIConvexHull_Voronoi
     {
         static void Main()
         {
-            const int NumberOfVertices = 500;
+            const int NumberOfVertices = 50;
             const double size = 1000;
             const int dimension = 6;
 

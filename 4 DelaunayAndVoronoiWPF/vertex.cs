@@ -18,6 +18,8 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
+using System.Windows;
+using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 
 namespace ExampleWithGraphics
@@ -32,7 +34,15 @@ namespace ExampleWithGraphics
 
         protected override Geometry DefiningGeometry
         {
-            get { throw new System.NotImplementedException(); }
+            get
+            {
+                return new EllipseGeometry
+                {
+                    Center = new Point(coordinates[0], coordinates[1]),
+                    RadiusX = 1,
+                    RadiusY = 1
+                };
+            }
         }
         /// <summary>
         /// Initializes a new instance of the <see cref="vertex"/> class.
@@ -41,46 +51,32 @@ namespace ExampleWithGraphics
         /// <param name="y">The y position.</param>
         public vertex(double x, double y)
         {
-            X = x;
-            Y = y;
-            //Center = new Point3D(X, Y, Z);
-            //Radius = 0.25;
+            coordinates = new[] {x, y};
+            Fill = Brushes.Black;
 
             //BackMaterial = new DiffuseMaterial(Brushes.Black);
         }
 
-        /// <summary>
-        /// Gets or sets the X.
-        /// </summary>
-        /// <value>The X position.</value>
-        private double X { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Y.
-        /// </summary>
-        /// <value>The Y position.</value>
-        private double Y { get; set; }
-
-
+ 
         /// <summary>
         /// Gets or sets the Z. Not used by MIConvexHull2D.
         /// </summary>
         /// <value>The Z position.</value>
-        private double Z { get; set; }
+       // private double Z { get; set; }
 
         /// <summary>
         /// Gets or sets the coordinates.
         /// </summary>
         /// <value>The coordinates.</value>
-        public double[] coordinates
-        {
-            get { return new[] { X, Y, Z }; }
-            set
-            {
-                X = value[0];
-                Y = value[1];
-                Z = value[2];
-            }
-        }
+        public double[] coordinates{get; set; }
+        //{
+        //    get { return new[] { X, Y}; }
+        //    set
+        //    {
+        //        X = value[0];
+        //        Y = value[1];
+        //       // Z = value[2];
+        //    }
+        //}
     }
 }

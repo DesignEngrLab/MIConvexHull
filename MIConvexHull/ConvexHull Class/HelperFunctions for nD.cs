@@ -124,9 +124,9 @@ namespace MIConvexHullPluginNameSpace
                                                         List<FaceData> primaryFaces = null)
         {
             if (primaryFaces == null)
-                return findAffectedFaces(currentFaceData, currentVertex, new List<FaceData> {currentFaceData});
+                return findAffectedFaces(currentFaceData, currentVertex, new List<FaceData> { currentFaceData });
             foreach (var adjFace in
-                currentFaceData.adjacentFaces.Where(adjFace => !primaryFaces.Contains(adjFace) 
+                currentFaceData.adjacentFaces.Where(adjFace => !primaryFaces.Contains(adjFace)
                     && (adjFace.verticesBeyond.Values.Contains(currentVertex))))
             {
                 primaryFaces.Add(adjFace);
@@ -139,30 +139,26 @@ namespace MIConvexHullPluginNameSpace
         {
             var newFaces = new List<FaceData>();
             var affectedVertices = new List<IVertexConvHull>();
-            var freeEdges = new List<Tuple<List<IVertexConvHull>, FaceData>>();
+            affectedVertices = oldFaces.Aggregate(affectedVertices, (current, oldFace)
+                 => current.Union(oldFace.verticesBeyond.Values).ToList());
+            affectedVertices.Remove(currentVertex);
+
             foreach (var oldFace in oldFaces)
             {
-                affectedVertices = affectedVertices.Union(oldFace.verticesBeyond.Values).ToList();
                 convexFaces.RemoveAt(convexFaces.IndexOfValue(oldFace));
-                var internalFaces = oldFace.adjacentFaces.Intersect(oldFaces);
                 for (var i = 0; i < oldFace.adjacentFaces.GetLength(0); i++)
-                    if (!internalFaces.Contains(oldFace.adjacentFaces[i]))
+                    if (!oldFaces.Contains(oldFace.adjacentFaces[i]))
                     {
-                        var freeEdge = new List<IVertexConvHull>(oldFace.vertices);
-                        freeEdge.RemoveAt(i);
-                        freeEdges.Add(Tuple.Create(freeEdge, oldFace.adjacentFaces[i]));
+                        var edge = new List<IVertexConvHull>(oldFace.vertices);
+                        edge.RemoveAt(i);
+                        var newFace = MakeFace(currentVertex, edge);
+                        recordAdjacentFaces(newFace, oldFace.adjacentFaces[i], edge);
+                        newFace.verticesBeyond = findBeyondVertices(newFace,
+                                                                    affectedVertices.Union(
+                                                                        oldFace.adjacentFaces[i].verticesBeyond.Values).
+                                                                        ToList());
+                        newFaces.Add(newFace);
                     }
-            }
-            affectedVertices.Remove(currentVertex);
-            foreach (var edge in freeEdges)
-            {
-                var newFace = MakeFace(currentVertex, edge.Item1);
-                recordAdjacentFaces(newFace, edge.Item2, edge.Item1);
-                newFace.adjacentFaces[0] = edge.Item2;
-                newFace.verticesBeyond = findBeyondVertices(newFace,
-                                                            affectedVertices.Union(edge.Item2.verticesBeyond.Values).
-                                                                ToList());
-                newFaces.Add(newFace);
             }
             for (var i = 0; i < newFaces.Count - 1; i++)
             {
@@ -189,7 +185,7 @@ namespace MIConvexHullPluginNameSpace
             {
                 var b = new double[dimension];
                 for (var i = 0; i < dimension; i++) b[i] = 1.0;
-                var A = new double[dimension,dimension];
+                var A = new double[dimension, dimension];
                 for (var i = 0; i < dimension; i++)
                     StarMath.SetRow(i, A, vertices[i].coordinates);
                 normal = StarMath.solve(A, b);

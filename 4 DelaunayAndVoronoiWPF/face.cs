@@ -18,19 +18,49 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Shapes;
+
 namespace ExampleWithGraphics
 {
     using MIConvexHullPluginNameSpace;
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class face : IFaceConvHull
+    public class face : Shape,IFaceConvHull
     {
         public face()
         {
             vertices = new IVertexConvHull[3];
+            Stroke = Brushes.Blue;
+            StrokeThickness = 1.0;
+            Opacity = 0.5;
         }
         public IVertexConvHull[] vertices { get; set; }
         public double[] normal { get; set; }
+
+
+
+        protected override Geometry DefiningGeometry
+        {
+            get
+            {
+                var myPathGeometry = new PathGeometry();
+                var pathFigure1 = new PathFigure {
+                    StartPoint = new Point(vertices[0].coordinates[0], 
+                    vertices[0].coordinates[1])};
+                for (int i = 1; i < vertices.GetLength(0); i++)
+                    pathFigure1.Segments.Add(
+                        new LineSegment(
+                            new Point(vertices[i].coordinates[0],
+                                      vertices[i].coordinates[1]), true));
+                pathFigure1.IsClosed = true;
+                myPathGeometry.Figures.Add(pathFigure1);
+
+
+                return myPathGeometry;
+            }
+        }
     }
 }

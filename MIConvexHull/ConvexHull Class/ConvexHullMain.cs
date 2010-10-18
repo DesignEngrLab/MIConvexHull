@@ -36,7 +36,7 @@ namespace MIConvexHullPluginNameSpace
         static List<FaceData> delaunayFaces;
         static int dimension;
         static double[] center;
-        private const double coeffNumVertices = 0.001;
+        private const double coeffNumVertices = 0.25;
         private const double coeffDimensions = 2;
         private const double coeffOffset = 1250;
         private static Boolean convexHullAnalysisComplete;

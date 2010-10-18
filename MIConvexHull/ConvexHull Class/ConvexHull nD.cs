@@ -23,7 +23,8 @@ namespace MIConvexHullPluginNameSpace
             /* as a heuristic, we limit the number of solutions created in the first loop, by an albeit, 
              * artificial formulation. This is to prevent the process from stagnating in this step in higher 
              * dimensions when the number of solutions on the Akl-Toussaint polygon gets too high (3^dimension).*/
-            var maxAklTousNumber = coeffDimensions * dimension + coeffNumVertices * VCount + coeffOffset;
+            var maxAklTousNumber = coeffDimensions * dimension  + coeffOffset;
+             maxAklTousNumber = Math.Min(maxAklTousNumber,  coeffNumVertices * VCount);
             /* of course, this limit is a moot point if there simply aren't enough points in the original
              * set of vertices. Therefore, it should at least be dimension + 1, the number of vertices in the
              * simplex. */
