@@ -194,7 +194,7 @@ namespace MIConvexHullPluginNameSpace
             }
             delaunayFaces = new List<FaceData>(convexFaces.Values);
             for (var i = delaunayFaces.Count - 1; i >= 0; i--)
-                if (delaunayFaces[i].normal[dimension] <= 0)
+                if (delaunayFaces[i].normal[dimension] >= 0)
                     delaunayFaces.RemoveAt(i);
 
             List<IFaceConvHull> userDelaunayFaces;
@@ -252,7 +252,7 @@ namespace MIConvexHullPluginNameSpace
                         edgeNodes.RemoveAt(j);
                         var avg = new double[dimension];
                         avg = edgeNodes.Aggregate(avg, (current, v) => StarMath.add(current, v.coordinates));
-                        avg = StarMath.divide(avg, dimension + 1);
+                        avg = StarMath.divide(avg, dimension);
                         voronoiNodes.Add(makeNewVoronoiEdge(avg, node_Type));
                         voronoiEdges.Add(Tuple.Create(voronoiNodes[i], voronoiNodes[voronoiNodes.Count - 1]));
                     }
