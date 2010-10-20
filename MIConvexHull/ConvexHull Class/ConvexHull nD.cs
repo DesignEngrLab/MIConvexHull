@@ -105,9 +105,10 @@ namespace MIConvexHullPluginNameSpace
             #endregion
 
             #region Step #4: Now a final loop to expand the convex hull and faces based on these beyond vertices
-
-            while (convexFaces.Keys[0] > minHeight)
+            int rdg = 0;
+            while (convexFaces.Keys[0] > 0*minHeight)
             {
+                rdg++;
                 var currentFace = convexFaces.Values[0];
                 var currentVertex = currentFace.verticesBeyond.Values[0];
                 convexHull.Add(currentVertex);

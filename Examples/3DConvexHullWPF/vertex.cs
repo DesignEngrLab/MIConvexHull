@@ -43,7 +43,7 @@ namespace ExampleWithGraphics
             Y = y;
             Z = z;
             Center = new Point3D(X, Y, Z);
-            Radius = 0.25;
+            Radius = 0.5;
 
             BackMaterial = new DiffuseMaterial(Brushes.Black);
         }
