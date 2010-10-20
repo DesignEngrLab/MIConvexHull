@@ -67,7 +67,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MIConvexHull\MIConvexHull.csproj">
+    <ProjectReference Include="..\..\MIConvexHull\MIConvexHull.csproj">
       <Project>{2337776D-7D0C-40AA-A439-C26C3CE24FAB}</Project>
       <Name>MIConvexHull</Name>
     </ProjectReference>

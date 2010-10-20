@@ -94,7 +94,10 @@ namespace MIConvexHullPluginNameSpace
             outDir = StarMath.subtract(outDir, center);
             var normal = findNormalVector(vertices);
             if (StarMath.multiplyDot(normal, outDir) < 0)
+            {
                 normal = StarMath.subtract(StarMath.makeZeroVector(dimension), normal);
+                if (dimension == 3) vertices.Reverse();
+            }
             var newFace = new FaceData(dimension)
                               {
                                   normal = normal,
