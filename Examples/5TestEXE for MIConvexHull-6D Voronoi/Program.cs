@@ -38,7 +38,7 @@ namespace TestEXE_for_MIConvexHull_Voronoi
     {
         static void Main()
         {
-            const int NumberOfVertices = 50;
+            const int NumberOfVertices = 500;
             const double size = 1000;
             const int dimension = 6;
 

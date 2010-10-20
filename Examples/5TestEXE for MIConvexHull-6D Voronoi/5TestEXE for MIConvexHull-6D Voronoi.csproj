@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}</ProjectGuid>
+    <ProjectGuid>{9C4F6904-847D-4717-81C5-4E5E1F6CD7CB}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TestEXE_for_StarMat</RootNamespace>
@@ -59,6 +59,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="face.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="vertex.cs" />
   </ItemGroup>
@@ -98,7 +99,7 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MIConvexHull\MIConvexHull.csproj">
+    <ProjectReference Include="..\..\MIConvexHull\MIConvexHull.csproj">
       <Project>{2337776D-7D0C-40AA-A439-C26C3CE24FAB}</Project>
       <Name>MIConvexHull</Name>
     </ProjectReference>

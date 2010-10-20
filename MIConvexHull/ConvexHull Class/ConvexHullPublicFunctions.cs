@@ -2,8 +2,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using StarMathLib;
 using System.Linq;
+using System.Windows;
+using System.Windows.Media.Media3D;
+using StarMathLib;
 #endregion
 
 namespace MIConvexHullPluginNameSpace
@@ -22,7 +24,7 @@ namespace MIConvexHullPluginNameSpace
         public static int InputVertices(List<IVertexConvHull> vertices)
         {
             origVertices = new List<IVertexConvHull>(vertices);
-            convexHullAnalysisComplete = false;
+            convexHullAnalysisComplete = delaunayAnalysisComplete = false;
             return origVertices.Count;
         }
 
@@ -35,19 +37,33 @@ namespace MIConvexHullPluginNameSpace
         public static int InputVertices(IList vertices)
         {
             origVertices = new List<IVertexConvHull>(vertices.Count);
-            if (vertices[0] as IVertexConvHull != null)
+            if (typeof(Point).IsInstanceOfType(vertices[0]))
+                Input2DPoints((IList<Point>)vertices);
+            else if (typeof(Point3D).IsInstanceOfType(vertices[0]))
+                Input3DPoints((IList<Point3D>)vertices);
+            else if (typeof(IVertexConvHull).IsInstanceOfType(vertices[0]))
                 foreach (var v in vertices)
                     origVertices.Add((IVertexConvHull)v);
-            else if (vertices[0] as double[] != null)
+            else if (typeof(double[]).IsInstanceOfType(vertices[0]))
             {
                 foreach (var v in vertices)
                     origVertices.Add(new defaultVertex { coordinates = (double[])v });
             }
-            else throw new Exception("List must be made up of IVertexConvHull objects or 1D double arrays.");
-            convexHullAnalysisComplete = false;
+            else throw new Exception("List must be made up of Point (System.Windows), Point3D(Windows.Media3D),or IVertexConvHull objects, or 1D double arrays.");
+            convexHullAnalysisComplete = delaunayAnalysisComplete = false;
             return origVertices.Count;
         }
+        static void Input2DPoints(IEnumerable<Point> vertices)
+        {
+            foreach (Point t in vertices)
+                origVertices.Add(new defaultVertex { coordinates = new[] { t.X, t.Y } });
+        }
 
+        static void Input3DPoints(IEnumerable<Point3D> vertices)
+        {
+            foreach (Point3D t in vertices)
+                origVertices.Add(new defaultVertex { coordinates = new[] { t.X, t.Y, t.Z } });
+        }
 
 
         /// <summary>
@@ -68,7 +84,7 @@ namespace MIConvexHullPluginNameSpace
                 for (var i = 0; i < vertices.GetLength(0); i++)
                     origVertices.Add(new defaultVertex { coordinates = (double[])vertices[i] });
             }
-            convexHullAnalysisComplete = false;
+            convexHullAnalysisComplete = delaunayAnalysisComplete = false;
             return origVertices.Count;
         }
 
@@ -84,7 +100,7 @@ namespace MIConvexHullPluginNameSpace
             for (var i = 0; i < vertices.GetLength(0); i++)
                 origVertices.Add(new defaultVertex { coordinates = StarMath.GetRow(i, vertices) });
 
-            convexHullAnalysisComplete = false;
+            convexHullAnalysisComplete = delaunayAnalysisComplete = false;
             return origVertices.Count;
         }
         #endregion
@@ -103,8 +119,12 @@ namespace MIConvexHullPluginNameSpace
             else dimension = dimensions;
             Initialize();
             if (dimension < 2) throw new Exception("Dimensions of space must be 2 or greater.");
-            if (dimension == 2) Find2D();
-            else FindConvexHull();
+            if (!convexHullAnalysisComplete)
+            {
+                if (dimension == 2) Find2D();
+                else FindConvexHull();
+                convexHullAnalysisComplete = true;
+            }
             return convexHull;
         }
         /// <summary>
@@ -130,7 +150,7 @@ namespace MIConvexHullPluginNameSpace
         /// <param name="face_Type">Type of the face.</param>
         /// <param name="dimensions">The dimensions of the system. It will be automatically determined if not provided.</param>
         /// <returns></returns>
-        public static List<IVertexConvHull> FindConvexHull(out List<IFaceConvHull> faces, Type face_Type, int dimensions = -1)
+        public static List<IVertexConvHull> FindConvexHull(out List<IFaceConvHull> faces, Type face_Type = null, int dimensions = -1)
         {
             if ((origVertices == null) || (origVertices.Count == 0))
                 throw new Exception("Please input the vertices first with the \"InputVertices\" function.");
@@ -138,18 +158,26 @@ namespace MIConvexHullPluginNameSpace
             else dimension = dimensions;
             Initialize();
             if (dimension < 2) throw new Exception("Dimensions of space must be 2 or greater.");
-            if (dimension == 2) Find2D();
-            else FindConvexHull();
-
-            faces = new List<IFaceConvHull>(convexFaces.Count);
-            foreach (var f in convexFaces)
+            if (!convexHullAnalysisComplete)
             {
-                var constructor = face_Type.GetConstructor(new Type[0]);
-                var newFace = (IFaceConvHull)constructor.Invoke(new object[0]);
-                newFace.normal = f.Value.normal;
-                newFace.vertices = f.Value.vertices;
-                faces.Add(newFace);
+                if (dimension == 2) Find2D();
+                else FindConvexHull();
+                convexHullAnalysisComplete = true;
             }
+
+            if (face_Type != null)
+            {
+                faces = new List<IFaceConvHull>(convexFaces.Count);
+                foreach (var f in convexFaces)
+                {
+                    var constructor = face_Type.GetConstructor(new Type[0]);
+                    var newFace = (IFaceConvHull)constructor.Invoke(new object[0]);
+                    newFace.normal = f.Value.normal;
+                    newFace.vertices = f.Value.vertices;
+                    faces.Add(newFace);
+                }
+            }
+            else faces = new List<IFaceConvHull>(convexFaces.Values);
             return convexHull;
         }
 
@@ -166,12 +194,12 @@ namespace MIConvexHullPluginNameSpace
         /// <returns></returns>
         public static List<IFaceConvHull> FindDelaunayTriangulation(Type face_Type = null, int dimensions = -1)
         {
-            if ((origVertices == null) || (origVertices.Count == 0))
-                throw new Exception("Please input the vertices first with the \"InputVertices\" function.");
-            if (dimensions == -1) determineDimension(origVertices);
-            else dimension = dimensions;
-            if (!convexHullAnalysisComplete)
+            if (!delaunayAnalysisComplete)
             {
+                if ((origVertices == null) || (origVertices.Count == 0))
+                    throw new Exception("Please input the vertices first with the \"InputVertices\" function.");
+                if (dimensions == -1) determineDimension(origVertices);
+                else dimension = dimensions;
                 foreach (var v in origVertices)
                 {
                     var size = StarMath.norm2(v.coordinates, true);
@@ -183,14 +211,14 @@ namespace MIConvexHullPluginNameSpace
                 dimension++;
                 Initialize();
                 FindConvexHull();
+                delaunayAnalysisComplete = true;
                 dimension--;
-
-                foreach (var v in convexHull)
-                {
-                    var coord = v.coordinates;
-                    Array.Resize(ref coord, dimension);
-                    v.coordinates = coord;
-                }
+            }
+            foreach (var v in convexHull)
+            {
+                var coord = v.coordinates;
+                Array.Resize(ref coord, dimension);
+                v.coordinates = coord;
             }
             delaunayFaces = new List<FaceData>(convexFaces.Values);
             for (var i = delaunayFaces.Count - 1; i >= 0; i--)
@@ -228,8 +256,7 @@ namespace MIConvexHullPluginNameSpace
                 throw new Exception("Please input the vertices first with the \"InputVertices\" function.");
             if (dimensions == -1) determineDimension(origVertices);
             else dimension = dimensions;
-            if (!convexHullAnalysisComplete)
-                FindDelaunayTriangulation(null, dimension);
+            FindDelaunayTriangulation(null, dimension);
             voronoiNodes = new List<IVertexConvHull>(delaunayFaces.Count);
             foreach (var f in delaunayFaces)
             {
