@@ -18,7 +18,7 @@ namespace ExampleWithGraphics
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const int NumberOfVertices = 500;
+        private const int NumberOfVertices = 1000;
         private const double size = 50;
         private List<IVertexConvHull> convexHullVertices;
         private List<IFaceConvHull> faces;

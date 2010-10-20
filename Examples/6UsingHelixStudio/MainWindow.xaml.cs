@@ -111,6 +111,7 @@ namespace ExampleWithGraphics
             }
 
             ConvexHull.InputVertices(verts);
+            txtBlkTimer.Text = "#verts=" + verts.Count;
             CVXvertices = null;
             CVXfaces = null;
             btnDisplay.IsEnabled = false;

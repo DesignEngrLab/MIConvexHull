@@ -129,15 +129,15 @@ namespace MIConvexHullPluginNameSpace
             if (primaryFaces == null)
                 return findAffectedFaces(currentFaceData, currentVertex, new List<FaceData> { currentFaceData });
             foreach (var adjFace in
-                currentFaceData.adjacentFaces.Where(adjFace => !primaryFaces.Contains(adjFace)
-                    && (adjFace.verticesBeyond.Values.Contains(currentVertex))))
+                currentFaceData.adjacentFaces.Where(anyFace => !primaryFaces.Contains(anyFace)
+                    && (anyFace.verticesBeyond.Values.Contains(currentVertex))))
             {
                 primaryFaces.Add(adjFace);
                 findAffectedFaces(adjFace, currentVertex, primaryFaces);
             }
             return primaryFaces;
         }
-
+        
         private static void updateFaces(IEnumerable<FaceData> oldFaces, IVertexConvHull currentVertex)
         {
             var newFaces = new List<FaceData>();
@@ -170,7 +170,9 @@ namespace MIConvexHullPluginNameSpace
                     var edge = newFaces[i].vertices.Intersect(newFaces[j].vertices).ToList();
                     if (edge.Count == dimension - 1)
                         recordAdjacentFaces(newFaces[i], newFaces[j], edge);
+                    if (!newFaces[i].adjacentFaces.Contains(null)) break;
                 }
+                if (newFaces[i].adjacentFaces.Contains(null)) Console.Write("");
             }
             foreach (var newFace in newFaces)
                 if (newFace.verticesBeyond.Count == 0)

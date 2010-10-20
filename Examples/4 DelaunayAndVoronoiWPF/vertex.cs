@@ -39,8 +39,8 @@ namespace ExampleWithGraphics
                 return new EllipseGeometry
                 {
                     Center = new Point(coordinates[0], coordinates[1]),
-                    RadiusX = 1,
-                    RadiusY = 1
+                    RadiusX = 2,
+                    RadiusY = 2
                 };
             }
         }
