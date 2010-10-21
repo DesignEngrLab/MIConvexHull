@@ -6,7 +6,7 @@ using StarMathLib;
 
 #endregion
 
-namespace MIConvexHullPluginNameSpace
+namespace MIConvexHull
 {
     /// <summary>
     ///   MIConvexHull for 3and higher dimensions.
@@ -105,10 +105,8 @@ namespace MIConvexHullPluginNameSpace
             #endregion
 
             #region Step #4: Now a final loop to expand the convex hull and faces based on these beyond vertices
-            int rdg = 0;
-            while (convexFaces.Keys[0] > 0*minHeight)
+            while (convexFaces.Keys[0] >= 0)
             {
-                rdg++;
                 var currentFace = convexFaces.Values[0];
                 var currentVertex = currentFace.verticesBeyond.Values[0];
                 convexHull.Add(currentVertex);

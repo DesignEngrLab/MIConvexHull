@@ -8,7 +8,7 @@
     <ProjectGuid>{2337776D-7D0C-40AA-A439-C26C3CE24FAB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MIConvexHullPluginNameSpace</RootNamespace>
+    <RootNamespace>MIConvexHull</RootNamespace>
     <AssemblyName>MIConvexHullPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

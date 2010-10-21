@@ -7,7 +7,7 @@ using StarMathLib;
 
 #endregion
 
-namespace MIConvexHullPluginNameSpace
+namespace MIConvexHull
 {
     /// <summary>
     ///   functions called from Find for the 3D case.

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MIConvexHullPluginNameSpace
+namespace MIConvexHull
 {
     /// <summary>
     /// This internal class manages the faces of the convex hull. It is a 

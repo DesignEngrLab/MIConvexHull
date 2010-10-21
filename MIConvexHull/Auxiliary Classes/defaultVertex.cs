@@ -1,4 +1,4 @@
-﻿namespace MIConvexHullPluginNameSpace
+﻿namespace MIConvexHull
 {
     /// <summary>
     /// A default vertex class in cases where the user provides 

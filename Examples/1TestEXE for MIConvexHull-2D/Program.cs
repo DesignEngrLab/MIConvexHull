@@ -21,7 +21,7 @@
 namespace TestEXE_for_MIConvexHull2D
 {
     using System;
-    using MIConvexHullPluginNameSpace;
+    using MIConvexHull;
 
 
     static class Program
