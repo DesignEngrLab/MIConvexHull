@@ -1,5 +1,5 @@
 ﻿using System;
-using MIConvexHullPluginNameSpace;
+using MIConvexHull;
 
 namespace TestEXE_for_MIConvexHull_No_Interfaces
 {
@@ -7,7 +7,7 @@ namespace TestEXE_for_MIConvexHull_No_Interfaces
     {
         static void Main()
         {
-            const int NumberOfVertices = 1000000;
+            const int NumberOfVertices = 30000;
             const double size = 1000;
             const int dimension = 3;
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using StarMathLib;
 #endregion
 
-namespace MIConvexHullPluginNameSpace
+namespace MIConvexHull
 {
     /// <summary>
     ///   MIConvexHull ("my convex hull", my initials are MIC) is built to be fast for large numbers of

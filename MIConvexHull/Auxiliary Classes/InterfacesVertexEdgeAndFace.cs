@@ -1,4 +1,4 @@
-﻿namespace MIConvexHullPluginNameSpace
+﻿namespace MIConvexHull
 {
     /// <summary>
     /// The interface for vertices that must be used in your program so that MIConvexHull can access you methods.

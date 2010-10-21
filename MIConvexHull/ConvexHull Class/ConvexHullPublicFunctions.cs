@@ -8,7 +8,7 @@ using System.Windows.Media.Media3D;
 using StarMathLib;
 #endregion
 
-namespace MIConvexHullPluginNameSpace
+namespace MIConvexHull
 {
     /// <summary>
     ///   MIConvexHull for 3D.

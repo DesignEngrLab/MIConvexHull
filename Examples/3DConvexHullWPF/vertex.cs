@@ -20,7 +20,7 @@
  *************************************************************************/
 namespace ExampleWithGraphics
 {
-    using MIConvexHullPluginNameSpace;
+    using MIConvexHull;
     using Petzold.Media3D;
     using System.Windows.Media.Media3D;
     using System.Windows.Media;

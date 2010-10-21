@@ -24,7 +24,7 @@ using System.Windows.Shapes;
 
 namespace ExampleWithGraphics
 {
-    using MIConvexHullPluginNameSpace;
+    using MIConvexHull;
     using System.Windows.Media;
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
@@ -44,31 +44,36 @@ namespace ExampleWithGraphics
                 };
             }
         }
+        public vertex()
+        {
+            Fill = Brushes.Black;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="vertex"/> class.
         /// </summary>
         /// <param name="x">The x position.</param>
         /// <param name="y">The y position.</param>
         public vertex(double x, double y)
+            : this()
         {
-            coordinates = new[] {x, y};
-            Fill = Brushes.Black;
+            coordinates = new[] { x, y };
 
             //BackMaterial = new DiffuseMaterial(Brushes.Black);
         }
 
- 
+
         /// <summary>
         /// Gets or sets the Z. Not used by MIConvexHull2D.
         /// </summary>
         /// <value>The Z position.</value>
-       // private double Z { get; set; }
+        // private double Z { get; set; }
 
         /// <summary>
         /// Gets or sets the coordinates.
         /// </summary>
         /// <value>The coordinates.</value>
-        public double[] coordinates{get; set; }
+        public double[] coordinates { get; set; }
         //{
         //    get { return new[] { X, Y}; }
         //    set

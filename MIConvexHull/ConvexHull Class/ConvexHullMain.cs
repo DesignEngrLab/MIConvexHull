@@ -18,7 +18,7 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-namespace MIConvexHullPluginNameSpace
+namespace MIConvexHull
 {
     using System;
     using System.Collections.Generic;
@@ -39,7 +39,6 @@ namespace MIConvexHullPluginNameSpace
         private const double coeffNumVertices = 0.25;
         private const double coeffDimensions = 2;
         private const double coeffOffset = 1250;
-        const double minHeight = 0.00000000001;
         private static Boolean convexHullAnalysisComplete;
         private static Boolean delaunayAnalysisComplete;
 

@@ -6,7 +6,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
-using MIConvexHullPluginNameSpace;
+using MIConvexHull;
 
 #endregion
 
@@ -41,7 +41,12 @@ namespace ExampleWithGraphics
             /****** Random Vertices ******/
             for (var i = 0; i < NumberOfVertices; i++)
             {
-                var vi = new vertex(size * r.NextDouble(), size * r.NextDouble());
+               // var vi = new vertex(size * r.NextDouble(), size * r.NextDouble());
+
+                var vi = new vertex
+                {
+                    coordinates = new[] { size * r.NextDouble(), size * r.NextDouble() }
+                };
                 vertices.Add(vi);
 
                 drawingCanvas.Children.Add(vi);

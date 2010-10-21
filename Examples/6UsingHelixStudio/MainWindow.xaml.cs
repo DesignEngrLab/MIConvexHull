@@ -8,8 +8,9 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
+using System.Windows.Shapes;
 using HelixToolkit;
-using MIConvexHullPluginNameSpace;
+using MIConvexHull;
 using Microsoft.Win32;
 using StarMathLib;
 using StudioDemo;
@@ -109,6 +110,7 @@ namespace ExampleWithGraphics
                         verts.AddRange(mesh.Positions);
                     }
             }
+            verts = verts.Distinct(new samePoint()).ToList();
 
             ConvexHull.InputVertices(verts);
             txtBlkTimer.Text = "#verts=" + verts.Count;
@@ -149,18 +151,18 @@ namespace ExampleWithGraphics
                 foreach (var v in t.vertices)
                     center = StarMath.add(center, v.coordinates);
                 center = StarMath.divide(center, 4);
-                for (int i=0; i<4;i++)
+                for (int i = 0; i < 4; i++)
                 {
                     var newface = new List<IVertexConvHull>((IVertexConvHull[])t.vertices.Clone());
                     newface.RemoveAt(i);
                     var indices = Enumerable.Range(0, 4).Where(p => p != i).Select(p => p + offset);
-                    if (!inTheProperOrder(center,newface))
+                    if (!inTheProperOrder(center, newface))
                         indices.Reverse();
                     faceTriCollection.AddRange(indices);
                 }
             }
             mesh.Positions = new Point3DCollection(verts);
-            mesh.TriangleIndices =new Int32Collection( faceTriCollection);
+            mesh.TriangleIndices = new Int32Collection(faceTriCollection);
         }
 
         private bool inTheProperOrder(double[] center, List<IVertexConvHull> vertices)
@@ -176,8 +178,52 @@ namespace ExampleWithGraphics
 
         private void displayVoronoi()
         {
-            throw new NotImplementedException();
+            if (viewport.Children.Count > 2) viewport.Children.RemoveAt(2);
+
+            foreach (var edge in Voro_edges)
+                viewport.Add(new TubeVisual3D
+               {
+                   BackMaterial = Materials.LightGray,
+                   Material = Materials.Red,
+                   Path = new Point3DCollection
+                                                   {
+                                                       new Point3D(edge.Item1.coordinates[0],edge.Item1.coordinates[1],edge.Item1.coordinates[2]),
+                                                       new Point3D(edge.Item2.coordinates[0],edge.Item2.coordinates[1],edge.Item2.coordinates[2])
+                                                   }
+               });
         }
 
+    }
+
+    internal class samePoint : IEqualityComparer<Point3D>
+    {
+        #region Implementation of IEqualityComparer<in Point3D>
+
+        /// <summary>
+        /// Determines whether the specified objects are equal.
+        /// </summary>
+        /// <returns>
+        /// true if the specified objects are equal; otherwise, false.
+        /// </returns>
+        /// <param name="x">The first object of type <paramref name="T"/> to compare.</param><param name="y">The second object of type <paramref name="T"/> to compare.</param>
+        bool IEqualityComparer<Point3D>.Equals(Point3D x, Point3D y)
+        {
+            return ((x - y).Length < 0.000000001) ;
+        }
+
+        /// <summary>
+        /// Returns a hash code for the specified object.
+        /// </summary>
+        /// <returns>
+        /// A hash code for the specified object.
+        /// </returns>
+        /// <param name="obj">The <see cref="T:System.Object"/> for which a hash code is to be returned.</param><exception cref="T:System.ArgumentNullException">The type of <paramref name="obj"/> is a reference type and <paramref name="obj"/> is null.</exception>
+        int IEqualityComparer<Point3D>.GetHashCode(Point3D obj)
+        {
+            var d = obj.ToVector3D().LengthSquared;
+            return d.GetHashCode();
+        }
+
+        #endregion
     }
 }

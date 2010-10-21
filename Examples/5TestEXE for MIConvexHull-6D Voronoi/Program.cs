@@ -31,7 +31,7 @@ namespace TestEXE_for_MIConvexHull_Voronoi
 {
     using System;
     using System.Collections.Generic;
-    using MIConvexHullPluginNameSpace;
+    using MIConvexHull;
 
 
     static class Program
