@@ -58,8 +58,6 @@ namespace ExampleWithGraphics
             : this()
         {
             coordinates = new[] { x, y };
-
-            //BackMaterial = new DiffuseMaterial(Brushes.Black);
         }
 
 

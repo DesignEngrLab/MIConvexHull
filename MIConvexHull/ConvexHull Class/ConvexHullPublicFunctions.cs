@@ -55,13 +55,13 @@ namespace MIConvexHull
         }
         static void Input2DPoints(IEnumerable<Point> vertices)
         {
-            foreach (Point t in vertices)
+            foreach (var t in vertices)
                 origVertices.Add(new defaultVertex { coordinates = new[] { t.X, t.Y } });
         }
 
         static void Input3DPoints(IEnumerable<Point3D> vertices)
         {
-            foreach (Point3D t in vertices)
+            foreach (var t in vertices)
                 origVertices.Add(new defaultVertex { coordinates = new[] { t.X, t.Y, t.Z } });
         }
 
@@ -136,7 +136,7 @@ namespace MIConvexHull
         {
             var vertices = FindConvexHull(dimensions);
             var result = new double[vertices.Count][];
-            for (int i = 0; i < vertices.Count; i++)
+            for (var i = 0; i < vertices.Count; i++)
                 result[i] = vertices[i].coordinates;
             return result;
         }

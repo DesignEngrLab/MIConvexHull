@@ -52,8 +52,8 @@ namespace MIConvexHull
             var ternaryPosition = new int[dimension];
             for (var k = 0; k < dimension; k++)
                 ternaryPosition[k] = -1;
-            int midPoint = (numExtremes - 1) / 2;
-            int flip = 1;
+            var midPoint = (numExtremes - 1) / 2;
+            var flip = 1;
             do
             {
                 var index = findIndex(ternaryPosition, midPoint);
