@@ -145,7 +145,9 @@ namespace MIConvexHull
             affectedVertices = oldFaces.Aggregate(affectedVertices, (current, oldFace)
                  => current.Union(oldFace.verticesBeyond.Values).ToList());
             affectedVertices.Remove(currentVertex);
-
+            /******************************************************
+             ********* This appears to be the bottleneck for higher dimensions. 
+             **** I believe it can be improved. */
             foreach (var oldFace in oldFaces)
             {
                 convexFaces.RemoveAt(convexFaces.IndexOfValue(oldFace));
@@ -163,6 +165,7 @@ namespace MIConvexHull
                         newFaces.Add(newFace);
                     }
             }
+                /**************************************************************************/
             for (var i = 0; i < newFaces.Count - 1; i++)
             {
                 for (var j = i + 1; j < newFaces.Count; j++)
@@ -172,7 +175,6 @@ namespace MIConvexHull
                         recordAdjacentFaces(newFaces[i], newFaces[j], edge);
                     if (!newFaces[i].adjacentFaces.Contains(null)) break;
                 }
-                if (newFaces[i].adjacentFaces.Contains(null)) Console.Write("");
             }
             foreach (var newFace in newFaces)
                 if (newFace.verticesBeyond.Count == 0)

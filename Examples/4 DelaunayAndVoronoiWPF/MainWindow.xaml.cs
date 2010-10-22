@@ -19,34 +19,27 @@ namespace ExampleWithGraphics
     {
         private const int NumberOfVertices = 1000;
         private double size;
-        private List<IVertexConvHull> convexHullVertices;
         private List<IFaceConvHull> faces;
-        private ModelVisual3D modViz;
         private List<IVertexConvHull> vertices;
 
         public MainWindow()
         {
             InitializeComponent();
-           // btnMakePoints_Click(null, null);
+            // btnMakePoints_Click(null, null);
         }
 
 
         private void btnMakePoints_Click(object sender, RoutedEventArgs e)
         {
             drawingCanvas.Children.Clear();
-            size = Math.Min(drawingCanvas.Height,drawingCanvas.Width);
+            size = Math.Min(drawingCanvas.Height, drawingCanvas.Width);
             vertices = new List<IVertexConvHull>();
             var r = new Random();
 
             /****** Random Vertices ******/
             for (var i = 0; i < NumberOfVertices; i++)
             {
-               // var vi = new vertex(size * r.NextDouble(), size * r.NextDouble());
-
-                var vi = new vertex
-                {
-                    coordinates = new[] { size * r.NextDouble(), size * r.NextDouble() }
-                };
+                var vi = new vertex(size * r.NextDouble(), size * r.NextDouble());
                 vertices.Add(vi);
 
                 drawingCanvas.Children.Add(vi);
@@ -57,7 +50,6 @@ namespace ExampleWithGraphics
             ConvexHull.InputVertices(vertices);
         }
 
-        private Boolean DelaunayClear;
         private void btnFindDelaunay_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("Running...");
@@ -74,7 +66,6 @@ namespace ExampleWithGraphics
         {
             foreach (var f in faces)
                 drawingCanvas.Children.Add((UIElement)f);
-            DelaunayClear = true;
         }
 
         private void btnFindVoronoi_Click(object sender, RoutedEventArgs e)
@@ -90,8 +81,8 @@ namespace ExampleWithGraphics
             btnDisplayVoronoi.IsDefault = true;
 
         }
-           
-            List<Tuple<IVertexConvHull, IVertexConvHull>> edges;
+
+        List<Tuple<IVertexConvHull, IVertexConvHull>> edges;
 
         private void btnDisplayVoronoi_Click(object sender, RoutedEventArgs e)
         {
