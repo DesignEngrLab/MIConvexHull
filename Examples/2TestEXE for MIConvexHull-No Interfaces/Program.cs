@@ -27,8 +27,8 @@ namespace TestEXE_for_MIConvexHull_No_Interfaces
             }
             Console.WriteLine("Running...");
             var now = DateTime.Now;
-            ConvexHull.InputVertices(vertices);
-            double[][] CVpoints = ConvexHull.FindConvexHull_AsDoubleArray();
+           var convexHull = new ConvexHull(vertices);
+            double[][] CVpoints = convexHull.FindConvexHull_AsDoubleArray();
             var interval = DateTime.Now - now;
             Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
                 CVpoints.GetLength(0) + " in the convex hull.");

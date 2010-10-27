@@ -1,7 +1,7 @@
 ﻿#region
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using StarMathLib;
 
 #endregion
@@ -11,20 +11,20 @@ namespace MIConvexHull
     /// <summary>
     ///   MIConvexHull for 3and higher dimensions.
     /// </summary>
-    public static partial class ConvexHull
+    public partial class ConvexHull
     {
         /// <summary>
         ///   Finds the convex hull vertices.
         /// </summary>
         /// <returns></returns>
-        private static void FindConvexHull()
+        private void FindConvexHull()
         {
             var VCount = origVertices.Count;
             /* as a heuristic, we limit the number of solutions created in the first loop, by an albeit, 
              * artificial formulation. This is to prevent the process from stagnating in this step in higher 
              * dimensions when the number of solutions on the Akl-Toussaint polygon gets too high (3^dimension).*/
-            var maxAklTousNumber = coeffDimensions * dimension  + coeffOffset;
-             maxAklTousNumber = Math.Min(maxAklTousNumber,  coeffNumVertices * VCount);
+            var maxAklTousNumber = coeffDimensions * dimension + coeffOffset;
+            maxAklTousNumber = Math.Min(maxAklTousNumber, coeffNumVertices * VCount);
             /* of course, this limit is a moot point if there simply aren't enough points in the original
              * set of vertices. Therefore, it should at least be dimension + 1, the number of vertices in the
              * simplex. */
@@ -118,28 +118,5 @@ namespace MIConvexHull
             #endregion
         }
 
-        private static Boolean incrementTernaryPosition(int[] ternaryPosition, int position = 0)
-        {
-            if (position == ternaryPosition.GetLength(0)) return false;
-            ternaryPosition[position]++;
-            if (ternaryPosition[position] == 2)
-            {
-                ternaryPosition[position] = -1;
-                return incrementTernaryPosition(ternaryPosition, ++position);
-            }
-            return true;
-        }
-
-        private static int findIndex(IList<int> ternaryPosition, int midPoint)
-        {
-            var index = midPoint;
-            var power = 1;
-            for (var i = 0; i < dimension; i++)
-            {
-                index += power * ternaryPosition[i];
-                power *= 3;
-            }
-            return index;
-        }
     }
 }

@@ -19,13 +19,13 @@ namespace MIConvexHull
     ///   4. a single break function to further speed up inter-vectex checking
     ///   5. an ordered list reduces the number of checks for new convex candidates.
     /// </summary>
-    public static partial class ConvexHull
+    public partial class ConvexHull
     {
         /// <summary>
         ///   Finds the convex hull vertices.
         /// </summary>
         /// <returns></returns>
-        private static void Find2D()
+        private void Find2D()
         {
             var origVNum = origVertices.Count;
 
@@ -117,21 +117,21 @@ namespace MIConvexHull
              * The first column corresponds to the X-value,and  the second column to the Y-value. Calculating this 
              * should not take long since there are only 3 to 8 members currently in hull, and it will save time 
              * comparing to all the result vertices. */
-            var edgeUnitVectors = new double[cvxVNum,2];
+            var edgeUnitVectors = new double[cvxVNum, 2];
             double magnitude;
             for (var i = 0; i < last; i++)
             {
                 edgeUnitVectors[i, 0] = (convexHullCCW[i + 1].coordinates[0] - convexHullCCW[i].coordinates[0]);
                 edgeUnitVectors[i, 1] = (convexHullCCW[i + 1].coordinates[1] - convexHullCCW[i].coordinates[1]);
-                magnitude = Math.Sqrt(edgeUnitVectors[i, 0]*edgeUnitVectors[i, 0] +
-                                      edgeUnitVectors[i, 1]*edgeUnitVectors[i, 1]);
+                magnitude = Math.Sqrt(edgeUnitVectors[i, 0] * edgeUnitVectors[i, 0] +
+                                      edgeUnitVectors[i, 1] * edgeUnitVectors[i, 1]);
                 edgeUnitVectors[i, 0] /= magnitude;
                 edgeUnitVectors[i, 1] /= magnitude;
             }
             edgeUnitVectors[last, 0] = convexHullCCW[0].coordinates[0] - convexHullCCW[last].coordinates[0];
             edgeUnitVectors[last, 1] = convexHullCCW[0].coordinates[1] - convexHullCCW[last].coordinates[1];
-            magnitude = Math.Sqrt(edgeUnitVectors[last, 0]*edgeUnitVectors[last, 0] +
-                                  edgeUnitVectors[last, 1]*edgeUnitVectors[last, 1]);
+            magnitude = Math.Sqrt(edgeUnitVectors[last, 0] * edgeUnitVectors[last, 0] +
+                                  edgeUnitVectors[last, 1] * edgeUnitVectors[last, 1]);
             edgeUnitVectors[last, 0] /= magnitude;
             edgeUnitVectors[last, 1] /= magnitude;
 
@@ -215,7 +215,7 @@ namespace MIConvexHull
                              * if you're back to the end you do need to reduce k (hence the line below). */
                             if (i == hc.Count - 1) i--;
                         }
-                            /* if the angle is convex, then continue toward the start, k-- */
+                        /* if the angle is convex, then continue toward the start, k-- */
                         else i--;
                     }
                     /* for each of the remaining vertices in hullCands[i-1], add them to the convexHullCCW. 

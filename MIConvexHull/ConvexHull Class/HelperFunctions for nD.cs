@@ -12,9 +12,9 @@ namespace MIConvexHull
     /// <summary>
     ///   functions called from Find for the 3D case.
     /// </summary>
-    public static partial class ConvexHull
+    public partial class ConvexHull
     {
-        private static void determineDimension(IList<IVertexConvHull> vertices)
+        private void determineDimension(IList<IVertexConvHull> vertices)
         {
             var r = new Random();
             var VCount = vertices.Count;
@@ -30,15 +30,36 @@ namespace MIConvexHull
                                   "\n*******************************************\n\n\n");
         }
 
-        private static Boolean isVertexOverFace(IVertexConvHull v, IFaceConvHull f, out double dotP)
+        #region Ternary Counter functions
+
+        private Boolean incrementTernaryPosition(int[] ternaryPosition, int position = 0)
         {
-            dotP = StarMath.multiplyDot(f.normal, StarMath.subtract(v.coordinates, f.vertices[0].coordinates));
-            return (dotP >= 0);
+            if (position == ternaryPosition.GetLength(0)) return false;
+            ternaryPosition[position]++;
+            if (ternaryPosition[position] == 2)
+            {
+                ternaryPosition[position] = -1;
+                return incrementTernaryPosition(ternaryPosition, ++position);
+            }
+            return true;
         }
+
+        private int findIndex(IList<int> ternaryPosition, int midPoint)
+        {
+            var index = midPoint;
+            var power = 1;
+            for (var i = 0; i < dimension; i++)
+            {
+                index += power * ternaryPosition[i];
+                power *= 3;
+            }
+            return index;
+        }
+        #endregion
 
         #region Make functions
 
-        private static SortedList<double, FaceData> initiateFaceDatabase()
+        private SortedList<double, FaceData> initiateFaceDatabase()
         {
             for (var i = 0; i < dimension + 1; i++)
             {
@@ -79,14 +100,14 @@ namespace MIConvexHull
         }
 
 
-        private static FaceData MakeFace(IVertexConvHull currentVertex, IEnumerable<IVertexConvHull> edge)
+        private FaceData MakeFace(IVertexConvHull currentVertex, IEnumerable<IVertexConvHull> edge)
         {
             var vertices = new List<IVertexConvHull>(edge);
             vertices.Insert(0, currentVertex);
             return MakeFace(vertices);
         }
 
-        private static FaceData MakeFace(List<IVertexConvHull> vertices)
+        private FaceData MakeFace(List<IVertexConvHull> vertices)
         {
             var outDir = new double[dimension];
             outDir = vertices.Aggregate(outDir, (current, v) => StarMath.add(current, v.coordinates));
@@ -110,7 +131,7 @@ namespace MIConvexHull
 
         #region Find, Get and Update functions
 
-        private static IEnumerable<FaceData> findFacesBeneathInitialVertices(IVertexConvHull currentVertex)
+        private IEnumerable<FaceData> findFacesBeneathInitialVertices(IVertexConvHull currentVertex)
         {
             var facesUnder = new List<FaceData>();
             foreach (var face in convexFaces.Values)
@@ -122,6 +143,11 @@ namespace MIConvexHull
             return facesUnder;
         }
 
+        private static Boolean isVertexOverFace(IVertexConvHull v, IFaceConvHull f, out double dotP)
+        {
+            dotP = StarMath.multiplyDot(f.normal, StarMath.subtract(v.coordinates, f.vertices[0].coordinates));
+            return (dotP >= 0);
+        }
 
         private static List<FaceData> findAffectedFaces(FaceData currentFaceData, IVertexConvHull currentVertex,
                                                         List<FaceData> primaryFaces = null)
@@ -137,8 +163,8 @@ namespace MIConvexHull
             }
             return primaryFaces;
         }
-        
-        private static void updateFaces(IEnumerable<FaceData> oldFaces, IVertexConvHull currentVertex)
+
+        private void updateFaces(IEnumerable<FaceData> oldFaces, IVertexConvHull currentVertex)
         {
             var newFaces = new List<FaceData>();
             var affectedVertices = new List<IVertexConvHull>();
@@ -165,7 +191,7 @@ namespace MIConvexHull
                         newFaces.Add(newFace);
                     }
             }
-                /**************************************************************************/
+            /**************************************************************************/
             for (var i = 0; i < newFaces.Count - 1; i++)
             {
                 for (var j = i + 1; j < newFaces.Count; j++)
@@ -182,7 +208,7 @@ namespace MIConvexHull
                 else convexFaces.Add(newFace.verticesBeyond.Keys[0], newFace);
         }
 
-        private static double[] findNormalVector(IList<IVertexConvHull> vertices)
+        private double[] findNormalVector(IList<IVertexConvHull> vertices)
         {
             double[] normal;
             if (dimension == 3)
@@ -214,7 +240,7 @@ namespace MIConvexHull
         }
 
 
-        private static void updateCenter(IVertexConvHull currentVertex)
+        private void updateCenter(IVertexConvHull currentVertex)
         {
             center = StarMath.divide(StarMath.add(
                 StarMath.multiply(convexHull.Count - 1, center),

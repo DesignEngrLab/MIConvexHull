@@ -21,6 +21,8 @@ namespace ExampleWithGraphics
         private double size;
         private List<IFaceConvHull> faces;
         private List<IVertexConvHull> vertices;
+        private List<Tuple<IVertexConvHull, IVertexConvHull>> edges;
+        private ConvexHull convexHull;
 
         public MainWindow()
         {
@@ -47,14 +49,14 @@ namespace ExampleWithGraphics
             btnDisplayDelaunay.IsDefault = true;
             btnDisplayDelaunay.IsEnabled = false;
             txtBlkTimer.Text = "00:00:00.000";
-            ConvexHull.InputVertices(vertices);
+            convexHull = new ConvexHull(vertices);
         }
 
         private void btnFindDelaunay_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("Running...");
             var now = DateTime.Now;
-            faces = ConvexHull.FindDelaunayTriangulation(typeof(face));
+            faces = convexHull.FindDelaunayTriangulation(typeof(face));
             var interval = DateTime.Now - now;
             txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
                                + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
@@ -73,7 +75,7 @@ namespace ExampleWithGraphics
             Console.WriteLine("Running...");
             var now = DateTime.Now;
             List<IVertexConvHull> nodes;
-            ConvexHull.FindVoronoiGraph(out nodes, out edges);
+            convexHull.FindVoronoiGraph(out nodes, out edges);
             var interval = DateTime.Now - now;
             txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
                                + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
@@ -82,7 +84,6 @@ namespace ExampleWithGraphics
 
         }
 
-        List<Tuple<IVertexConvHull, IVertexConvHull>> edges;
 
         private void btnDisplayVoronoi_Click(object sender, RoutedEventArgs e)
         {

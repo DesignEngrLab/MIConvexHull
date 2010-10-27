@@ -28,7 +28,7 @@ namespace TestEXE_for_MIConvexHull2D
     {
         static void Main()
         {
-            const int NumberOfVertices = 1000000;
+            const int NumberOfVertices = 10000;
             const double size = 1000;
 
             var r = new Random();
@@ -45,8 +45,8 @@ namespace TestEXE_for_MIConvexHull2D
                 vertices[i] = new vertex(size * r.NextDouble(), size * r.NextDouble());
             Console.WriteLine("Running...");
             var now = DateTime.Now;
-            ConvexHull.InputVertices(vertices);
-            var convexHullVertices = ConvexHull.FindConvexHull();
+            var convexHull = new ConvexHull(vertices);
+            var convexHullVertices = convexHull.FindConvexHull();
             var interval = DateTime.Now - now;
             Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
                 convexHullVertices.Count + " in the convex hull.");

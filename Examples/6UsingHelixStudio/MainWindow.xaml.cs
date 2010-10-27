@@ -31,6 +31,7 @@ namespace ExampleWithGraphics
         List<Tuple<IVertexConvHull, IVertexConvHull>> Voro_edges;
         public Model3DGroup CurrentModel { get; set; }
         private MeshGeometry3D mesh;
+        private ConvexHull convexHull;
 
         public MainWindow()
         {
@@ -40,7 +41,7 @@ namespace ExampleWithGraphics
         private void MIConvexHullMenuItem_Click(object sender, RoutedEventArgs e)
         {
             var now = DateTime.Now;
-            CVXvertices = ConvexHull.FindConvexHull(out CVXfaces);
+            CVXvertices = convexHull.FindConvexHull(out CVXfaces);
             var interval = DateTime.Now - now;
             txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
                                + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
@@ -51,7 +52,7 @@ namespace ExampleWithGraphics
         private void FindDelaunayClick(object sender, RoutedEventArgs e)
         {
             var now = DateTime.Now;
-            Del_tetras = ConvexHull.FindDelaunayTriangulation();
+            Del_tetras = convexHull.FindDelaunayTriangulation();
             var interval = DateTime.Now - now;
             txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
                                + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
@@ -62,7 +63,7 @@ namespace ExampleWithGraphics
         private void FindVoronoiClick(object sender, RoutedEventArgs e)
         {
             var now = DateTime.Now;
-            ConvexHull.FindVoronoiGraph(out Voro_nodes, out Voro_edges);
+            convexHull.FindVoronoiGraph(out Voro_nodes, out Voro_edges);
             var interval = DateTime.Now - now;
             txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
                                + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
@@ -112,7 +113,7 @@ namespace ExampleWithGraphics
             }
             verts = verts.Distinct(new samePoint()).ToList();
 
-            ConvexHull.InputVertices(verts);
+             convexHull = new ConvexHull(verts);
             txtBlkTimer.Text = "#verts=" + verts.Count;
             CVXvertices = null;
             CVXfaces = null;
