@@ -13,7 +13,7 @@ namespace MIConvexHull
     /// <summary>
     ///   MIConvexHull for 3D.
     /// </summary>
-    public static partial class ConvexHull
+    public partial class ConvexHull
     {
         #region Input Vertices
         /// <summary>
@@ -21,11 +21,10 @@ namespace MIConvexHull
         /// </summary>
         /// <param name="vertices">The vertices.</param>
         /// <returns></returns>
-        public static int InputVertices(List<IVertexConvHull> vertices)
+        public ConvexHull(List<IVertexConvHull> vertices)
         {
             origVertices = new List<IVertexConvHull>(vertices);
             convexHullAnalysisComplete = delaunayAnalysisComplete = false;
-            return origVertices.Count;
         }
 
 
@@ -34,7 +33,7 @@ namespace MIConvexHull
         /// </summary>
         /// <param name="vertices">The vertices.</param>
         /// <returns></returns>
-        public static int InputVertices(IList vertices)
+        public ConvexHull(IList vertices)
         {
             origVertices = new List<IVertexConvHull>(vertices.Count);
             if (typeof(Point).IsInstanceOfType(vertices[0]))
@@ -51,15 +50,14 @@ namespace MIConvexHull
             }
             else throw new Exception("List must be made up of Point (System.Windows), Point3D(Windows.Media3D),or IVertexConvHull objects, or 1D double arrays.");
             convexHullAnalysisComplete = delaunayAnalysisComplete = false;
-            return origVertices.Count;
         }
-        static void Input2DPoints(IEnumerable<Point> vertices)
+        void Input2DPoints(IEnumerable<Point> vertices)
         {
             foreach (var t in vertices)
                 origVertices.Add(new defaultVertex { coordinates = new[] { t.X, t.Y } });
         }
 
-        static void Input3DPoints(IEnumerable<Point3D> vertices)
+        void Input3DPoints(IEnumerable<Point3D> vertices)
         {
             foreach (var t in vertices)
                 origVertices.Add(new defaultVertex { coordinates = new[] { t.X, t.Y, t.Z } });
@@ -71,7 +69,7 @@ namespace MIConvexHull
         /// </summary>
         /// <param name="vertices">The vertices.</param>
         /// <returns></returns>
-        public static int InputVertices(object[] vertices)
+        public ConvexHull(object[] vertices)
         {
             origVertices = new List<IVertexConvHull>();
             if (vertices[0] as IVertexConvHull != null)
@@ -85,7 +83,6 @@ namespace MIConvexHull
                     origVertices.Add(new defaultVertex { coordinates = (double[])vertices[i] });
             }
             convexHullAnalysisComplete = delaunayAnalysisComplete = false;
-            return origVertices.Count;
         }
 
 
@@ -94,14 +91,13 @@ namespace MIConvexHull
         /// </summary>
         /// <param name="vertices">The vertices.</param>
         /// <returns></returns>
-        public static int InputVertices(double[,] vertices)
+        public ConvexHull(double[,] vertices)
         {
             origVertices = new List<IVertexConvHull>();
             for (var i = 0; i < vertices.GetLength(0); i++)
                 origVertices.Add(new defaultVertex { coordinates = StarMath.GetRow(i, vertices) });
 
             convexHullAnalysisComplete = delaunayAnalysisComplete = false;
-            return origVertices.Count;
         }
         #endregion
 
@@ -111,7 +107,7 @@ namespace MIConvexHull
         /// </summary>
         /// <param name="dimensions">The dimensions of the system. It will be automatically determined if not provided.</param>
         /// <returns></returns>
-        public static List<IVertexConvHull> FindConvexHull(int dimensions = -1)
+        public List<IVertexConvHull> FindConvexHull(int dimensions = -1)
         {
             if ((origVertices == null) || (origVertices.Count == 0))
                 throw new Exception("Please input the vertices first with the \"InputVertices\" function.");
@@ -132,7 +128,7 @@ namespace MIConvexHull
         /// </summary>
         /// <param name="dimensions">The dimensions of the system. It will be automatically determined if not provided.</param>
         /// <returns></returns>
-        public static double[][] FindConvexHull_AsDoubleArray(int dimensions = -1)
+        public double[][] FindConvexHull_AsDoubleArray(int dimensions = -1)
         {
             var vertices = FindConvexHull(dimensions);
             var result = new double[vertices.Count][];
@@ -150,7 +146,7 @@ namespace MIConvexHull
         /// <param name="face_Type">Type of the face.</param>
         /// <param name="dimensions">The dimensions of the system. It will be automatically determined if not provided.</param>
         /// <returns></returns>
-        public static List<IVertexConvHull> FindConvexHull(out List<IFaceConvHull> faces, Type face_Type = null, int dimensions = -1)
+        public List<IVertexConvHull> FindConvexHull(out List<IFaceConvHull> faces, Type face_Type = null, int dimensions = -1)
         {
             if ((origVertices == null) || (origVertices.Count == 0))
                 throw new Exception("Please input the vertices first with the \"InputVertices\" function.");
@@ -192,7 +188,7 @@ namespace MIConvexHull
         /// <param name="face_Type">Type of the face_.</param>
         /// <param name="dimensions">The dimensions.</param>
         /// <returns></returns>
-        public static List<IFaceConvHull> FindDelaunayTriangulation(Type face_Type = null, int dimensions = -1)
+        public List<IFaceConvHull> FindDelaunayTriangulation(Type face_Type = null, int dimensions = -1)
         {
             if (!delaunayAnalysisComplete)
             {
@@ -249,7 +245,7 @@ namespace MIConvexHull
         /// <param name="edges">The edges.</param>
         /// <param name="node_Type">Type of the node_.</param>
         /// <param name="dimensions">The dimensions.</param>
-        public static void FindVoronoiGraph(out List<IVertexConvHull> nodes, out List<Tuple<IVertexConvHull, IVertexConvHull>> edges,
+        public void FindVoronoiGraph(out List<IVertexConvHull> nodes, out List<Tuple<IVertexConvHull, IVertexConvHull>> edges,
             Type node_Type = null, int dimensions = -1)
         {
             if ((origVertices == null) || (origVertices.Count == 0))
@@ -287,7 +283,7 @@ namespace MIConvexHull
             edges = voronoiEdges;
         }
 
-        private static IVertexConvHull makeNewVoronoiEdge(double[] avg, Type node_Type)
+        private IVertexConvHull makeNewVoronoiEdge(double[] avg, Type node_Type)
         {
             if (node_Type == null)
                 return new defaultVertex { coordinates = avg };

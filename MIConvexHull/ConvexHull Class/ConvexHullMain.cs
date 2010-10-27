@@ -26,23 +26,23 @@ namespace MIConvexHull
     /// <summary>
     /// MIConvexHull.
     /// </summary>
-    public static partial class ConvexHull
+    public partial class ConvexHull
     {
-        static List<IVertexConvHull> origVertices;
-        static List<IVertexConvHull> convexHull;
-        static List<IVertexConvHull> voronoiNodes;
-        static List<Tuple<IVertexConvHull, IVertexConvHull>> voronoiEdges;
-        static SortedList<double, FaceData> convexFaces;
-        static List<FaceData> delaunayFaces;
-        static int dimension;
-        static double[] center;
+        List<IVertexConvHull> origVertices;
+        List<IVertexConvHull> convexHull;
+        List<IVertexConvHull> voronoiNodes;
+        List<Tuple<IVertexConvHull, IVertexConvHull>> voronoiEdges;
+        SortedList<double, FaceData> convexFaces;
+        List<FaceData> delaunayFaces;
+        int dimension;
+        double[] center;
         private const double coeffNumVertices = 0.25;
         private const double coeffDimensions = 2;
         private const double coeffOffset = 1250;
-        private static Boolean convexHullAnalysisComplete;
-        private static Boolean delaunayAnalysisComplete;
+        private Boolean convexHullAnalysisComplete;
+        private Boolean delaunayAnalysisComplete;
 
-        static void Initialize()
+        void Initialize()
         {
             convexHull = new List<IVertexConvHull>();
             convexFaces = new SortedList<double, FaceData>(new noEqualSortMaxtoMinDouble());

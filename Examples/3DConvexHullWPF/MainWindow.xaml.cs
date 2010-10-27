@@ -45,8 +45,8 @@ namespace ExampleWithGraphics
             Console.WriteLine("Running...");
             var now = DateTime.Now;
             faces = new List<IFaceConvHull>();
-            ConvexHull.InputVertices(vertices);
-            convexHullVertices = ConvexHull.FindConvexHull(out faces, typeof(face), 3);
+            var convexHull = new ConvexHull(vertices);
+            convexHullVertices = convexHull.FindConvexHull(out faces, typeof(face), 3);
             var interval = DateTime.Now - now;
             txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
                                + ":" + interval.Seconds + "." + interval.TotalMilliseconds;

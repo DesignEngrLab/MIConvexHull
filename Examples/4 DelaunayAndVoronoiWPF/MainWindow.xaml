@@ -18,9 +18,9 @@
             </Grid.ColumnDefinitions>
             <Button Grid.Column="0" Name="btnMakePoints" Click="btnMakePoints_Click"  Content="Make Rnd Points" IsDefault="True"/>
             <Button Grid.Column="1" Name="btnFindDelaunay" Click="btnFindDelaunay_Click"  Content="Find Delaunay" />
-            <Button Grid.Column="2" Name="btnDisplayDelaunay" Click="btnDisplayDelaunay_Click" Content="Display Delaunay" />
+            <Button Grid.Column="2" Name="btnDisplayDelaunay" Click="btnDisplayDelaunay_Click" Content="Display Delaunay" IsEnabled="False" />
             <Button Grid.Column="3" Name="btnFindVoronoi" Click="btnFindVoronoi_Click"  Content="Find Voronoi" />
-            <Button Grid.Column="4" Name="btnDisplayVoronoi" Click="btnDisplayVoronoi_Click" Content="Display Voronoi" />
+            <Button Grid.Column="4" Name="btnDisplayVoronoi" Click="btnDisplayVoronoi_Click" Content="Display Voronoi" IsEnabled="False" />
             <TextBlock Grid.Column="5" Name="txtBlkTimer" Text="00:00:00.000" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
