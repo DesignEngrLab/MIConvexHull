@@ -173,7 +173,7 @@ namespace MIConvexHull
                     faces.Add(newFace);
                 }
             }
-            else faces = new List<IFaceConvHull>(convexFaces.Values);
+            else faces = new List<IFaceConvHull>(convexFaces.Select(f => f.Value));
             return convexHull;
         }
 
@@ -216,7 +216,7 @@ namespace MIConvexHull
                 Array.Resize(ref coord, dimension);
                 v.coordinates = coord;
             }
-            delaunayFaces = new List<FaceData>(convexFaces.Values);
+            delaunayFaces = new List<FaceData>(convexFaces.Select(f => f.Value));
             for (var i = delaunayFaces.Count - 1; i >= 0; i--)
                 if (delaunayFaces[i].normal[dimension] >= 0)
                     delaunayFaces.RemoveAt(i);
@@ -253,34 +253,48 @@ namespace MIConvexHull
             if (dimensions == -1) determineDimension(origVertices);
             else dimension = dimensions;
             FindDelaunayTriangulation(null, dimension);
-            voronoiNodes = new List<IVertexConvHull>(delaunayFaces.Count);
+            var voronoiNodes = new List<voronoiVertex>(delaunayFaces.Count);
             foreach (var f in delaunayFaces)
             {
                 var avg = new double[dimension];
                 avg = f.vertices.Aggregate(avg, (current, v) => StarMath.add(current, v.coordinates));
                 avg = StarMath.divide(avg, dimension + 1);
-                voronoiNodes.Add(makeNewVoronoiEdge(avg, node_Type));
+                voronoiNodes.Add(new voronoiVertex { vertex = makeNewVoronoiEdge(avg, node_Type), face = f });
             }
-            voronoiEdges = new List<Tuple<IVertexConvHull, IVertexConvHull>>(delaunayFaces.Count);
-            for (var i = 0; i < delaunayFaces.Count - 1; i++)
-                for (var j = i + 1; j < delaunayFaces.Count; j++)
-                    if (delaunayFaces[i].adjacentFaces.Contains(delaunayFaces[j]))
-                        voronoiEdges.Add(Tuple.Create(voronoiNodes[i], voronoiNodes[j]));
 
+            HashSet<voronoiEdge> voronoiEdges = new HashSet<voronoiEdge>();
+            var nodeDict = voronoiNodes.ToDictionary(n => n.face, n => n);
+
+            foreach (var f in delaunayFaces)
+            {
+                foreach (var af in f.adjacentFaces)
+                {
+                    if (nodeDict.ContainsKey(af))
+                    {
+                        voronoiEdges.Add(new voronoiEdge { a = nodeDict[f], b = nodeDict[af] });
+                    }
+                };
+            };
+            
+            nodes = voronoiNodes.Select(n => n.vertex).ToList();
+            edges = voronoiEdges.Select(e => Tuple.Create(e.a.vertex, e.b.vertex)).ToList();
+            
             for (var i = 0; i < delaunayFaces.Count; i++)
+            {
                 for (var j = 0; j < delaunayFaces[i].adjacentFaces.GetLength(0); j++)
-                    if (!delaunayFaces.Contains(delaunayFaces[i].adjacentFaces[j]))
+                {
+                    if (!nodeDict.ContainsKey(delaunayFaces[i].adjacentFaces[j]))
                     {
                         var edgeNodes = new List<IVertexConvHull>(delaunayFaces[i].vertices);
                         edgeNodes.RemoveAt(j);
                         var avg = new double[dimension];
                         avg = edgeNodes.Aggregate(avg, (current, v) => StarMath.add(current, v.coordinates));
                         avg = StarMath.divide(avg, dimension);
-                        voronoiNodes.Add(makeNewVoronoiEdge(avg, node_Type));
-                        voronoiEdges.Add(Tuple.Create(voronoiNodes[i], voronoiNodes[voronoiNodes.Count - 1]));
+                        nodes.Add(makeNewVoronoiEdge(avg, node_Type));
+                        edges.Add(Tuple.Create(nodes[i], nodes[nodes.Count - 1]));
                     }
-            nodes = voronoiNodes;
-            edges = voronoiEdges;
+                }
+            }            
         }
 
         private IVertexConvHull makeNewVoronoiEdge(double[] avg, Type node_Type)

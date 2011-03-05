@@ -59,7 +59,7 @@ namespace MIConvexHull
 
         #region Make functions
 
-        private SortedList<double, FaceData> initiateFaceDatabase()
+        private FibonacciHeap<double, FaceData> initiateFaceDatabase()
         {
             for (var i = 0; i < dimension + 1; i++)
             {
@@ -69,8 +69,8 @@ namespace MIConvexHull
                 /* the next line initialization of "verticesBeyond" is just to allow the line of
                  * code in updateFaces ("edge.Item2.verticesBeyond.Values).ToList());")
                  * to not crash when filling out the initial polygon. */
-                newFace.verticesBeyond = new SortedList<double, IVertexConvHull>();
-                convexFaces.Add(0.0, newFace);
+                newFace.verticesBeyond = new HashSet<IVertexConvHull>();
+                newFace.fibCell = convexFaces.Enqueue(0.0, newFace);
             }
             for (var i = 0; i < dimension; i++)
                 for (var j = i + 1; j < dimension + 1; j++)
@@ -78,9 +78,9 @@ namespace MIConvexHull
                     var edge = new List<IVertexConvHull>(convexHull);
                     edge.RemoveAt(j);
                     edge.RemoveAt(i);
-                    var betweenFaces = (from f in convexFaces.Values
+                    var betweenFaces = (from f in convexFaces.Select(tt => tt.Value)
                                         where f.vertices.Intersect(edge).Count() == edge.Count()
-                                        select f).ToList();
+                                        select f).Take(2).ToArray();
                     recordAdjacentFaces(betweenFaces[0], betweenFaces[1], edge);
                 }
             return convexFaces;
@@ -92,7 +92,7 @@ namespace MIConvexHull
                                         where (!edge.Contains(v))
                                         select Array.IndexOf(face1.vertices, v)).FirstOrDefault();
             face1.adjacentFaces[vertexIndexNotOnEdge] = face2;
-
+            
             vertexIndexNotOnEdge = (from v in face2.vertices
                                     where (!edge.Contains(v))
                                     select Array.IndexOf(face2.vertices, v)).FirstOrDefault();
@@ -110,20 +110,36 @@ namespace MIConvexHull
         private FaceData MakeFace(List<IVertexConvHull> vertices)
         {
             var outDir = new double[dimension];
-            outDir = vertices.Aggregate(outDir, (current, v) => StarMath.add(current, v.coordinates));
-            outDir = StarMath.divide(outDir, dimension);
-            outDir = StarMath.subtract(outDir, center);
+
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                for (int j = 0; j < dimension; j++)
+                {
+                    outDir[j] += vertices[i].coordinates[j];
+                }
+            }
+
+            for (int j = 0; j < dimension; j++)
+            {
+                outDir[j] /= dimension;
+            }
+
+            for (int j = 0; j < dimension; j++)
+            {
+                outDir[j] -= center[j];
+            }
+
             var normal = findNormalVector(vertices);
-            if (StarMath.multiplyDot(normal, outDir) < 0)
+            if (MathUtils.multiplyDotFast(normal, outDir, dimension) < 0)
             {
                 normal = StarMath.subtract(StarMath.makeZeroVector(dimension), normal);
                 if (dimension == 3) vertices.Reverse();
             }
             var newFace = new FaceData(dimension)
-                              {
-                                  normal = normal,
-                                  vertices = vertices.ToArray()
-                              };
+            {
+                normal = normal,
+                vertices = vertices.ToArray()
+            };
             return newFace;
         }
 
@@ -131,89 +147,191 @@ namespace MIConvexHull
 
         #region Find, Get and Update functions
 
-        private IEnumerable<FaceData> findFacesBeneathInitialVertices(IVertexConvHull currentVertex)
+        private FaceData[] findFacesBeneathInitialVertices(IVertexConvHull currentVertex)
         {
             var facesUnder = new List<FaceData>();
-            foreach (var face in convexFaces.Values)
+
+            var fst = convexFaces.Top.Value;
+            int n = 0;
+            if (fst != null) n = fst.vertices[0].coordinates.Length;
+
+            foreach (var face in convexFaces.Select(f => f.Value))
             {
                 double dummy;
-                if (isVertexOverFace(currentVertex, face, out dummy))
+                if (isVertexOverFace(currentVertex, face, out dummy, n))
                     facesUnder.Add(face);
             }
-            return facesUnder;
+            return facesUnder.ToArray();
         }
+               
 
-        private static Boolean isVertexOverFace(IVertexConvHull v, IFaceConvHull f, out double dotP)
+        private static Boolean isVertexOverFace(IVertexConvHull v, IFaceConvHull f, out double dotP, int n)
         {
-            dotP = StarMath.multiplyDot(f.normal, StarMath.subtract(v.coordinates, f.vertices[0].coordinates));
+            //dotP = StarMath.multiplyDot(f.normal, StarMath.subtract(v.coordinates, f.vertices[0].coordinates));
+            //this function is called very often and calling dot and sub separately is a lot of overhead
+            dotP = MathUtils.subtractAndDot(f.normal, v.coordinates, f.vertices[0].coordinates, n);
             return (dotP >= 0);
         }
 
-        private static List<FaceData> findAffectedFaces(FaceData currentFaceData, IVertexConvHull currentVertex,
+        private static FaceData[] findAffectedFaces(FaceData currentFaceData, IVertexConvHull currentVertex,
                                                         List<FaceData> primaryFaces = null)
         {
             if (primaryFaces == null)
                 return findAffectedFaces(currentFaceData, currentVertex, new List<FaceData> { currentFaceData });
-            foreach (var adjFace in
-                currentFaceData.adjacentFaces.Where(anyFace => !primaryFaces.Contains(anyFace)
-                    && (anyFace.verticesBeyond.Values.Contains(currentVertex))))
+
+            for (int i = 0; i < currentFaceData.adjacentFaces.Length; i++)
             {
-                primaryFaces.Add(adjFace);
-                findAffectedFaces(adjFace, currentVertex, primaryFaces);
+                var adjFace = currentFaceData.adjacentFaces[i];
+
+                if (adjFace != null && !contains(primaryFaces, adjFace) && adjFace.verticesBeyond.Contains(currentVertex))
+                {
+                    primaryFaces.Add(adjFace);
+                    findAffectedFaces(adjFace, currentVertex, primaryFaces);
+                }
             }
-            return primaryFaces;
+            return primaryFaces.ToArray();
         }
 
-        private void updateFaces(IEnumerable<FaceData> oldFaces, IVertexConvHull currentVertex)
+        // this is a somewhat crude optimalization of 
+        // var edge = newFaces[i].vertices.Intersect(newFaces[j].vertices).ToList();
+        // in updateFaces
+        int EdgeList(IVertexConvHull[] l, IVertexConvHull[] r, IVertexConvHull[] edgeBuffer)
+        {
+            int c = 0;
+            int miss = 0;
+
+            for (int i = 0; i < dimension; i++)
+            {
+                bool contains = false;
+                for (int j = 0; j < dimension; j++)
+                {
+                    if (l[i] == r[j])
+                    {
+                        contains = true;
+                        break;
+                    }
+                }
+                if (contains)
+                {
+                    if (c < dimension - 1) edgeBuffer[c] = l[i];
+                    c++;
+                }
+                else
+                {
+                    miss++;
+
+                    if (miss > 1) return 0;
+                }
+            }
+
+            return c;
+        }
+
+
+        // IEnumerable.Contains is called very often and this seems to be faster
+        bool containsNull(FaceData[] fd)
+        {
+            for (int i = 0; i < fd.Length; i++)
+            {
+                if (fd[i] == null) return true;
+            }
+
+            return false;
+        }
+
+        // IEnumerable.Contains is called very often and this seems to be faster
+        static bool contains(FaceData[] fd, FaceData face)
+        {
+            for (int i = 0; i < fd.Length; i++)
+            {
+                if (fd[i] == face) return true;
+            }
+
+            return false;
+        }
+
+        // IEnumerable.Contains is called very often and this seems to be faster
+        static bool contains(List<FaceData> fd, FaceData face)
+        {
+            for (int i = 0; i < fd.Count; i++)
+            {
+                if (fd[i] == face) return true;
+            }
+
+            return false;
+        }
+
+        private IEnumerable<FaceData> updateFaces(FaceData[] oldFaces, IVertexConvHull currentVertex, bool noRemove = false)
         {
             var newFaces = new List<FaceData>();
-            var affectedVertices = new List<IVertexConvHull>();
-            affectedVertices = oldFaces.Aggregate(affectedVertices, (current, oldFace)
-                 => current.Union(oldFace.verticesBeyond.Values).ToList());
+            var affectedVertices = new HashSet<IVertexConvHull>();
+            foreach (var of in oldFaces) affectedVertices.UnionWith(of.verticesBeyond);
             affectedVertices.Remove(currentVertex);
-            /******************************************************
-             ********* This appears to be the bottleneck for higher dimensions. 
-             **** I believe it can be improved. */
+            
             foreach (var oldFace in oldFaces)
             {
-                convexFaces.RemoveAt(convexFaces.IndexOfValue(oldFace));
+                if (oldFace.fibCell != null)
+                {
+                    convexFaces.Delete(oldFace.fibCell);
+                    oldFace.fibCell = null;
+                }
+
                 for (var i = 0; i < oldFace.adjacentFaces.GetLength(0); i++)
-                    if (!oldFaces.Contains(oldFace.adjacentFaces[i]))
+                {
+                    if (oldFace.adjacentFaces[i] != null && !contains(oldFaces, oldFace.adjacentFaces[i]))
                     {
                         var edge = new List<IVertexConvHull>(oldFace.vertices);
                         edge.RemoveAt(i);
                         var newFace = MakeFace(currentVertex, edge);
+                        if (oldFace.adjacentFaces[i] == null) throw new Exception("wtf");
                         recordAdjacentFaces(newFace, oldFace.adjacentFaces[i], edge);
-                        newFace.verticesBeyond = findBeyondVertices(newFace,
-                                                                    affectedVertices.Union(
-                                                                        oldFace.adjacentFaces[i].verticesBeyond.Values).
-                                                                        ToList());
+
+                        HashSet<IVertexConvHull> t = new HashSet<IVertexConvHull>(affectedVertices);
+                        t.UnionWith(oldFace.adjacentFaces[i].verticesBeyond);
+                        findBeyondVertices(newFace, t, dimension);
+
                         newFaces.Add(newFace);
                     }
+                }
             }
-            /**************************************************************************/
+
+            IVertexConvHull[] edgeBuffer = new IVertexConvHull[newFaces[0].vertices.Length - 1];
+
             for (var i = 0; i < newFaces.Count - 1; i++)
             {
                 for (var j = i + 1; j < newFaces.Count; j++)
                 {
-                    var edge = newFaces[i].vertices.Intersect(newFaces[j].vertices).ToList();
-                    if (edge.Count == dimension - 1)
-                        recordAdjacentFaces(newFaces[i], newFaces[j], edge);
-                    if (!newFaces[i].adjacentFaces.Contains(null)) break;
+                    //var edge = newFaces[i].vertices.Intersect(newFaces[j].vertices).ToList();
+                    int count = EdgeList(newFaces[i].vertices, newFaces[j].vertices, edgeBuffer);
+                    if (count == dimension - 1)
+                    {
+                        System.Diagnostics.Debug.Assert(edgeBuffer.All(ee => ee != null));
+                        System.Diagnostics.Debug.Assert(newFaces[j] != null);
+                        recordAdjacentFaces(newFaces[i], newFaces[j], edgeBuffer);
+                    }
+                    if (!containsNull(newFaces[i].adjacentFaces)) break;
                 }
             }
             foreach (var newFace in newFaces)
                 if (newFace.verticesBeyond.Count == 0)
-                    convexFaces.Add(-1.0, newFace);
-                else convexFaces.Add(newFace.verticesBeyond.Keys[0], newFace);
-        }
+                {
+                    newFace.fibCell = convexFaces.Enqueue(-1.0, newFace);
+                }
+                else
+                {
+                    var key = newFace.minVertexBeyond.Item1;
+                    newFace.fibCell = convexFaces.Enqueue(key, newFace);
+                }
 
+            return newFaces;
+        }        
+        
         private double[] findNormalVector(IList<IVertexConvHull> vertices)
         {
             double[] normal;
             if (dimension == 3)
-                normal = StarMath.multiplyCross(StarMath.subtract(vertices[1].coordinates, vertices[0].coordinates),
-                                                StarMath.subtract(vertices[2].coordinates, vertices[1].coordinates));
+                normal = StarMath.multiplyCross(MathUtils.subtractFast(vertices[1].coordinates, vertices[0].coordinates, dimension),
+                                                MathUtils.subtractFast(vertices[2].coordinates, vertices[1].coordinates, dimension));
             else
             {
                 var b = new double[dimension];
@@ -227,16 +345,28 @@ namespace MIConvexHull
         }
 
 
-        private static SortedList<double, IVertexConvHull> findBeyondVertices(IFaceConvHull face,
-                                                                              IEnumerable<IVertexConvHull> vertices)
+        private static void findBeyondVertices(FaceData face, IEnumerable<IVertexConvHull> vertices, int dim)
         {
-            var beyondVertices = new SortedList<double, IVertexConvHull>(new noEqualSortMaxtoMinDouble());
+            HashSet<IVertexConvHull> beyondVertices = new HashSet<IVertexConvHull>();
+
+            double min = double.NegativeInfinity;
+            IVertexConvHull minV = null;
+
             foreach (var v in vertices)
             {
                 double dotP;
-                if (isVertexOverFace(v, face, out dotP)) beyondVertices.Add(dotP, v);
+                if (isVertexOverFace(v, face, out dotP, dim))
+                {
+                    if (dotP > min)
+                    {
+                        min = dotP;
+                        minV = v;
+                    }
+                    beyondVertices.Add(v);
+                }
             }
-            return beyondVertices;
+            face.verticesBeyond = beyondVertices;
+            face.minVertexBeyond = Tuple.Create(min, minV);
         }
 
 

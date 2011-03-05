@@ -58,9 +58,10 @@ namespace TestEXE_for_MIConvexHull_Voronoi
             Console.WriteLine("Running...");
             var now = DateTime.Now;
             var convexHull = new ConvexHull(vertices);
-            List<IVertexConvHull> vnodes;
-            List<Tuple<IVertexConvHull, IVertexConvHull>> vedges;
-            convexHull.FindVoronoiGraph(out vnodes, out vedges, typeof(vertex));
+            List<IVertexConvHull> vnodes = new List<IVertexConvHull>();
+            List<Tuple<IVertexConvHull, IVertexConvHull>> vedges = new List<Tuple<IVertexConvHull,IVertexConvHull>>();
+            //convexHull.FindDelaunayTriangulation();
+            convexHull.FindVoronoiGraph(out vnodes, out vedges);
             var interval = DateTime.Now - now;
             Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
                 vnodes.Count + " voronoi points and " + vedges.Count + " voronoi edges.");

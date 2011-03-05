@@ -30,9 +30,9 @@ namespace MIConvexHull
     {
         List<IVertexConvHull> origVertices;
         List<IVertexConvHull> convexHull;
-        List<IVertexConvHull> voronoiNodes;
+        //List<IVertexConvHull> voronoiNodes;
         List<Tuple<IVertexConvHull, IVertexConvHull>> voronoiEdges;
-        SortedList<double, FaceData> convexFaces;
+        FibonacciHeap<double, FaceData> convexFaces;
         List<FaceData> delaunayFaces;
         int dimension;
         double[] center;
@@ -45,7 +45,7 @@ namespace MIConvexHull
         void Initialize()
         {
             convexHull = new List<IVertexConvHull>();
-            convexFaces = new SortedList<double, FaceData>(new noEqualSortMaxtoMinDouble());
+            convexFaces = new FibonacciHeap<double, FaceData>(HeapDirection.Decreasing, (x, y) => (x < y) ? -1 : 1);
             center = new double[dimension];
         }
     }

@@ -60,7 +60,7 @@ namespace MIConvexHull
                 if (index == midPoint) continue;
                 for (var m = 0; m < VCount; m++)
                 {
-                    var extreme = flip * StarMath.multiplyDot(ternaryPosition, origVertices[m].coordinates);
+                    var extreme = flip * MathUtils.multiplyDotFast(ternaryPosition, origVertices[m].coordinates, dimension);
                     if (extreme <= extremeValues[index]) continue;
                     AklToussaintIndices[index] = m;
                     extremeValues[index] = extreme;
@@ -91,29 +91,38 @@ namespace MIConvexHull
 
             #endregion
 
+
             #region Step #3: Consider all remaining vertices. Store them with the faces that they are 'beyond'
-            var justTheFaces = new List<FaceData>(convexFaces.Values);
+            var justTheFaces = convexFaces.Select(f => f.Value).ToArray();
             foreach (var face in justTheFaces)
             {
-                convexFaces.RemoveAt(convexFaces.IndexOfValue(face));
-                face.verticesBeyond = findBeyondVertices(face, origVertices);
+                convexFaces.Delete(face.fibCell);
+                face.fibCell = null;
+                findBeyondVertices(face, origVertices, dimension);
                 if (face.verticesBeyond.Count == 0)
-                    convexFaces.Add(-1.0, face);
-                else convexFaces.Add(face.verticesBeyond.Keys[0], face);
+                {
+                    face.fibCell = convexFaces.Enqueue(-1.0, face);
+                }
+                else
+                {
+                    double key = face.minVertexBeyond.Item1;
+                    face.fibCell = convexFaces.Enqueue(key, face);
+                }
             }
 
             #endregion
-
+            
             #region Step #4: Now a final loop to expand the convex hull and faces based on these beyond vertices
-            while (convexFaces.Keys[0] >= 0)
+            while (!convexFaces.IsEmpty && convexFaces.Top.Priority >= 0)
             {
-                var currentFace = convexFaces.Values[0];
-                var currentVertex = currentFace.verticesBeyond.Values[0];
+                var tf = convexFaces.Top.Value;
+                var currentFace = tf;
+                var currentVertex = currentFace.minVertexBeyond.Item2;
                 convexHull.Add(currentVertex);
                 updateCenter(currentVertex);
 
                 var primaryFaces = findAffectedFaces(currentFace, currentVertex);
-                updateFaces(primaryFaces, currentVertex);
+                updateFaces(primaryFaces, currentVertex, true);
             }
             #endregion
         }
