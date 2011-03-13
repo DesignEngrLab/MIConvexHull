@@ -18,7 +18,13 @@ namespace MIConvexHull
 
         public bool Equals(voronoiEdge other)
         {
-            return object.ReferenceEquals(a.face, other.a.face) && object.ReferenceEquals(b.face, other.b.face);
+            return (object.ReferenceEquals(a.face, other.a.face) && object.ReferenceEquals(b.face, other.b.face)) ||
+                   (object.ReferenceEquals(a.face, other.b.face) && object.ReferenceEquals(b.face, other.a.face));
+        }
+
+        public override int GetHashCode()
+        {
+            return a.GetHashCode() ^ b.GetHashCode();
         }
     }
 }

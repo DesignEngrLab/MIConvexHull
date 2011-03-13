@@ -33,7 +33,6 @@ namespace MIConvexHull
         public static double subtractAndDot(double[] n, double[] l, double[] r, int dim)
         {
             double acc = 0;
-            double[] t = new double[dim];
             for (int i = 0; i < dim; i++)
             {
                 acc += n[i] * (l[i] - r[i]);
