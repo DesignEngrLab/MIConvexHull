@@ -90,19 +90,22 @@ namespace ExampleWithGraphics
                                TriangleIndices = faceTris
                            };
 
+            var material = new MaterialGroup
+                            {
+                                Children = new MaterialCollection
+                                            {
+                                                new DiffuseMaterial(Brushes.Red),
+                                                new SpecularMaterial(Brushes.Beige, 2.0)
+                                            }
+                            };
+
 
             var geoMod = new GeometryModel3D
                              {
                                  Geometry = mg3d,
-                                 BackMaterial = new MaterialGroup
-                                                    {
-                                                        Children = new MaterialCollection
-                                                                       {
-                                                                           new DiffuseMaterial(Brushes.Red),
-                                                                           new SpecularMaterial(Brushes.Beige, 2.0)
-                                                                       }
-                                                    }
+                                 Material = material
                              };
+
             modViz = new ModelVisual3D { Content = geoMod };
             viewport.Children.Add(modViz);
         }
@@ -122,6 +125,26 @@ namespace ExampleWithGraphics
 
                 viewport.Children.Add(vi);
             }
+
+            //vertices.Add(new vertex(0, 0, 0));
+            //vertices.Add(new vertex(10, 0, 0));
+            //vertices.Add(new vertex(0, 10, 0));
+            //vertices.Add(new vertex(0, 0, 10));
+            //vertices.Add(new vertex(10, 10, 0));
+            //vertices.Add(new vertex(10, 0, 10));
+            //vertices.Add(new vertex(0, 10, 10));
+            //vertices.Add(new vertex(10, 10, 10));
+
+            //vertices.Add(new vertex(10, 10, 20));
+            //vertices.Add(new vertex(0, 10, 20));
+            //vertices.Add(new vertex(10, 0, 20));
+            //vertices.Add(new vertex(0, 0, 20));
+            
+            //foreach (var item in vertices)
+            //{
+            //    viewport.Children.Add((vertex)item);
+            //}
+
             btnRun.IsDefault = true;
             btnDisplay.IsEnabled = false;
             txtBlkTimer.Text = "00:00:00.000";
