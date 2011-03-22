@@ -22,6 +22,7 @@ namespace TestEXE_for_MIConvexHull2D
 {
     using System;
     using MIConvexHull;
+    using System.Collections.Generic;
 
 
     static class Program
@@ -41,7 +42,7 @@ namespace TestEXE_for_MIConvexHull2D
             //    vertices.Add(new vertex(size * r.NextDouble(), size * r.NextDouble()));
 
             var vertices = new object[NumberOfVertices];
-            for (var i=0; i<NumberOfVertices; i++)
+            for (var i = 0; i < NumberOfVertices; i++)
                 vertices[i] = new vertex(size * r.NextDouble(), size * r.NextDouble());
             Console.WriteLine("Running...");
             var now = DateTime.Now;
@@ -51,6 +52,7 @@ namespace TestEXE_for_MIConvexHull2D
             Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
                 convexHullVertices.Count + " in the convex hull.");
             Console.WriteLine("time = " + interval);
+
             Console.ReadLine();
         }
 

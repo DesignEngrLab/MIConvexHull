@@ -84,7 +84,6 @@ namespace ExampleWithGraphics
 
         }
 
-
         private void btnDisplayVoronoi_Click(object sender, RoutedEventArgs e)
         {
             foreach (var edge in edges)

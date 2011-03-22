@@ -72,7 +72,7 @@ namespace MIConvexHull
             AklToussaintIndices.Remove(-1);
             AklToussaintIndices.Sort(new noEqualSortMaxtoMinInt());
             #endregion
-
+            
             #region Step #2: Define up to 48 faces of the Disdyakis dodecahedron
             for (var i = 0; i < AklToussaintIndices.Count; i++)
             {
@@ -89,11 +89,11 @@ namespace MIConvexHull
                 origVertices.RemoveAt(AklToussaintIndices[i]);
             }
 
-            #endregion
-
-
+            #endregion            
+            
             #region Step #3: Consider all remaining vertices. Store them with the faces that they are 'beyond'
             var justTheFaces = convexFaces.Select(f => f.Value).ToArray();
+
             foreach (var face in justTheFaces)
             {
                 convexFaces.Delete(face.fibCell);
@@ -109,7 +109,7 @@ namespace MIConvexHull
                     face.fibCell = convexFaces.Enqueue(key, face);
                 }
             }
-
+            
             #endregion
             
             #region Step #4: Now a final loop to expand the convex hull and faces based on these beyond vertices
