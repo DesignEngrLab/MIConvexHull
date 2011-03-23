@@ -102,17 +102,53 @@ namespace MIConvexHull
 			return convexFaces;
 		}
 
-		private static void recordAdjacentFaces(FaceData face1, FaceData face2, ICollection<IVertexConvHull> edge)
+        static bool containsVert(IList<IVertexConvHull> vs, IVertexConvHull vert)
 		{
-			var vertexIndexNotOnEdge = (from v in face1.vertices
-										where (!edge.Contains(v))
-										select Array.IndexOf(face1.vertices, v)).FirstOrDefault();
-			face1.adjacentFaces[vertexIndexNotOnEdge] = face2;
-			
-			vertexIndexNotOnEdge = (from v in face2.vertices
-									where (!edge.Contains(v))
-									select Array.IndexOf(face2.vertices, v)).FirstOrDefault();
-			face2.adjacentFaces[vertexIndexNotOnEdge] = face1;
+            int count = vs.Count;
+            for (int i = 0; i < count; i++)
+            {
+                if (vs[i] == vert) return true;
+            }
+
+			return false;
+		}
+
+		private void recordAdjacentFaces(FaceData face1, FaceData face2, IList<IVertexConvHull> edge)
+		{
+			//var vertexIndexNotOnEdge = (from v in face1.vertices
+			//                            where (!edge.Contains(v))
+			//                            select Array.IndexOf(face1.vertices, v)).FirstOrDefault();
+			//face1.adjacentFaces[vertexIndexNotOnEdge] = face2;
+
+            for (int i = 0; i < dimension; i++)
+            {
+                var v = face1.vertices[i];
+                if (!containsVert(edge, v))
+                {
+                    face1.adjacentFaces[Array.IndexOf(face1.vertices, v)] = face2;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < dimension; i++)
+            {
+                var v = face2.vertices[i];
+                if (!containsVert(edge, v))
+                {
+                    face2.adjacentFaces[Array.IndexOf(face2.vertices, v)] = face1;
+                    break;
+                }
+            }
+
+            //var vertexIndexNotOnEdge = (from v in face1.vertices
+            //                            where (!edge.Contains(v))
+            //                            select Array.IndexOf(face1.vertices, v)).FirstOrDefault();
+            //face1.adjacentFaces[vertexIndexNotOnEdge] = face2;
+
+            //vertexIndexNotOnEdge = (from v in face2.vertices
+            //                        where (!edge.Contains(v))
+            //                        select Array.IndexOf(face2.vertices, v)).FirstOrDefault();
+            //face2.adjacentFaces[vertexIndexNotOnEdge] = face1;
 		}
 
 
