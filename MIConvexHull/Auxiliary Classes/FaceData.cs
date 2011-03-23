@@ -32,6 +32,7 @@ namespace MIConvexHull
         /// </summary>
         /// <value>The vertices beyond.</value>
         public HashSet<IVertexConvHull> verticesBeyond { get; set; }
+
         /// <summary>
         /// Gets or sets the "minimum" vertex.
         /// </summary>

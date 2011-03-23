@@ -39,13 +39,42 @@ namespace ExampleWithGraphics
             var r = new Random();
 
             /****** Random Vertices ******/
-            for (var i = 0; i < NumberOfVertices; i++)
-            {
-                var vi = new vertex(size * r.NextDouble(), size * r.NextDouble());
-                vertices.Add(vi);
+            //for (var i = 0; i < NumberOfVertices; i++)
+            //{
+            //    var vi = new vertex(size * r.NextDouble(), size * r.NextDouble());
+            //    vertices.Add(vi);
+            //    drawingCanvas.Children.Add(vi);
+            //}
 
-                drawingCanvas.Children.Add(vi);
+            int ls = 10;
+            int offset = 50;
+            for (var i = 0; i < ls; i++)
+            {
+                for (int j = 0; j < ls; j++)
+                {
+                    var vi = new vertex(i * size / (ls + 1) + offset, j * size / (ls + 1) + offset);
+                    vertices.Add(vi);
+                    drawingCanvas.Children.Add(vi);
+                }
             }
+
+            var ver = new vertex(0, 0);
+            vertices.Add(ver);
+            drawingCanvas.Children.Add(ver);
+
+            var tt = size;
+            ver = new vertex(tt, 0);
+            vertices.Add(ver);
+            drawingCanvas.Children.Add(ver);
+
+            ver = new vertex(0, tt);
+            vertices.Add(ver);
+            drawingCanvas.Children.Add(ver);
+
+            ver = new vertex(tt, tt);
+            vertices.Add(ver);
+            drawingCanvas.Children.Add(ver);
+
             btnDisplayDelaunay.IsDefault = true;
             btnDisplayDelaunay.IsEnabled = false;
             txtBlkTimer.Text = "00:00:00.000";
@@ -58,7 +87,7 @@ namespace ExampleWithGraphics
             var now = DateTime.Now;
             faces = convexHull.FindDelaunayTriangulation(typeof(face));
             var interval = DateTime.Now - now;
-            txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
+            txtBlkTimer.Text = faces.Count.ToString() + " | " + interval.Hours + ":" + interval.Minutes
                                + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
             btnDisplayDelaunay.IsEnabled = true;
             btnDisplayDelaunay.IsDefault = true;
