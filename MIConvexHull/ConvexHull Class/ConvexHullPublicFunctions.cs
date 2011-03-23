@@ -192,6 +192,8 @@ namespace MIConvexHull
         {
             if (!delaunayAnalysisComplete)
             {
+                var rnd = new Random();
+
                 if ((origVertices == null) || (origVertices.Count == 0))
                     throw new Exception("Please input the vertices first with the \"InputVertices\" function.");
                 if (dimensions == -1) determineDimension(origVertices);

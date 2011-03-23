@@ -12,7 +12,7 @@ namespace MIConvexHull
     ///   MIConvexHull for 3and higher dimensions.
     /// </summary>
     public partial class ConvexHull
-    {
+    {       
         /// <summary>
         ///   Finds the convex hull vertices.
         /// </summary>
@@ -20,6 +20,8 @@ namespace MIConvexHull
         private void FindConvexHull()
         {
             var VCount = origVertices.Count;
+            origVertices.Sort(new lexComp(dimension));
+
             /* as a heuristic, we limit the number of solutions created in the first loop, by an albeit, 
              * artificial formulation. This is to prevent the process from stagnating in this step in higher 
              * dimensions when the number of solutions on the Akl-Toussaint polygon gets too high (3^dimension).*/
@@ -61,7 +63,7 @@ namespace MIConvexHull
                 for (var m = 0; m < VCount; m++)
                 {
                     var extreme = flip * MathUtils.multiplyDotFast(ternaryPosition, origVertices[m].coordinates, dimension);
-                    if (extreme <= extremeValues[index]) continue;
+                    if (extreme < extremeValues[index]) continue;
                     AklToussaintIndices[index] = m;
                     extremeValues[index] = extreme;
                 }

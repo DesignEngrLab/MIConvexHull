@@ -27,4 +27,27 @@ namespace MIConvexHull
             return 1;
         }
     }
+
+    class lexComp : IComparer<IVertexConvHull>
+    {
+        int dim;
+
+        public int Compare(IVertexConvHull vx, IVertexConvHull vy)
+        {
+            var x = vx.coordinates;
+            var y = vy.coordinates;
+            for (int i = 0; i < dim; i++)
+            {
+                if (x[i] < y[i]) return -1;
+                if (x[i] > y[i]) return 1;
+            }
+
+            return 0;
+        }
+
+        public lexComp(int dim)
+        {
+            this.dim = dim;
+        }
+    }
 }
