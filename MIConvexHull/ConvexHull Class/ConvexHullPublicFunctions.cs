@@ -15,7 +15,7 @@ namespace MIConvexHull
     /// </summary>
     public partial class ConvexHull
     {
-        #region Input Vertices
+        #region Constructors: Used to Input Vertices
         /// <summary>
         /// Inputs the vertices.
         /// </summary>
@@ -24,7 +24,6 @@ namespace MIConvexHull
         public ConvexHull(List<IVertexConvHull> vertices)
         {
             origVertices = new List<IVertexConvHull>(vertices);
-            convexHullAnalysisComplete = delaunayAnalysisComplete = false;
         }
 
 
@@ -49,7 +48,6 @@ namespace MIConvexHull
                     origVertices.Add(new defaultVertex { coordinates = (double[])v });
             }
             else throw new Exception("List must be made up of Point (System.Windows), Point3D(Windows.Media3D),or IVertexConvHull objects, or 1D double arrays.");
-            convexHullAnalysisComplete = delaunayAnalysisComplete = false;
         }
         void Input2DPoints(IEnumerable<Point> vertices)
         {
@@ -69,35 +67,12 @@ namespace MIConvexHull
         /// </summary>
         /// <param name="vertices">The vertices.</param>
         /// <returns></returns>
-        public ConvexHull(object[] vertices)
-        {
-            origVertices = new List<IVertexConvHull>();
-            if (vertices[0] as IVertexConvHull != null)
-            {
-                for (var i = 0; i < vertices.GetLength(0); i++)
-                    origVertices.Add((IVertexConvHull)vertices[i]);
-            }
-            else if ((vertices[0] as double[] != null) || (vertices[0] as float[] != null))
-            {
-                for (var i = 0; i < vertices.GetLength(0); i++)
-                    origVertices.Add(new defaultVertex { coordinates = (double[])vertices[i] });
-            }
-            convexHullAnalysisComplete = delaunayAnalysisComplete = false;
-        }
-
-
-        /// <summary>
-        /// Inputs the vertices.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <returns></returns>
         public ConvexHull(double[,] vertices)
         {
             origVertices = new List<IVertexConvHull>();
             for (var i = 0; i < vertices.GetLength(0); i++)
                 origVertices.Add(new defaultVertex { coordinates = StarMath.GetRow(i, vertices) });
 
-            convexHullAnalysisComplete = delaunayAnalysisComplete = false;
         }
         #endregion
 
@@ -109,11 +84,13 @@ namespace MIConvexHull
         /// <returns></returns>
         public List<IVertexConvHull> FindConvexHull(int dimensions = -1)
         {
+            Status.TotalTaskCount = 4;
+            Status.TaskNumber = 0;
             if ((origVertices == null) || (origVertices.Count == 0))
                 throw new Exception("Please input the vertices first with the \"InputVertices\" function.");
             if (dimensions == -1) determineDimension(origVertices);
             else dimension = dimensions;
-            Initialize();
+            center = new double[dimension];
             if (dimension < 2) throw new Exception("Dimensions of space must be 2 or greater.");
             if (!convexHullAnalysisComplete)
             {
@@ -130,6 +107,8 @@ namespace MIConvexHull
         /// <returns></returns>
         public double[][] FindConvexHull_AsDoubleArray(int dimensions = -1)
         {
+            Status.TotalTaskCount = 4;
+            Status.TaskNumber = 0;
             var vertices = FindConvexHull(dimensions);
             var result = new double[vertices.Count][];
             for (var i = 0; i < vertices.Count; i++)
@@ -148,11 +127,13 @@ namespace MIConvexHull
         /// <returns></returns>
         public List<IVertexConvHull> FindConvexHull(out List<IFaceConvHull> faces, Type face_Type = null, int dimensions = -1)
         {
+            Status.TotalTaskCount = 5;
+            Status.TaskNumber = 0;
             if ((origVertices == null) || (origVertices.Count == 0))
                 throw new Exception("Please input the vertices first with the \"InputVertices\" function.");
             if (dimensions == -1) determineDimension(origVertices);
             else dimension = dimensions;
-            Initialize();
+            center = new double[dimension];
             if (dimension < 2) throw new Exception("Dimensions of space must be 2 or greater.");
             if (!convexHullAnalysisComplete)
             {
@@ -160,12 +141,16 @@ namespace MIConvexHull
                 else FindConvexHull();
                 convexHullAnalysisComplete = true;
             }
+            Status.TaskNumber = 5;
+            Status.TotalSubTaskCount = convexFaces.Count;
+            Status.SubTaskNumber = 0;
 
             if (face_Type != null)
             {
                 faces = new List<IFaceConvHull>(convexFaces.Count);
                 foreach (var f in convexFaces)
                 {
+                    Status.SubTaskNumber++;
                     var constructor = face_Type.GetConstructor(new Type[0]);
                     var newFace = (IFaceConvHull)constructor.Invoke(new object[0]);
                     newFace.normal = f.Value.normal;
@@ -190,6 +175,8 @@ namespace MIConvexHull
         /// <returns></returns>
         public List<IFaceConvHull> FindDelaunayTriangulation(Type face_Type = null, int dimensions = -1)
         {
+            Status.TotalTaskCount = 5;
+            Status.TaskNumber = 0;
             if (!delaunayAnalysisComplete)
             {
                 if ((origVertices == null) || (origVertices.Count == 0))
@@ -205,13 +192,17 @@ namespace MIConvexHull
                     v.coordinates = coord;
                 }
                 dimension++;
-                Initialize();
+                center = new double[dimension];
                 FindConvexHull();
                 delaunayAnalysisComplete = true;
                 dimension--;
             }
+            Status.TaskNumber = 5;
+            Status.TotalSubTaskCount = convexHull.Count;
+            Status.SubTaskNumber = 0;
             foreach (var v in convexHull)
             {
+                Status.SubTaskNumber++;
                 var coord = v.coordinates;
                 Array.Resize(ref coord, dimension);
                 v.coordinates = coord;
@@ -224,9 +215,12 @@ namespace MIConvexHull
             List<IFaceConvHull> userDelaunayFaces;
             if (face_Type != null)
             {
+                Status.TotalSubTaskCount = delaunayFaces.Count;
+                Status.SubTaskNumber = 0;
                 userDelaunayFaces = new List<IFaceConvHull>(delaunayFaces.Count);
                 foreach (var f in delaunayFaces)
                 {
+                    Status.SubTaskNumber++;
                     var constructor = face_Type.GetConstructor(new Type[0]);
                     var newFace = (IFaceConvHull)constructor.Invoke(new object[0]);
                     newFace.vertices = f.vertices;
@@ -248,14 +242,21 @@ namespace MIConvexHull
         public void FindVoronoiGraph(out List<IVertexConvHull> nodes, out List<Tuple<IVertexConvHull, IVertexConvHull>> edges,
             Type node_Type = null, int dimensions = -1)
         {
+            Status.TotalTaskCount = 6;
+            Status.TaskNumber = 0;
             if ((origVertices == null) || (origVertices.Count == 0))
                 throw new Exception("Please input the vertices first with the \"InputVertices\" function.");
             if (dimensions == -1) determineDimension(origVertices);
             else dimension = dimensions;
             FindDelaunayTriangulation(null, dimension);
+            Status.TaskNumber = 6;
+            var p = delaunayFaces.Count;
+            Status.TotalSubTaskCount = p + p * (p - 1) / 2 + p * dimension;
+            Status.SubTaskNumber = 0;
             voronoiNodes = new List<IVertexConvHull>(delaunayFaces.Count);
             foreach (var f in delaunayFaces)
             {
+                Status.SubTaskNumber++;
                 var avg = new double[dimension];
                 avg = f.vertices.Aggregate(avg, (current, v) => StarMath.add(current, v.coordinates));
                 avg = StarMath.divide(avg, dimension + 1);
@@ -265,7 +266,10 @@ namespace MIConvexHull
             for (var i = 0; i < delaunayFaces.Count - 1; i++)
                 for (var j = i + 1; j < delaunayFaces.Count; j++)
                     if (delaunayFaces[i].adjacentFaces.Contains(delaunayFaces[j]))
+                    {
                         voronoiEdges.Add(Tuple.Create(voronoiNodes[i], voronoiNodes[j]));
+                        Status.SubTaskNumber++;
+                    }
 
             for (var i = 0; i < delaunayFaces.Count; i++)
                 for (var j = 0; j < delaunayFaces[i].adjacentFaces.GetLength(0); j++)
@@ -278,6 +282,7 @@ namespace MIConvexHull
                         avg = StarMath.divide(avg, dimension);
                         voronoiNodes.Add(makeNewVoronoiEdge(avg, node_Type));
                         voronoiEdges.Add(Tuple.Create(voronoiNodes[i], voronoiNodes[voronoiNodes.Count - 1]));
+                        Status.SubTaskNumber++;
                     }
             nodes = voronoiNodes;
             edges = voronoiEdges;

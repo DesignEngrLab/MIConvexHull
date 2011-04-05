@@ -28,11 +28,11 @@ namespace MIConvexHull
     /// </summary>
     public partial class ConvexHull
     {
-        List<IVertexConvHull> origVertices;
-        List<IVertexConvHull> convexHull;
+        readonly List<IVertexConvHull> origVertices;
+        List<IVertexConvHull> convexHull = new List<IVertexConvHull>();
         List<IVertexConvHull> voronoiNodes;
         List<Tuple<IVertexConvHull, IVertexConvHull>> voronoiEdges;
-        SortedList<double, FaceData> convexFaces;
+        SortedList<double, FaceData> convexFaces= new SortedList<double, FaceData>(new noEqualSortMaxtoMinDouble());
         List<FaceData> delaunayFaces;
         int dimension;
         double[] center;
@@ -41,12 +41,6 @@ namespace MIConvexHull
         private const double coeffOffset = 1250;
         private Boolean convexHullAnalysisComplete;
         private Boolean delaunayAnalysisComplete;
-
-        void Initialize()
-        {
-            convexHull = new List<IVertexConvHull>();
-            convexFaces = new SortedList<double, FaceData>(new noEqualSortMaxtoMinDouble());
-            center = new double[dimension];
-        }
+        public StatusClass Status = new StatusClass();         
     }
 }

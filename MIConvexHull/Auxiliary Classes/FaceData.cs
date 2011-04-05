@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System;
 
 namespace MIConvexHull
 {
@@ -30,7 +31,12 @@ namespace MIConvexHull
         /// Gets or sets the vertices beyond.
         /// </summary>
         /// <value>The vertices beyond.</value>
-        public SortedList<double, IVertexConvHull> verticesBeyond { get; set; }
+        public HashSet<IVertexConvHull> verticesBeyond { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "minimum" vertex.
+        /// </summary>
+        public Tuple<double, IVertexConvHull> minVertexBeyond;
         /// <summary>
         /// Gets or sets the vertices.
         /// </summary>
@@ -41,5 +47,9 @@ namespace MIConvexHull
         /// </summary>
         /// <value>The normal.</value>
         public double[] normal { get; set; }
+        /// <summary>
+        /// Gets or sets the fibonacci heap cell representing this FaceData
+        /// </summary>
+        public FibonacciHeapCell<double, FaceData> fibCell { get; set; }
     }
 }

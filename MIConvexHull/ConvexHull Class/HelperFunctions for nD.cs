@@ -204,7 +204,10 @@ namespace MIConvexHull
             }
             foreach (var newFace in newFaces)
                 if (newFace.verticesBeyond.Count == 0)
+                {
+                    if (Status.TaskNumber == 4) Status.SubTaskNumber++;
                     convexFaces.Add(-1.0, newFace);
+                }
                 else convexFaces.Add(newFace.verticesBeyond.Keys[0], newFace);
         }
 

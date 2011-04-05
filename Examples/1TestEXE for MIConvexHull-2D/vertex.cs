@@ -67,4 +67,26 @@ namespace TestEXE_for_MIConvexHull2D
             }
         }
     }
+
+    public class vertex3 : IVertexConvHull
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="vertex"/> class.
+        /// </summary>
+        /// <param name="x">The x position.</param>
+        /// <param name="y">The y position.</param>
+        public vertex3(double x, double y, double z)
+        {
+            coordinates = new double[] { x, y, z };
+        }
+
+        /// <summary>
+        /// Gets or sets the coordinates.
+        /// </summary>
+        /// <value>The coordinates.</value>
+        public double[] coordinates
+        {
+            get; set;
+        }
+    }
 }

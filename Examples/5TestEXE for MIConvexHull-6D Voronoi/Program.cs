@@ -27,6 +27,9 @@
  * to maneuver in full 3-D space, and you have 6 variables: x, y, z, and rotations
  * about x, y, and z. The resulting graph could be used by a path-planning search process.
  */
+using System.Threading;
+using System.Windows.Threading;
+
 namespace TestEXE_for_MIConvexHull_Voronoi
 {
     using System;
@@ -38,6 +41,7 @@ namespace TestEXE_for_MIConvexHull_Voronoi
     {
         static void Main()
         {
+            statusTimer.Tick += statusTimerTimer_Tick;
             const int NumberOfVertices = 500;
             const double size = 1000;
             const int dimension = 6;
@@ -57,15 +61,30 @@ namespace TestEXE_for_MIConvexHull_Voronoi
             }
             Console.WriteLine("Running...");
             var now = DateTime.Now;
-            var convexHull = new ConvexHull(vertices);
+            convexHull = new ConvexHull(vertices);
             List<IVertexConvHull> vnodes;
             List<Tuple<IVertexConvHull, IVertexConvHull>> vedges;
-            convexHull.FindVoronoiGraph(out vnodes, out vedges, typeof(vertex));
-            var interval = DateTime.Now - now;
-            Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
-                vnodes.Count + " voronoi points and " + vedges.Count + " voronoi edges.");
-            Console.WriteLine("time = " + interval);
-            Console.ReadLine();
+            statusTimer.Start();
+            convexHull.FindVoronoiGraph(out vnodes, out vedges, typeof (vertex));
+            //var interval = DateTime.Now - now;
+            //statusTimer.Stop();
+            //Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
+            //    vnodes.Count + " voronoi points and " + vedges.Count + " voronoi edges.");
+            //Console.WriteLine("time = " + interval);
+            //Console.ReadLine();
+        }
+
+        private static ConvexHull convexHull;
+        static readonly DispatcherTimer statusTimer = new DispatcherTimer
+              {
+                  Interval = new TimeSpan(50000000),
+                  IsEnabled = true
+              };
+
+        static void statusTimerTimer_Tick(object sender, EventArgs e)
+        {
+            Console.WriteLine(convexHull.Status);
         }
     }
 }
+

@@ -39,10 +39,8 @@ namespace ExampleWithGraphics
         /// <param name="z">The z position.</param>
         public vertex(double x, double y, double z)
         {
-            X = x;
-            Y = y;
-            Z = z;
-            Center = new Point3D(X, Y, Z);
+            coordinates = new double[] { x, y, z };
+            Center = new Point3D(x, y, z);
             Radius = 0.5;
 
             BackMaterial = new DiffuseMaterial(Brushes.Black);
@@ -52,20 +50,20 @@ namespace ExampleWithGraphics
         /// Gets or sets the X.
         /// </summary>
         /// <value>The X position.</value>
-        private double X { get; set; }
+        private double X { get { return coordinates[0]; } set { coordinates[0] = value; } }
 
         /// <summary>
         /// Gets or sets the Y.
         /// </summary>
         /// <value>The Y position.</value>
-        private double Y { get; set; }
+        private double Y { get { return coordinates[1]; } set { coordinates[1] = value; } }
 
 
         /// <summary>
         /// Gets or sets the Z. Not used by MIConvexHull2D.
         /// </summary>
         /// <value>The Z position.</value>
-        private double Z { get; set; }
+        private double Z { get { return coordinates[2]; } set { coordinates[2] = value; } }
 
         /// <summary>
         /// Gets or sets the coordinates.
@@ -73,13 +71,8 @@ namespace ExampleWithGraphics
         /// <value>The coordinates.</value>
         public double[] coordinates
         {
-            get { return new[] { X, Y, Z }; }
-            set
-            {
-                X = value[0];
-                Y = value[1];
-                Z = value[2];
-            }
+            get;
+            set;
         }
     }
 }

@@ -90,19 +90,22 @@ namespace ExampleWithGraphics
                                TriangleIndices = faceTris
                            };
 
+            var material = new MaterialGroup
+                            {
+                                Children = new MaterialCollection
+                                            {
+                                                new DiffuseMaterial(Brushes.Red),
+                                                new SpecularMaterial(Brushes.Beige, 2.0)
+                                            }
+                            };
+
 
             var geoMod = new GeometryModel3D
                              {
                                  Geometry = mg3d,
-                                 BackMaterial = new MaterialGroup
-                                                    {
-                                                        Children = new MaterialCollection
-                                                                       {
-                                                                           new DiffuseMaterial(Brushes.Red),
-                                                                           new SpecularMaterial(Brushes.Beige, 2.0)
-                                                                       }
-                                                    }
+                                 Material = material
                              };
+
             modViz = new ModelVisual3D { Content = geoMod };
             viewport.Children.Add(modViz);
         }
@@ -122,6 +125,38 @@ namespace ExampleWithGraphics
 
                 viewport.Children.Add(vi);
             }
+
+            //vertices.Add(new vertex(0, 0, 0));
+            //vertices.Add(new vertex(10, 0, 0));
+            //vertices.Add(new vertex(0, 10, 0));
+            //vertices.Add(new vertex(0, 0, 10));
+            //vertices.Add(new vertex(10, 10, 0));
+            //vertices.Add(new vertex(10, 0, 10));
+            //vertices.Add(new vertex(0, 10, 10));
+            //vertices.Add(new vertex(10, 10, 10));
+
+            //vertices.Add(new vertex(10, 10, 20));
+            //vertices.Add(new vertex(0, 10, 20));
+            //vertices.Add(new vertex(10, 0, 20));
+            //vertices.Add(new vertex(0, 0, 20));
+
+//            for (int i = 0; i < 8; i++)
+//            {
+//                for (int j = 0; j < 8; j++)
+//                {
+//                    for (int k = 0; k < 8; k++)
+//                    {
+////                        vertices.Add(new vertex(5 * i, 0.6 * (i * i + j * j), 5 * j));
+//                        vertices.Add(new vertex(5 * i, 5 * j, 5 * k));
+//                    }
+//                }
+//            }
+
+            //foreach (var item in vertices)
+            //{
+            //    viewport.Children.Add((vertex)item);
+            //}
+
             btnRun.IsDefault = true;
             btnDisplay.IsEnabled = false;
             txtBlkTimer.Text = "00:00:00.000";
@@ -164,5 +199,21 @@ namespace ExampleWithGraphics
             btnDisplay.IsEnabled = false;
             txtBlkTimer.Text = "00:00:00.000";
         }
+
+        //private void btnDelau_Click(object sender, RoutedEventArgs e)
+        //{
+        //    Console.WriteLine("Running...");
+        //    var now = DateTime.Now;
+        //    //faces = new List<IFaceConvHull>();
+        //    var convexHull = new ConvexHull(vertices);
+        //    var faces = convexHull.FindDelaunayTriangulation();
+        //    var interval = DateTime.Now - now;
+        //    txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
+        //                       + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
+
+        //    MessageBox.Show(faces.Count.ToString());
+        //    btnDisplay.IsEnabled = true;
+        //    btnDisplay.IsDefault = true;
+        //}
     }
 }
