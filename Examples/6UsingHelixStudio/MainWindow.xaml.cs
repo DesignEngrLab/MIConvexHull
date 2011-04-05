@@ -3,12 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using HelixToolkit;
 using MIConvexHull;
 using Microsoft.Win32;
@@ -36,6 +39,7 @@ namespace ExampleWithGraphics
         public MainWindow()
         {
             InitializeComponent();
+            statusTimer.Tick += statusTimerTimer_Tick;
         }
 
         private void MIConvexHullMenuItem_Click(object sender, RoutedEventArgs e)
@@ -51,6 +55,11 @@ namespace ExampleWithGraphics
 
         private void FindDelaunayClick(object sender, RoutedEventArgs e)
         {
+            statusTimer.Start();
+            Dispatcher.BeginInvoke((ThreadStart)RunDelaunay);
+        }
+        void RunDelaunay()
+        {
             var now = DateTime.Now;
             Del_tetras = convexHull.FindDelaunayTriangulation();
             var interval = DateTime.Now - now;
@@ -58,6 +67,7 @@ namespace ExampleWithGraphics
                                + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
             btnDisplay.IsEnabled = btnDisplay.IsDefault = true;
             CVXvertices = null; CVXfaces = null; Voro_edges = null; Voro_nodes = null;
+            
         }
 
         private void FindVoronoiClick(object sender, RoutedEventArgs e)
@@ -194,6 +204,21 @@ namespace ExampleWithGraphics
                });
         }
 
+
+        readonly DispatcherTimer statusTimer = new DispatcherTimer
+        {
+            Interval = new TimeSpan(50000000),
+            IsEnabled = true
+        };
+
+        void statusTimerTimer_Tick(object sender, EventArgs e)
+        {
+            if (convexHull != null)
+            {
+            outputTextBox.Text += convexHull.Status;
+                outputTextBox.Text += "\n\n";
+            }
+        }
     }
 
     internal class samePoint : IEqualityComparer<Point3D>

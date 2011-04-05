@@ -79,6 +79,7 @@
   <ItemGroup>
     <Compile Include="Auxiliary Classes\defaultVertex.cs" />
     <Compile Include="Auxiliary Classes\FaceData.cs" />
+    <Compile Include="Auxiliary Classes\Status.cs" />
     <Compile Include="Auxiliary Classes\FibonacciHeap.cs" />
     <Compile Include="Auxiliary Classes\MathUtils.cs" />
     <Compile Include="Auxiliary Classes\voronoiHelpers.cs" />
