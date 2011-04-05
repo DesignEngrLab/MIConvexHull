@@ -42,6 +42,8 @@ namespace MIConvexHull
              * to base-3 (min,center,max) in three dimensions. Three raised to the third power
              * though is 27. the point at the center (0,0,0) is not used therefore 27 - 1 = 26.
              */
+            Status.TaskNumber = 1;
+            Status.TotalSubTaskCount = (int)maxAklTousNumber;
             var AklToussaintIndices = new List<int>(numExtremes);
             var extremeValues = new double[numExtremes];
             for (var k = 0; k < numExtremes; k++)
@@ -66,7 +68,8 @@ namespace MIConvexHull
                     extremeValues[index] = extreme;
                 }
                 flip *= -1;
-                if (AklToussaintIndices.Distinct().Count() > maxAklTousNumber) break;
+                Status.SubTaskNumber = AklToussaintIndices.Distinct().Count();
+                if (Status.SubTaskNumber > maxAklTousNumber) break;
             } while (incrementTernaryPosition(ternaryPosition));
             AklToussaintIndices = AklToussaintIndices.Distinct().ToList();
             AklToussaintIndices.Remove(-1);
@@ -74,8 +77,13 @@ namespace MIConvexHull
             #endregion
 
             #region Step #2: Define up to 48 faces of the Disdyakis dodecahedron
-            for (var i = 0; i < AklToussaintIndices.Count; i++)
+
+            Status.TaskNumber = 2;
+            Status.SubTaskNumber = 0;
+            Status.TotalSubTaskCount = AklToussaintIndices.Count;
+            for (int i = 0;i < Status.TotalSubTaskCount; i++)
             {
+                Status.SubTaskNumber = i;
                 var currentVertex = origVertices[AklToussaintIndices[i]];
                 convexHull.Add(currentVertex);
                 updateCenter(currentVertex);
@@ -92,9 +100,13 @@ namespace MIConvexHull
             #endregion
 
             #region Step #3: Consider all remaining vertices. Store them with the faces that they are 'beyond'
+            Status.TaskNumber = 3;
+            Status.SubTaskNumber = 0;
+            Status.TotalSubTaskCount = convexFaces.Count;
             var justTheFaces = new List<FaceData>(convexFaces.Values);
             foreach (var face in justTheFaces)
             {
+                Status.SubTaskNumber++;
                 convexFaces.RemoveAt(convexFaces.IndexOfValue(face));
                 face.verticesBeyond = findBeyondVertices(face, origVertices);
                 if (face.verticesBeyond.Count == 0)
@@ -105,8 +117,12 @@ namespace MIConvexHull
             #endregion
 
             #region Step #4: Now a final loop to expand the convex hull and faces based on these beyond vertices
+            Status.TaskNumber = 4;
+            Status.SubTaskNumber = 0;
+            Status.TotalSubTaskCount = convexFaces.Count;
             while (convexFaces.Keys[0] >= 0)
             {
+                Status.TotalSubTaskCount = convexFaces.Count;
                 var currentFace = convexFaces.Values[0];
                 var currentVertex = currentFace.verticesBeyond.Values[0];
                 convexHull.Add(currentVertex);
