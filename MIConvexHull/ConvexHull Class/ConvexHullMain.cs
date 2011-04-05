@@ -28,8 +28,8 @@ namespace MIConvexHull
     /// </summary>
     public partial class ConvexHull
     {
-        List<IVertexConvHull> origVertices;
-        List<IVertexConvHull> convexHull;
+        readonly List<IVertexConvHull> origVertices;
+        List<IVertexConvHull> convexHull = new List<IVertexConvHull>();
         //List<IVertexConvHull> voronoiNodes;
         List<Tuple<IVertexConvHull, IVertexConvHull>> voronoiEdges;
         FibonacciHeap<double, FaceData> convexFaces;
@@ -41,6 +41,7 @@ namespace MIConvexHull
         private const double coeffOffset = 1250;
         private Boolean convexHullAnalysisComplete;
         private Boolean delaunayAnalysisComplete;
+        public StatusClass Status = new StatusClass();         
 
         void Initialize()
         {

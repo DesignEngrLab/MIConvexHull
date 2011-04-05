@@ -399,6 +399,8 @@ namespace MIConvexHull
 			}
 			foreach (var newFace in newFaces)
 				if (newFace.verticesBeyond.Count == 0)
+                {
+                    if (Status.TaskNumber == 4) Status.SubTaskNumber++;
 				{
 					newFace.fibCell = convexFaces.Enqueue(-1.0, newFace);
 				}
