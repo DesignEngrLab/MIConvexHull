@@ -1,5 +1,4 @@
 ﻿#region
-
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -7,8 +6,6 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using MIConvexHull;
 using Petzold.Media3D;
-using StarMathLib;
-
 #endregion
 
 namespace ExampleWithGraphics
@@ -74,11 +71,11 @@ namespace ExampleWithGraphics
             var faceTris = new Int32Collection();
             foreach (var f in faces)
             {
-                var orderImpliedNormal = StarMath.multiplyCross(
-                    StarMath.subtract(f.vertices[1].coordinates, f.vertices[0].coordinates),
-                    StarMath.subtract(f.vertices[2].coordinates, f.vertices[1].coordinates)
+                var orderImpliedNormal = StarMath.crossProduct3(
+                    StarMath.subtract(f.vertices[1].coordinates, f.vertices[0].coordinates, 3),
+                    StarMath.subtract(f.vertices[2].coordinates, f.vertices[1].coordinates, 3)
                     );
-                if (StarMath.multiplyDot(f.normal, orderImpliedNormal) < 0)
+                if (StarMath.dotProduct(f.normal, orderImpliedNormal, 3) < 0)
                     Array.Reverse(f.vertices);
                 faceTris.Add(convexHullVertices.IndexOf(f.vertices[0]));
                 faceTris.Add(convexHullVertices.IndexOf(f.vertices[1]));
@@ -140,17 +137,17 @@ namespace ExampleWithGraphics
             //vertices.Add(new vertex(10, 0, 20));
             //vertices.Add(new vertex(0, 0, 20));
 
-//            for (int i = 0; i < 8; i++)
-//            {
-//                for (int j = 0; j < 8; j++)
-//                {
-//                    for (int k = 0; k < 8; k++)
-//                    {
-////                        vertices.Add(new vertex(5 * i, 0.6 * (i * i + j * j), 5 * j));
-//                        vertices.Add(new vertex(5 * i, 5 * j, 5 * k));
-//                    }
-//                }
-//            }
+            //            for (int i = 0; i < 8; i++)
+            //            {
+            //                for (int j = 0; j < 8; j++)
+            //                {
+            //                    for (int k = 0; k < 8; k++)
+            //                    {
+            ////                        vertices.Add(new vertex(5 * i, 0.6 * (i * i + j * j), 5 * j));
+            //                        vertices.Add(new vertex(5 * i, 5 * j, 5 * k));
+            //                    }
+            //                }
+            //            }
 
             //foreach (var item in vertices)
             //{

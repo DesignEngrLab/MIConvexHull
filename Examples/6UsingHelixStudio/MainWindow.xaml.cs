@@ -1,23 +1,15 @@
 ﻿#region
-
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using HelixToolkit;
 using MIConvexHull;
 using Microsoft.Win32;
-using StarMathLib;
-using StudioDemo;
-
 #endregion
 
 namespace ExampleWithGraphics
@@ -67,7 +59,7 @@ namespace ExampleWithGraphics
                                + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
             btnDisplay.IsEnabled = btnDisplay.IsDefault = true;
             CVXvertices = null; CVXfaces = null; Voro_edges = null; Voro_nodes = null;
-            
+
         }
 
         private void FindVoronoiClick(object sender, RoutedEventArgs e)
@@ -123,7 +115,7 @@ namespace ExampleWithGraphics
             }
             verts = verts.Distinct(new samePoint()).ToList();
 
-             convexHull = new ConvexHull(verts);
+            convexHull = new ConvexHull(verts);
             txtBlkTimer.Text = "#verts=" + verts.Count;
             CVXvertices = null;
             CVXfaces = null;
@@ -160,8 +152,8 @@ namespace ExampleWithGraphics
                 verts.AddRange(t.vertices.Select(p => new Point3D(p.coordinates[0], p.coordinates[1], p.coordinates[2])));
                 var center = new double[3];
                 foreach (var v in t.vertices)
-                    center = StarMath.add(center, v.coordinates);
-                center = StarMath.divide(center, 4);
+                    center = StarMath.add(center, v.coordinates, 3);
+                center = StarMath.divide(center, 4, 3);
                 for (int i = 0; i < 4; i++)
                 {
                     var newface = new List<IVertexConvHull>((IVertexConvHull[])t.vertices.Clone());
@@ -179,12 +171,12 @@ namespace ExampleWithGraphics
         private bool inTheProperOrder(double[] center, List<IVertexConvHull> vertices)
         {
             var outDir = new double[3];
-            outDir = vertices.Aggregate(outDir, (current, v) => StarMath.add(current, v.coordinates));
-            outDir = StarMath.divide(outDir, 3);
-            outDir = StarMath.subtract(outDir, center);
-            var normal = StarMath.multiplyCross(StarMath.subtract(vertices[1].coordinates, vertices[0].coordinates),
-                                                StarMath.subtract(vertices[2].coordinates, vertices[1].coordinates));
-            return (StarMath.multiplyDot(normal, outDir) >= 0);
+            outDir = vertices.Aggregate(outDir, (current, v) => StarMath.add(current, v.coordinates, 3));
+            outDir = StarMath.divide(outDir, 3, 3);
+            outDir = StarMath.subtract(outDir, center, 3);
+            var normal = StarMath.crossProduct3(StarMath.subtract(vertices[1].coordinates, vertices[0].coordinates, 3),
+                                                StarMath.subtract(vertices[2].coordinates, vertices[1].coordinates, 3));
+            return (StarMath.dotProduct(normal, outDir, 3) >= 0);
         }
 
         private void displayVoronoi()
@@ -215,7 +207,7 @@ namespace ExampleWithGraphics
         {
             if (convexHull != null)
             {
-            outputTextBox.Text += convexHull.Status;
+                outputTextBox.Text += convexHull.Status;
                 outputTextBox.Text += "\n\n";
             }
         }
@@ -234,7 +226,7 @@ namespace ExampleWithGraphics
         /// <param name="x">The first object of type <paramref name="T"/> to compare.</param><param name="y">The second object of type <paramref name="T"/> to compare.</param>
         bool IEqualityComparer<Point3D>.Equals(Point3D x, Point3D y)
         {
-            return ((x - y).Length < 0.000000001) ;
+            return ((x - y).Length < 0.000000001);
         }
 
         /// <summary>

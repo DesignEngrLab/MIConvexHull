@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using StarMathLib;
 
 #endregion
 
@@ -11,7 +12,7 @@ namespace MIConvexHull
     ///   MIConvexHull for 3and higher dimensions.
     /// </summary>
     public partial class ConvexHull
-    {
+    {       
         /// <summary>
         ///   Finds the convex hull vertices.
         /// </summary>
@@ -63,7 +64,7 @@ namespace MIConvexHull
                 if (index == midPoint) continue;
                 for (var m = 0; m < VCount; m++)
                 {
-                    var extreme = flip * StarMath.dotProduct(ternaryPosition, origVertices[m].coordinates, dimension);
+                    var extreme = flip * MathUtils.multiplyDotFast(ternaryPosition, origVertices[m].coordinates, dimension);
                     if (extreme < extremeValues[index]) continue;
                     AklToussaintIndices[index] = m;
                     extremeValues[index] = extreme;
@@ -76,13 +77,13 @@ namespace MIConvexHull
             AklToussaintIndices.Remove(-1);
             AklToussaintIndices.Sort(new noEqualSortMaxtoMinInt());
             #endregion
-
+            
             #region Step #2: Define up to 48 faces of the Disdyakis dodecahedron
 
             Status.TaskNumber = 2;
             Status.SubTaskNumber = 0;
             Status.TotalSubTaskCount = AklToussaintIndices.Count;
-            for (int i = 0; i < Status.TotalSubTaskCount; i++)
+            for (int i = 0;i < Status.TotalSubTaskCount; i++)
             {
                 Status.SubTaskNumber = i;
                 var currentVertex = origVertices[AklToussaintIndices[i]];
@@ -98,20 +99,30 @@ namespace MIConvexHull
                 origVertices.RemoveAt(AklToussaintIndices[i]);
             }
 
-            #endregion
+            #endregion            
+            
+            #region Step #3: Consider all remaining vertices. Store them with the faces that they are 'beyond'
+            var justTheFaces = convexFaces.Select(f => f.Value).ToArray();
 
+<<<<<<< local
             #region Step #3: Consider all remaining vertices. Store them with the faces that they are 'beyond'
             Status.TaskNumber = 3;
             Status.SubTaskNumber = 0;
-            var justTheFaces = convexFaces.Select(f => f.Value).ToArray();
-
             Status.TotalSubTaskCount = convexFaces.Count;
+            var justTheFaces = new List<FaceData>(convexFaces.Values);
+=======
+>>>>>>> other
             foreach (var face in justTheFaces)
             {
+<<<<<<< local
                 Status.SubTaskNumber++;
+                convexFaces.RemoveAt(convexFaces.IndexOfValue(face));
+                face.verticesBeyond = findBeyondVertices(face, origVertices);
+=======
                 convexFaces.Delete(face.fibCell);
                 face.fibCell = null;
                 findBeyondVertices(face, origVertices, dimension);
+>>>>>>> other
                 if (face.verticesBeyond.Count == 0)
                 {
                     face.fibCell = convexFaces.Enqueue(-1.0, face);
@@ -122,17 +133,28 @@ namespace MIConvexHull
                     face.fibCell = convexFaces.Enqueue(key, face);
                 }
             }
-
+            
             #endregion
-
+            
             #region Step #4: Now a final loop to expand the convex hull and faces based on these beyond vertices
+<<<<<<< local
             Status.TaskNumber = 4;
             Status.SubTaskNumber = 0;
+            Status.TotalSubTaskCount = convexFaces.Count;
+            while (convexFaces.Keys[0] >= 0)
+=======
             while (!convexFaces.IsEmpty && convexFaces.Top.Priority >= 0)
+>>>>>>> other
             {
+<<<<<<< local
+                Status.TotalSubTaskCount = convexFaces.Count;
+                var currentFace = convexFaces.Values[0];
+                var currentVertex = currentFace.verticesBeyond.Values[0];
+=======
                 var tf = convexFaces.Top.Value;
                 var currentFace = tf;
                 var currentVertex = currentFace.minVertexBeyond.Item2;
+>>>>>>> other
                 convexHull.Add(currentVertex);
                 updateCenter(currentVertex);
 

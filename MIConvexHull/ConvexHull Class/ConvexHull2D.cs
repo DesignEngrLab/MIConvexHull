@@ -1,7 +1,7 @@
 ﻿#region
 using System;
 using System.Collections.Generic;
-using StarMathLib;
+
 #endregion
 
 namespace MIConvexHull
@@ -166,8 +166,8 @@ namespace MIConvexHull
                      * other applications though. In the condition below, any signed distance that is negative is outside of the
                      * original polygon. It is only possible for the IVertexConvHull to be outside one of the 3 to 8 edges, so once we
                      * add it, we break out of the inner loop (gotta save time where we can!). */
-                    if (StarMath.multiplyCross2D(StarMath.GetRow(j, edgeUnitVectors), b) > 0) continue;
-                    hullCands[j].Add(StarMath.multiplyDot(StarMath.GetRow(j, edgeUnitVectors), b), origVertices[i]);
+                    if (StarMath.crossProduct2(StarMath.GetRow(j, edgeUnitVectors), b) > 0) continue;
+                    hullCands[j].Add(StarMath.dotProduct(StarMath.GetRow(j, edgeUnitVectors), b, 2), origVertices[i]);
                     break;
                 }
             }
@@ -205,8 +205,8 @@ namespace MIConvexHull
                     var i = hc.Count - 2;
                     while (i > 0)
                     {
-                        var zValue = StarMath.multiplyCross2D(StarMath.subtract(hc[i].coordinates, hc[i - 1].coordinates),
-                                                              StarMath.subtract(hc[i + 1].coordinates, hc[i].coordinates));
+                        var zValue = StarMath.crossProduct2(StarMath.subtract(hc[i].coordinates, hc[i - 1].coordinates, 2),
+                                                              StarMath.subtract(hc[i + 1].coordinates, hc[i].coordinates, 2));
                         if (zValue < 0)
                         {
                             /* remove any vertices that create concave angles. */
