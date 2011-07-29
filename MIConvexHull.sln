@@ -3,13 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIConvexHull", "MIConvexHull\MIConvexHull.csproj", "{2337776D-7D0C-40AA-A439-C26C3CE24FAB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StarMath", "StarMath", "{DE1CF135-6418-4236-AF1F-E9D8A7CE4292}"
-	ProjectSection(SolutionItems) = preProject
-		MIConvexHull\Resources\StarMath.dll = MIConvexHull\Resources\StarMath.dll
-		MIConvexHull\Resources\StarMath.pdb = MIConvexHull\Resources\StarMath.pdb
-		MIConvexHull\Resources\StarMath.XML = MIConvexHull\Resources\StarMath.XML
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "1TestEXE for MIConvexHull-2D", "Examples\1TestEXE for MIConvexHull-2D\1TestEXE for MIConvexHull-2D.csproj", "{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "2TestEXE for MIConvexHull-No Interfaces", "Examples\2TestEXE for MIConvexHull-No Interfaces\2TestEXE for MIConvexHull-No Interfaces.csproj", "{62FC0ECE-F54A-47F9-B183-0C54AE944408}"
@@ -21,8 +14,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "5TestEXE for MIConvexHull-6D Voronoi", "Examples\5TestEXE for MIConvexHull-6D Voronoi\5TestEXE for MIConvexHull-6D Voronoi.csproj", "{9C4F6904-847D-4717-81C5-4E5E1F6CD7CB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "6Using Helix To Open Models", "Examples\6UsingHelixStudio\6Using Helix To Open Models.csproj", "{AB6A4302-6B39-4606-874C-53CE263BB2A2}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5B78C51B-2A24-411A-8742-1B107B967B0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

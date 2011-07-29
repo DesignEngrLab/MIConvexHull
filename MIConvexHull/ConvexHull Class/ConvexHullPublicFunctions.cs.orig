@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media.Media3D;
+using StarMathLib;
 #endregion
 
 namespace MIConvexHull
@@ -250,19 +251,34 @@ namespace MIConvexHull
             if (dimensions == -1) determineDimension(origVertices);
             else dimension = dimensions;
             FindDelaunayTriangulation(null, dimension);
+<<<<<<< local
             Status.TaskNumber = 6;
-            var voronoiNodes = new List<voronoiVertex>(delaunayFaces.Count);
             var p = delaunayFaces.Count;
             Status.TotalSubTaskCount = p + p * (p - 1) / 2 + p * dimension;
             Status.SubTaskNumber = 0;
+            voronoiNodes = new List<IVertexConvHull>(delaunayFaces.Count);
+=======
+            var voronoiNodes = new List<voronoiVertex>(delaunayFaces.Count);
+>>>>>>> other
             foreach (var f in delaunayFaces)
             {
                 Status.SubTaskNumber++;
                 var avg = new double[dimension];
-                avg = f.vertices.Aggregate(avg, (current, v) => StarMath.add(current, v.coordinates,dimension));
-                avg = StarMath.divide(avg, dimension + 1,dimension);
+                avg = f.vertices.Aggregate(avg, (current, v) => StarMath.add(current, v.coordinates));
+                avg = StarMath.divide(avg, dimension + 1);
                 voronoiNodes.Add(new voronoiVertex { vertex = makeNewVoronoiEdge(avg, node_Type), face = f });
             }
+<<<<<<< local
+            voronoiEdges = new List<Tuple<IVertexConvHull, IVertexConvHull>>(delaunayFaces.Count);
+            for (var i = 0; i < delaunayFaces.Count - 1; i++)
+                for (var j = i + 1; j < delaunayFaces.Count; j++)
+                    if (delaunayFaces[i].adjacentFaces.Contains(delaunayFaces[j]))
+                    {
+                        voronoiEdges.Add(Tuple.Create(voronoiNodes[i], voronoiNodes[j]));
+                        Status.SubTaskNumber++;
+                    }
+=======
+>>>>>>> other
 
             HashSet<voronoiEdge> voronoiEdges = new HashSet<voronoiEdge>();
             var nodeDict = voronoiNodes.ToDictionary(n => n.face, n => n);
@@ -290,11 +306,16 @@ namespace MIConvexHull
                         var edgeNodes = new List<IVertexConvHull>(delaunayFaces[i].vertices);
                         edgeNodes.RemoveAt(j);
                         var avg = new double[dimension];
-                        avg = edgeNodes.Aggregate(avg, (current, v) => StarMath.add(current, v.coordinates,dimension));
-                        avg = StarMath.divide(avg, dimension,dimension);
+                        avg = edgeNodes.Aggregate(avg, (current, v) => StarMath.add(current, v.coordinates));
+                        avg = StarMath.divide(avg, dimension);
+<<<<<<< local
+                        voronoiNodes.Add(makeNewVoronoiEdge(avg, node_Type));
+                        voronoiEdges.Add(Tuple.Create(voronoiNodes[i], voronoiNodes[voronoiNodes.Count - 1]));
+                        Status.SubTaskNumber++;
+=======
                         nodes.Add(makeNewVoronoiEdge(avg, node_Type));
                         edges.Add(Tuple.Create(nodes[i], nodes[nodes.Count - 1]));
-                        Status.SubTaskNumber++;
+>>>>>>> other
                     }
                 }
             }            
