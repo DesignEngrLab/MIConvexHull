@@ -95,10 +95,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="face.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="vertex.cs" />
   </ItemGroup>

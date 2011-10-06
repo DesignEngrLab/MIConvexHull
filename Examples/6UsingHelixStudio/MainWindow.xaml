@@ -14,10 +14,7 @@
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <Button Grid.Column="4" Name="btnDisplay" Content="Display" IsEnabled="False" Click="btnDisplay_Click"/>
         </Menu>
-            <TextBox DockPanel.Dock="Bottom" Name="outputTextBox" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" 
-                    IsReadOnly="True" Background="DimGray" Foreground="White" FontFamily="Calibri" TextWrapping="Wrap" Height="128" />
-
-                    <helix:HelixView3D x:Name="viewport" CameraRotationMode="VirtualTrackball">
+            <helix:HelixView3D x:Name="viewport" CameraRotationMode="VirtualTrackball">
                <!--<helix:CubeVisual3D Fill="Red"/>--> 
                 <helix:DefaultLightsVisual3D/>
                 <!--<helix:StudioVisual3D Source="{Binding CurrentModelPath, Mode=TwoWay}"/>

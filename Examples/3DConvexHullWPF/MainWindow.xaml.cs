@@ -1,4 +1,5 @@
 ﻿#region
+
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -6,6 +7,8 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using MIConvexHull;
 using Petzold.Media3D;
+using System.Linq;
+
 #endregion
 
 namespace ExampleWithGraphics
@@ -17,10 +20,10 @@ namespace ExampleWithGraphics
     {
         private const int NumberOfVertices = 1000;
         private const double size = 50;
-        private List<IVertexConvHull> convexHullVertices;
-        private List<IFaceConvHull> faces;
+        private List<vertex> convexHullVertices;
+        private List<face> faces;
         private ModelVisual3D modViz;
-        private List<IVertexConvHull> vertices;
+        private List<vertex> vertices;
 
         public MainWindow()
         {
@@ -41,9 +44,9 @@ namespace ExampleWithGraphics
         {
             Console.WriteLine("Running...");
             var now = DateTime.Now;
-            faces = new List<IFaceConvHull>();
-            var convexHull = new ConvexHull(vertices);
-            convexHullVertices = convexHull.FindConvexHull(out faces, typeof(face), 3);
+            var convexHull = ConvexHull.Create<vertex, face>(vertices);
+            convexHullVertices = convexHull.Hull.ToList();
+            faces = convexHull.Faces.ToList();
             var interval = DateTime.Now - now;
             txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
                                + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
@@ -72,14 +75,14 @@ namespace ExampleWithGraphics
             foreach (var f in faces)
             {
                 var orderImpliedNormal = StarMath.crossProduct3(
-                    StarMath.subtract(f.vertices[1].coordinates, f.vertices[0].coordinates, 3),
-                    StarMath.subtract(f.vertices[2].coordinates, f.vertices[1].coordinates, 3)
+                    StarMath.subtract(f.Vertices[1].Position, f.Vertices[0].Position, 3),
+                    StarMath.subtract(f.Vertices[2].Position, f.Vertices[1].Position, 3)
                     );
-                if (StarMath.dotProduct(f.normal, orderImpliedNormal, 3) < 0)
-                    Array.Reverse(f.vertices);
-                faceTris.Add(convexHullVertices.IndexOf(f.vertices[0]));
-                faceTris.Add(convexHullVertices.IndexOf(f.vertices[1]));
-                faceTris.Add(convexHullVertices.IndexOf(f.vertices[2]));
+                if (StarMath.dotProduct(f.Normal, orderImpliedNormal, 3) < 0)
+                    Array.Reverse(f.Vertices);
+                faceTris.Add(convexHullVertices.IndexOf(f.Vertices[0]));
+                faceTris.Add(convexHullVertices.IndexOf(f.Vertices[1]));
+                faceTris.Add(convexHullVertices.IndexOf(f.Vertices[2]));
             }
             var mg3d = new MeshGeometry3D
                            {
@@ -110,7 +113,7 @@ namespace ExampleWithGraphics
         private void btnMakeSquarePoints_Click(object sender, RoutedEventArgs e)
         {
             ClearAndDrawAxes();
-            vertices = new List<IVertexConvHull>();
+            vertices = new List<vertex>();
             var r = new Random();
 
             /****** Random Vertices ******/
@@ -137,21 +140,22 @@ namespace ExampleWithGraphics
             //vertices.Add(new vertex(10, 0, 20));
             //vertices.Add(new vertex(0, 0, 20));
 
-            //            for (int i = 0; i < 8; i++)
-            //            {
-            //                for (int j = 0; j < 8; j++)
-            //                {
-            //                    for (int k = 0; k < 8; k++)
-            //                    {
-            ////                        vertices.Add(new vertex(5 * i, 0.6 * (i * i + j * j), 5 * j));
-            //                        vertices.Add(new vertex(5 * i, 5 * j, 5 * k));
-            //                    }
-            //                }
-            //            }
+            //int d = 5;
+            //for (int i = 0; i < d; i++)
+            //{
+            //    for (int j = 0; j < d; j++)
+            //    {
+            //        for (int k = 0; k < d; k++)
+            //        {
+            //            //                        vertices.Add(new vertex(5 * i, 0.6 * (i * i + j * j), 5 * j));
+            //            vertices.Add(new vertex(5 * i, 5 * j, 5 * k));
+            //        }
+            //    }
+            //}
 
             //foreach (var item in vertices)
             //{
-            //    viewport.Children.Add((vertex)item);
+            //   // viewport.Children.Add((vertex)item);
             //}
 
             btnRun.IsDefault = true;
@@ -162,7 +166,7 @@ namespace ExampleWithGraphics
         private void btnMakeCirclePoints_Click(object sender, RoutedEventArgs e)
         {
             ClearAndDrawAxes();
-            vertices = new List<IVertexConvHull>();
+            vertices = new List<vertex>();
             var r = new Random();
 
             /****** Random Vertices ******/
@@ -196,21 +200,5 @@ namespace ExampleWithGraphics
             btnDisplay.IsEnabled = false;
             txtBlkTimer.Text = "00:00:00.000";
         }
-
-        //private void btnDelau_Click(object sender, RoutedEventArgs e)
-        //{
-        //    Console.WriteLine("Running...");
-        //    var now = DateTime.Now;
-        //    //faces = new List<IFaceConvHull>();
-        //    var convexHull = new ConvexHull(vertices);
-        //    var faces = convexHull.FindDelaunayTriangulation();
-        //    var interval = DateTime.Now - now;
-        //    txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
-        //                       + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
-
-        //    MessageBox.Show(faces.Count.ToString());
-        //    btnDisplay.IsEnabled = true;
-        //    btnDisplay.IsDefault = true;
-        //}
     }
 }

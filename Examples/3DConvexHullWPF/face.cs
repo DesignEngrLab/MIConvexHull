@@ -24,13 +24,8 @@ namespace ExampleWithGraphics
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class face : IFaceConvHull
+    public class face : ConvexFace<vertex, face>
     {
-        public face()
-        {
-            vertices = new IVertexConvHull[3];
-        }
-        public IVertexConvHull[] vertices { get; set; }
-        public double[] normal { get; set; }
+
     }
 }

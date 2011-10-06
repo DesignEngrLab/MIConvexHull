@@ -32,13 +32,13 @@ namespace TestEXE_for_MIConvexHull_Voronoi
     using System;
     using System.Collections.Generic;
     using MIConvexHull;
-
+    using System.Linq;
 
     static class Program
     {
         static void Main()
         {
-            const int NumberOfVertices = 500;
+            const int NumberOfVertices = 150;
             const double size = 1000;
             const int dimension = 6;
 
@@ -57,14 +57,10 @@ namespace TestEXE_for_MIConvexHull_Voronoi
             }
             Console.WriteLine("Running...");
             var now = DateTime.Now;
-            var convexHull = new ConvexHull(vertices);
-            List<IVertexConvHull> vnodes = new List<IVertexConvHull>();
-            List<Tuple<IVertexConvHull, IVertexConvHull>> vedges = new List<Tuple<IVertexConvHull,IVertexConvHull>>();
-            //convexHull.FindDelaunayTriangulation();
-            convexHull.FindVoronoiGraph(out vnodes, out vedges);
+            var voronoi = VoronoiMesh.Create(vertices);
             var interval = DateTime.Now - now;
             Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
-                vnodes.Count + " voronoi points and " + vedges.Count + " voronoi edges.");
+                voronoi.Cells.Count() + " voronoi points and " + voronoi.Edges.Count() + " voronoi edges.");
             Console.WriteLine("time = " + interval);
             Console.ReadLine();
         }

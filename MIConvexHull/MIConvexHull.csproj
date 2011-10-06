@@ -16,10 +16,9 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\MIConvexHullPlugin.xml</DocumentationFile>
@@ -73,24 +72,19 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Auxiliary Classes\defaultVertex.cs" />
-    <Compile Include="Auxiliary Classes\FaceData.cs" />
-    <Compile Include="Auxiliary Classes\Status.cs" />
-    <Compile Include="Auxiliary Classes\FibonacciHeap.cs" />
-    <Compile Include="Auxiliary Classes\voronoiHelpers.cs" />
-    <Compile Include="ConvexHull Class\ConvexHullPublicFunctions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ConvexHull Class\ConvexHullMain.cs" />
-    <Compile Include="ConvexHull Class\ConvexHull nD.cs" />
-    <Compile Include="Auxiliary Classes\SortRoutines.cs" />
-    <Compile Include="ConvexHull Class\HelperFunctions for nD.cs" />
-    <Compile Include="Auxiliary Classes\InterfacesVertexEdgeAndFace.cs" />
-    <Compile Include="ConvexHull Class\ConvexHull2D.cs" />
+    <Compile Include="ConvexHull\ConvexFace.cs" />
+    <Compile Include="ConvexHull\ConvexFaceInternal.cs" />
+    <Compile Include="ConvexHull\ConvexHull.cs" />
+    <Compile Include="ConvexHull\ConvexHullInternal.cs" />
+    <Compile Include="ConvexHull\FibonacciHeap.cs" />
+    <Compile Include="ConvexHull\IVertex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StarMath\StarMathLibrary.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="StarMath\StarMathLibrary.cs" />
+    <Compile Include="Triangulation\DelaunayTriangulation.cs" />
+    <Compile Include="Triangulation\Triangulation.cs" />
+    <Compile Include="Triangulation\TriangulationCell.cs" />
+    <Compile Include="Triangulation\VoronoiEdge.cs" />
+    <Compile Include="Triangulation\VoronoiMesh.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

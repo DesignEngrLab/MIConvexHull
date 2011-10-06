@@ -28,39 +28,48 @@ namespace ExampleWithGraphics
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class face : Shape,IFaceConvHull
+    public class face : TriangulationCell<vertex, face>
     {
-        public face()
+        public class FaceVisual : Shape
         {
-            vertices = new IVertexConvHull[3];
-            Stroke = Brushes.Blue;
-            StrokeThickness = 1.0;
-            Opacity = 0.5;
-        }
-        public IVertexConvHull[] vertices { get; set; }
-        public double[] normal { get; set; }
+            face f;
 
-
-
-        protected override Geometry DefiningGeometry
-        {
-            get
+            protected override Geometry DefiningGeometry
             {
-                var myPathGeometry = new PathGeometry();
-                var pathFigure1 = new PathFigure {
-                    StartPoint = new Point(vertices[0].coordinates[0], 
-                    vertices[0].coordinates[1])};
-                for (int i = 1; i < vertices.GetLength(0); i++)
-                    pathFigure1.Segments.Add(
-                        new LineSegment(
-                            new Point(vertices[i].coordinates[0],
-                                      vertices[i].coordinates[1]), true));
-                pathFigure1.IsClosed = true;
-                myPathGeometry.Figures.Add(pathFigure1);
+                get
+                {
+                    var myPathGeometry = new PathGeometry();
+                    var pathFigure1 = new PathFigure
+                    {
+                        StartPoint = new Point(f.Vertices[0].Position[0], f.Vertices[0].Position[1])
+                    };
+                    for (int i = 1; i < f.Vertices.GetLength(0); i++)
+                        pathFigure1.Segments.Add(
+                            new LineSegment(
+                                new Point(f.Vertices[i].Position[0],
+                                          f.Vertices[i].Position[1]), true));
+                    pathFigure1.IsClosed = true;
+                    myPathGeometry.Figures.Add(pathFigure1);
 
 
-                return myPathGeometry;
+                    return myPathGeometry;
+                }
+            }
+
+            public FaceVisual(face f)
+            {
+                Stroke = Brushes.Blue;
+                StrokeThickness = 1.0;
+                Opacity = 0.5;
+                this.f = f;
             }
         }
+
+        public Shape Visual { get; private set; }
+
+        public face()
+        {
+            Visual = new FaceVisual(this);
+        }      
     }
 }

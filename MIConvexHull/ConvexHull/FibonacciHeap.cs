@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 
+// This is a modified version of the FibonacciHeap from the QuickGraph library.
+// - foreach was replaced by for (...) where applicable
+// - ChangeKeyInternal - one List<T> is being reused instead of allocating a new one
+// - Added GetValues() function that enumerates all values on the heap in arbitrary order
+
 namespace MIConvexHull
 {
-    // this is taken from the QuickGraph project at codeplex (http://quickgraph.codeplex.com)
-
     /// <summary>
     /// Specifies the order in which a Heap will Dequeue items.
     /// </summary>
@@ -21,7 +24,7 @@ namespace MIConvexHull
         /// </summary>
         Decreasing
     }
-
+    
     internal static class LambdaHelpers
     {
         /// <summary>
@@ -51,6 +54,16 @@ namespace MIConvexHull
             }
         }
 
+        public static void ForEach<TPriority, TValue>(FibonacciHeapLinkedList<TPriority, TValue> collection, Action<TValue> action)
+        {
+            var current = collection.First;
+            while (current != null)
+            {
+                action(current.Value);
+                current = current.Next;
+            }
+        }
+
         public static Stack<T> ToStack<T>(IEnumerable<T> collection)
         {
             Stack<T> newStack = new Stack<T>();
@@ -59,7 +72,7 @@ namespace MIConvexHull
         }
     }
 
-    public sealed class FibonacciHeapLinkedList<TPriority, TValue>
+    public sealed class FibonacciHeapLinkedList<TPriority, TValue> 
         : IEnumerable<FibonacciHeapCell<TPriority, TValue>>
     {
         FibonacciHeapCell<TPriority, TValue> first;
@@ -76,7 +89,7 @@ namespace MIConvexHull
         internal FibonacciHeapLinkedList()
         {
             first = null;
-            last = null;
+            last = null; 
         }
 
         internal void MergeLists(FibonacciHeapLinkedList<TPriority, TValue> list)
@@ -187,7 +200,7 @@ namespace MIConvexHull
     }
 
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class FibonacciHeap<TPriority, TValue>
+    public sealed class FibonacciHeap<TPriority, TValue> 
         : IEnumerable<KeyValuePair<TPriority, TValue>>
     {
         public FibonacciHeap()
@@ -197,8 +210,8 @@ namespace MIConvexHull
         public FibonacciHeap(HeapDirection Direction)
             : this(Direction, Comparer<TPriority>.Default.Compare)
         { }
-
-        public FibonacciHeap(HeapDirection Direction, Comparison<TPriority> priorityComparison)
+        
+        public FibonacciHeap(HeapDirection Direction, Comparison<TPriority> priorityComparison)            
         {
             nodes = new FibonacciHeapLinkedList<TPriority, TValue>();
             degreeToNode = new Dictionary<int, FibonacciHeapCell<TPriority, TValue>>();
@@ -210,7 +223,7 @@ namespace MIConvexHull
         FibonacciHeapLinkedList<TPriority, TValue> nodes;
         FibonacciHeapCell<TPriority, TValue> next;
         private short DirectionMultiplier;  //Used to control the direction of the heap, set to 1 if the Heap is increasing, -1 if it's decreasing
-        //We use the approach to avoid unnessecary branches
+                                          //We use the approach to avoid unnessecary branches
         private Dictionary<int, FibonacciHeapCell<TPriority, TValue>> degreeToNode;
         private readonly Comparison<TPriority> priorityComparsion;
         private readonly HeapDirection direction;
@@ -288,13 +301,13 @@ namespace MIConvexHull
             //We don't do any book keeping or maintenance of the heap on Enqueue,
             //We just add this node to the end of the list of Heaps, updating the Next if required
             this.nodes.AddLast(newNode);
-            if (next == null ||
+            if (next == null || 
                 (this.priorityComparsion(newNode.Priority, next.Priority) * DirectionMultiplier) < 0)
             {
                 next = newNode;
             }
             count++;
-            return newNode;
+            return newNode;            
         }
 
         public void Delete(FibonacciHeapCell<TPriority, TValue> node)
@@ -302,18 +315,20 @@ namespace MIConvexHull
             Contract.Requires(node != null);
 
             ChangeKeyInternal(node, default(TPriority), true);
-            Dequeue();
+            Dequeue();            
         }
 
         public void ChangeKey(FibonacciHeapCell<TPriority, TValue> node, TPriority newKey)
-        {
+        {            
             Contract.Requires(node != null);
 
-            ChangeKeyInternal(node, newKey, false);
+            ChangeKeyInternal(node, newKey, false);            
         }
 
+        List<FibonacciHeapCell<TPriority, TValue>> changeKeyUpdateBuffer = new List<FibonacciHeapCell<TPriority, TValue>>();
+
         private void ChangeKeyInternal(
-            FibonacciHeapCell<TPriority, TValue> node,
+            FibonacciHeapCell<TPriority, TValue> node, 
             TPriority NewKey, bool deletingNode)
         {
             Contract.Requires(node != null);
@@ -323,7 +338,7 @@ namespace MIConvexHull
                 return;
             if (delta == this.DirectionMultiplier || deletingNode)
             {
-                //New value is in the same direciton as the heap
+                //New value is in the same direction as the heap
                 node.Priority = NewKey;
                 var parentNode = node.Parent;
                 if (parentNode != null && ((priorityComparsion(NewKey, node.Parent.Priority) * DirectionMultiplier) < 0 || deletingNode))
@@ -365,41 +380,47 @@ namespace MIConvexHull
                 node.Priority = NewKey;
                 if (node.Children != null)
                 {
-                    List<FibonacciHeapCell<TPriority, TValue>> toupdate = null;
-                    foreach (var child in node.Children)
+                    List<FibonacciHeapCell<TPriority, TValue>> toupdate = changeKeyUpdateBuffer; //null;
+                    //foreach (var child in node.Children)
+                    for (var child = node.Children.First; child != null; child = child.Next)
                     {
                         if ((priorityComparsion(node.Priority, child.Priority) * DirectionMultiplier) > 0)
                         {
-                            if (toupdate == null)
-                                toupdate = new List<FibonacciHeapCell<TPriority, TValue>>();
+                            //if (toupdate == null)
+                            //    toupdate = new List<FibonacciHeapCell<TPriority, TValue>>();
                             toupdate.Add(child);
                         }
                     }
 
-                    if (toupdate != null)
-                        foreach (var child in toupdate)
-                        {
-                            node.Marked = true;
-                            node.Children.Remove(child);
-                            child.Parent = null;
-                            child.Marked = false;
-                            nodes.AddLast(child);
-                            UpdateNodesDegree(node);
-                        }
+                    //if (toupdate != null)
+                    //{
+                        //foreach (var child in toupdate)
+                    for (int i = 0; i < toupdate.Count; i++)
+                    {
+                        var child = toupdate[i];
+                        node.Marked = true;
+                        node.Children.Remove(child);
+                        child.Parent = null;
+                        child.Marked = false;
+                        nodes.AddLast(child);
+                        UpdateNodesDegree(node);
+                    }
+
+                    if (toupdate.Count > 0) toupdate.Clear();
+                    //}
                 }
                 UpdateNext();
             }
         }
-
-        static int Max<T>(IEnumerable<T> values, Converter<T, int> converter)
+        
+        static int MaxDegree(FibonacciHeapLinkedList<TPriority, TValue> values)
         {
             Contract.Requires(values != null);
-            Contract.Requires(converter != null);
 
             int max = int.MinValue;
-            foreach (var value in values)
+            for (var cell = values.First; cell != null; cell = cell.Next)
             {
-                int v = converter(value);
+                int v = cell.Degree;
                 if (max < v)
                     max = v;
             }
@@ -417,9 +438,9 @@ namespace MIConvexHull
             Contract.Requires(parentNode != null);
 
             var oldDegree = parentNode.Degree;
-            parentNode.Degree =
+            parentNode.Degree = 
                 parentNode.Children.First != null
-                ? Max(parentNode.Children, x => x.Degree) + 1
+                ? MaxDegree(parentNode.Children) + 1 
                 : 1;
             FibonacciHeapCell<TPriority, TValue> degreeMapValue;
             if (oldDegree != parentNode.Degree)
@@ -458,7 +479,8 @@ namespace MIConvexHull
                 }
             }
             Contract.Assert(next.Children != null);
-            foreach (var child in next.Children)
+            //foreach (var child in next.Children)
+            for (var child = next.Children.First; child != null; child = child.Next)
             {
                 child.Parent = null;
             }
@@ -529,7 +551,7 @@ namespace MIConvexHull
         /// <param name="parentNode"></param>
         /// <param name="childNode"></param>
         private void ReduceNodes(
-            FibonacciHeapCell<TPriority, TValue> parentNode,
+            FibonacciHeapCell<TPriority, TValue> parentNode, 
             FibonacciHeapCell<TPriority, TValue> childNode)
         {
             Contract.Requires(parentNode != null);
@@ -561,7 +583,7 @@ namespace MIConvexHull
         }
 
         public void Merge(FibonacciHeap<TPriority, TValue> other)
-        {
+        {      
             Contract.Requires(other != null);
 
             if (other.Direction != this.Direction)
@@ -580,13 +602,15 @@ namespace MIConvexHull
         {
             var tempHeap = new FibonacciHeap<TPriority, TValue>(this.Direction, this.priorityComparsion);
             var nodeStack = new Stack<FibonacciHeapCell<TPriority, TValue>>();
-            LambdaHelpers.ForEach(nodes, x => nodeStack.Push(x));
+            //LambdaHelpers.ForEach(nodes, x => nodeStack.Push(x));
+            for (var node = nodes.First; node != null; node = node.Next) nodeStack.Push(node);
             while (nodeStack.Count > 0)
             {
                 var topNode = nodeStack.Peek();
                 tempHeap.Enqueue(topNode.Priority, topNode.Value);
                 nodeStack.Pop();
-                LambdaHelpers.ForEach(topNode.Children, x => nodeStack.Push(x));
+                //LambdaHelpers.ForEach(topNode.Children, x => nodeStack.Push(x));
+                for (var node = topNode.Children.First; node != null; node = node.Next) nodeStack.Push(node);
             }
             while (!tempHeap.IsEmpty)
             {
@@ -594,6 +618,20 @@ namespace MIConvexHull
                 tempHeap.Dequeue();
             }
         }
+
+        public IEnumerable<TValue> GetValues()
+        {
+            var nodeStack = new Stack<FibonacciHeapCell<TPriority, TValue>>();
+            for (var node = nodes.First; node != null; node = node.Next) nodeStack.Push(node);
+            while (nodeStack.Count > 0)
+            {
+                var topNode = nodeStack.Peek();
+                yield return topNode.Value;
+                nodeStack.Pop();
+                for (var node = topNode.Children.First; node != null; node = node.Next) nodeStack.Push(node);
+            }
+        }
+
         public IEnumerable<KeyValuePair<TPriority, TValue>> GetDestructiveEnumerator()
         {
             while (!this.IsEmpty)
