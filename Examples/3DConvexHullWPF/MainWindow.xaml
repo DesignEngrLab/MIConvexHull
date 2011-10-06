@@ -12,17 +12,15 @@
                 <ColumnDefinition Width="25*"/>
                 <ColumnDefinition Width="25*"/>
                 <ColumnDefinition Width="25*"/>
-                <ColumnDefinition Width="25*"/>
                 <ColumnDefinition Width="50*"/>
                 <ColumnDefinition Width="25*"/>
             </Grid.ColumnDefinitions>
             <Button Grid.Column="0" Name="btnMakeSquarePoints" Click="btnMakeSquarePoints_Click"  Content="Make Rnd Uniform" IsDefault="True"/>
             <Button Grid.Column="1" Name="btnMakeCirclePoints" Click="btnMakeCirclePoints_Click"  Content="Make Rnd on Sphere" />
             <Button Grid.Column="2" Name="btnRun" Click="btnRun_Click" Content="Analyze" />
-            <!--Button Grid.Column="3" Name="btnDelau" Content="Delaunay" Click="btnDelau_Click" /-->
-            <TextBlock Grid.Column="4" Name="txtBlkTimer" Text="00:00:00.000" 
+            <TextBlock Grid.Column="3" Name="txtBlkTimer" Text="00:00:00.000" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <Button Grid.Column="5" Name="btnDisplay" Click="btnDisplay_Click" Content="Display" IsEnabled="False"/>
+            <Button Grid.Column="4" Name="btnDisplay" Click="btnDisplay_Click" Content="Display" IsEnabled="False"/>
         </Grid>
         <ScrollBar Name="hscroll" DockPanel.Dock="Bottom"
                    Orientation="Horizontal" Minimum="-180" Maximum="180" />

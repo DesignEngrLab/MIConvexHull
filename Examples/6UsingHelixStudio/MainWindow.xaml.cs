@@ -1,77 +1,111 @@
 ﻿#region
+
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Threading;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using System.Windows.Threading;
+using System.Windows.Shapes;
 using HelixToolkit;
 using MIConvexHull;
 using Microsoft.Win32;
+using StudioDemo;
+
 #endregion
 
 namespace ExampleWithGraphics
 {
+    class Vertex : IVertex
+    {
+        public double[] Position { get; set; }
+
+        public Vertex(Point3D point)
+        {
+            Position = new double[3] { point.X, point.Y, point.Z };
+        }
+    }
+
+
     /// <summary>
     ///   Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window  //, INotifyPropertyChanged
     {
-        private List<IFaceConvHull> CVXfaces;
-        private List<IVertexConvHull> CVXvertices;
-        private List<IFaceConvHull> Del_tetras;
-        List<IVertexConvHull> Voro_nodes;
-        List<Tuple<IVertexConvHull, IVertexConvHull>> Voro_edges;
+        private List<DefaultConvexFace<Vertex>> CVXfaces;
+        private List<Vertex> CVXvertices;
+        private List<DefaultTriangulationCell<Vertex>> Del_tetras;
+        List<DefaultTriangulationCell<Vertex>> Voro_nodes;
+        List<VoronoiEdge<Vertex, DefaultTriangulationCell<Vertex>>> Voro_edges;
         public Model3DGroup CurrentModel { get; set; }
         private MeshGeometry3D mesh;
-        private ConvexHull convexHull;
+
+        List<Vertex> vertices;
 
         public MainWindow()
         {
             InitializeComponent();
-            statusTimer.Tick += statusTimerTimer_Tick;
         }
 
         private void MIConvexHullMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            var now = DateTime.Now;
-            CVXvertices = convexHull.FindConvexHull(out CVXfaces);
-            var interval = DateTime.Now - now;
-            txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
-                               + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
-            btnDisplay.IsEnabled = btnDisplay.IsDefault = true;
-            Voro_edges = null; Voro_nodes = null; Del_tetras = null;
+            try
+            {
+                var now = DateTime.Now;
+                var hull = ConvexHull.Create(vertices);
+                CVXvertices = hull.Hull.ToList(); // convexHull.FindConvexHull(out CVXfaces);
+                CVXfaces = hull.Faces.ToList();
+                var interval = DateTime.Now - now;
+                txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
+                                   + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
+                btnDisplay.IsEnabled = btnDisplay.IsDefault = true;
+                Voro_edges = null; Voro_nodes = null; Del_tetras = null;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         private void FindDelaunayClick(object sender, RoutedEventArgs e)
         {
-            statusTimer.Start();
-            Dispatcher.BeginInvoke((ThreadStart)RunDelaunay);
-        }
-        void RunDelaunay()
-        {
-            var now = DateTime.Now;
-            Del_tetras = convexHull.FindDelaunayTriangulation();
-            var interval = DateTime.Now - now;
-            txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
-                               + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
-            btnDisplay.IsEnabled = btnDisplay.IsDefault = true;
-            CVXvertices = null; CVXfaces = null; Voro_edges = null; Voro_nodes = null;
-
+            try
+            {
+                var now = DateTime.Now;
+                Del_tetras = Triangulation.CreateDelaunay(vertices).Cells.ToList();
+                var interval = DateTime.Now - now;
+                txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
+                                   + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
+                btnDisplay.IsEnabled = btnDisplay.IsDefault = true;
+                CVXvertices = null; CVXfaces = null; Voro_edges = null; Voro_nodes = null;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         private void FindVoronoiClick(object sender, RoutedEventArgs e)
         {
-            var now = DateTime.Now;
-            convexHull.FindVoronoiGraph(out Voro_nodes, out Voro_edges);
-            var interval = DateTime.Now - now;
-            txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
-                               + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
-            btnDisplay.IsEnabled = btnDisplay.IsDefault = true;
-            CVXvertices = null; CVXfaces = null; Del_tetras = null;
+            try
+            {
+                var now = DateTime.Now;
+                var voronoi = VoronoiMesh.Create(vertices);
+                Voro_nodes = voronoi.Cells.ToList();
+                Voro_edges = voronoi.Edges.ToList();
+                var interval = DateTime.Now - now;
+                txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
+                                   + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
+                btnDisplay.IsEnabled = btnDisplay.IsDefault = true;
+                CVXvertices = null; CVXfaces = null; Del_tetras = null;
 
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
 
@@ -113,10 +147,10 @@ namespace ExampleWithGraphics
                         verts.AddRange(mesh.Positions);
                     }
             }
-            verts = verts.Distinct(new samePoint()).ToList();
+            Random rnd = new Random();
+            vertices = verts.Distinct(new samePoint()).Select(p =>new Vertex((Point3D)((Vector3D)p + 0.1 * new Vector3D(rnd.NextDouble(), rnd.NextDouble(), rnd.NextDouble())))).ToList();
 
-            convexHull = new ConvexHull(verts);
-            txtBlkTimer.Text = "#verts=" + verts.Count;
+            txtBlkTimer.Text = "#verts=" + vertices.Count;
             CVXvertices = null;
             CVXfaces = null;
             btnDisplay.IsEnabled = false;
@@ -133,11 +167,11 @@ namespace ExampleWithGraphics
         private void displayConvexHull()
         {
             var verts = new List<Point3D>();
-            verts.AddRange(CVXvertices.Select(p => new Point3D(p.coordinates[0], p.coordinates[1], p.coordinates[2])));
+            verts.AddRange(CVXvertices.Select(p => new Point3D(p.Position[0], p.Position[1], p.Position[2])));
             mesh.Positions = new Point3DCollection(verts);
             var faceTriCollection = new Int32Collection();
             foreach (var f in CVXfaces)
-                foreach (var v in f.vertices)
+                foreach (var v in f.Vertices)
                     faceTriCollection.Add(CVXvertices.IndexOf(v));
             mesh.TriangleIndices = faceTriCollection;
 
@@ -149,14 +183,14 @@ namespace ExampleWithGraphics
             foreach (var t in Del_tetras)
             {
                 var offset = verts.Count;
-                verts.AddRange(t.vertices.Select(p => new Point3D(p.coordinates[0], p.coordinates[1], p.coordinates[2])));
+                verts.AddRange(t.Vertices.Select(p => new Point3D(p.Position[0], p.Position[1], p.Position[2])));
                 var center = new double[3];
-                foreach (var v in t.vertices)
-                    center = StarMath.add(center, v.coordinates, 3);
+                foreach (var v in t.Vertices)
+                    center = StarMath.add(center, v.Position, 3);
                 center = StarMath.divide(center, 4, 3);
                 for (int i = 0; i < 4; i++)
                 {
-                    var newface = new List<IVertexConvHull>((IVertexConvHull[])t.vertices.Clone());
+                    var newface = t.Vertices.ToList(); //new List<IVertexConvHull>((IVertexConvHull[])t.vertices.Clone());
                     newface.RemoveAt(i);
                     var indices = Enumerable.Range(0, 4).Where(p => p != i).Select(p => p + offset);
                     if (!inTheProperOrder(center, newface))
@@ -168,49 +202,34 @@ namespace ExampleWithGraphics
             mesh.TriangleIndices = new Int32Collection(faceTriCollection);
         }
 
-        private bool inTheProperOrder(double[] center, List<IVertexConvHull> vertices)
+        private bool inTheProperOrder(double[] center, List<Vertex> vertices)
         {
             var outDir = new double[3];
-            outDir = vertices.Aggregate(outDir, (current, v) => StarMath.add(current, v.coordinates, 3));
+            outDir = vertices.Aggregate(outDir, (current, v) => StarMath.add(current, v.Position, 3));
             outDir = StarMath.divide(outDir, 3, 3);
             outDir = StarMath.subtract(outDir, center, 3);
-            var normal = StarMath.crossProduct3(StarMath.subtract(vertices[1].coordinates, vertices[0].coordinates, 3),
-                                                StarMath.subtract(vertices[2].coordinates, vertices[1].coordinates, 3));
+            var normal = StarMath.crossProduct3(StarMath.subtract(vertices[1].Position, vertices[0].Position, 3),
+                                                StarMath.subtract(vertices[2].Position, vertices[1].Position, 3));
             return (StarMath.dotProduct(normal, outDir, 3) >= 0);
         }
 
         private void displayVoronoi()
         {
-            if (viewport.Children.Count > 2) viewport.Children.RemoveAt(2);
+            //if (viewport.Children.Count > 2) viewport.Children.RemoveAt(2);
 
-            foreach (var edge in Voro_edges)
-                viewport.Add(new TubeVisual3D
-               {
-                   BackMaterial = Materials.LightGray,
-                   Material = Materials.Red,
-                   Path = new Point3DCollection
-                                                   {
-                                                       new Point3D(edge.Item1.coordinates[0],edge.Item1.coordinates[1],edge.Item1.coordinates[2]),
-                                                       new Point3D(edge.Item2.coordinates[0],edge.Item2.coordinates[1],edge.Item2.coordinates[2])
-                                                   }
-               });
+            //foreach (var edge in Voro_edges)
+            //    viewport.Add(new TubeVisual3D
+            //   {
+            //       BackMaterial = Materials.LightGray,
+            //       Material = Materials.Red,
+            //       Path = new Point3DCollection
+            //                                       {
+            //                                           new Point3D(edge.Source.Position[0],edge.Source.Position[1],edge.Source.Position[2]),
+            //                                           new Point3D(edge.Target.Position[0],edge.Target.Position[1],edge.Target.Position[2])
+            //                                       }
+            //   });
         }
 
-
-        readonly DispatcherTimer statusTimer = new DispatcherTimer
-        {
-            Interval = new TimeSpan(50000000),
-            IsEnabled = true
-        };
-
-        void statusTimerTimer_Tick(object sender, EventArgs e)
-        {
-            if (convexHull != null)
-            {
-                outputTextBox.Text += convexHull.Status;
-                outputTextBox.Text += "\n\n";
-            }
-        }
     }
 
     internal class samePoint : IEqualityComparer<Point3D>
@@ -226,7 +245,7 @@ namespace ExampleWithGraphics
         /// <param name="x">The first object of type <paramref name="T"/> to compare.</param><param name="y">The second object of type <paramref name="T"/> to compare.</param>
         bool IEqualityComparer<Point3D>.Equals(Point3D x, Point3D y)
         {
-            return ((x - y).Length < 0.000000001);
+            return ((x - y).Length < 0.000000001) ;
         }
 
         /// <summary>

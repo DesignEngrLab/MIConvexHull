@@ -29,7 +29,7 @@ namespace ExampleWithGraphics
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class vertex : Shape, IVertexConvHull
+    public class vertex : Shape, IVertex
     {
 
         protected override Geometry DefiningGeometry
@@ -38,7 +38,7 @@ namespace ExampleWithGraphics
             {
                 return new EllipseGeometry
                 {
-                    Center = new Point(coordinates[0], coordinates[1]),
+                    Center = new Point(Position[0], Position[1]),
                     RadiusX = 2,
                     RadiusY = 2
                 };
@@ -57,7 +57,7 @@ namespace ExampleWithGraphics
         public vertex(double x, double y)
             : this()
         {
-            coordinates = new[] { x, y };
+            Position = new[] { x, y };
         }
 
 
@@ -71,15 +71,6 @@ namespace ExampleWithGraphics
         /// Gets or sets the coordinates.
         /// </summary>
         /// <value>The coordinates.</value>
-        public double[] coordinates { get; set; }
-        //{
-        //    get { return new[] { X, Y}; }
-        //    set
-        //    {
-        //        X = value[0];
-        //        Y = value[1];
-        //       // Z = value[2];
-        //    }
-        //}
+        public double[] Position { get; set; }
     }
 }

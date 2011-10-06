@@ -24,7 +24,7 @@ namespace TestEXE_for_MIConvexHull2D
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class vertex : IVertexConvHull
+    public class vertex : IVertex
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="vertex"/> class.
@@ -33,42 +33,13 @@ namespace TestEXE_for_MIConvexHull2D
         /// <param name="y">The y position.</param>
         public vertex(double x, double y)
         {
-            X = x;
-            Y = y;
+            Position = new double[2] { x, y };
         }
-
-
-        /// <summary>
-        /// Gets or sets the X.
-        /// </summary>
-        /// <value>The X position.</value>
-        private double X { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Y.
-        /// </summary>
-        /// <value>The Y position.</value>
-        private double Y { get; set; }
-
-
-
-
-        /// <summary>
-        /// Gets or sets the coordinates.
-        /// </summary>
-        /// <value>The coordinates.</value>
-        public double[] coordinates
-        {
-            get { return new[] { X, Y }; }
-            set
-            {
-                X = value[0];
-                Y = value[1];
-            }
-        }
+        
+        public double[] Position { get; set; }
     }
 
-    public class vertex3 : IVertexConvHull
+    public class vertex3 : IVertex
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="vertex"/> class.
@@ -77,14 +48,14 @@ namespace TestEXE_for_MIConvexHull2D
         /// <param name="y">The y position.</param>
         public vertex3(double x, double y, double z)
         {
-            coordinates = new double[] { x, y, z };
+            Position = new double[] { x, y, z };
         }
 
         /// <summary>
         /// Gets or sets the coordinates.
         /// </summary>
         /// <value>The coordinates.</value>
-        public double[] coordinates
+        public double[] Position
         {
             get; set;
         }

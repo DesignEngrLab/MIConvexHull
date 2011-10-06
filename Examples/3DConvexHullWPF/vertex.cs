@@ -27,7 +27,7 @@ namespace ExampleWithGraphics
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class vertex : Sphere, IVertexConvHull
+    public class vertex : Sphere, IVertex
     {
         
 
@@ -39,7 +39,7 @@ namespace ExampleWithGraphics
         /// <param name="z">The z position.</param>
         public vertex(double x, double y, double z)
         {
-            coordinates = new double[] { x, y, z };
+            Position = new double[] { x, y, z };
             Center = new Point3D(x, y, z);
             Radius = 0.5;
 
@@ -50,26 +50,26 @@ namespace ExampleWithGraphics
         /// Gets or sets the X.
         /// </summary>
         /// <value>The X position.</value>
-        private double X { get { return coordinates[0]; } set { coordinates[0] = value; } }
+        private double X { get { return Position[0]; } set { Position[0] = value; } }
 
         /// <summary>
         /// Gets or sets the Y.
         /// </summary>
         /// <value>The Y position.</value>
-        private double Y { get { return coordinates[1]; } set { coordinates[1] = value; } }
+        private double Y { get { return Position[1]; } set { Position[1] = value; } }
 
 
         /// <summary>
         /// Gets or sets the Z. Not used by MIConvexHull2D.
         /// </summary>
         /// <value>The Z position.</value>
-        private double Z { get { return coordinates[2]; } set { coordinates[2] = value; } }
+        private double Z { get { return Position[2]; } set { Position[2] = value; } }
 
         /// <summary>
         /// Gets or sets the coordinates.
         /// </summary>
         /// <value>The coordinates.</value>
-        public double[] coordinates
+        public double[] Position
         {
             get;
             set;
