@@ -149,6 +149,7 @@ namespace ExampleWithGraphics
             }
             Random rnd = new Random();
             vertices = verts.Distinct(new samePoint()).Select(p =>new Vertex((Point3D)((Vector3D)p + 0.1 * new Vector3D(rnd.NextDouble(), rnd.NextDouble(), rnd.NextDouble())))).ToList();
+            //vertices = verts.Distinct(new samePoint()).Select(p => new Vertex(p)).ToList();
 
             txtBlkTimer.Text = "#verts=" + vertices.Count;
             CVXvertices = null;
