@@ -451,8 +451,8 @@
                 // Recycle the face for future use
                 if (updateCount == 0)
                 {
-                    convexFaces.Delete(oldFace.FibCell);
-                    oldFace.FibCell = null;
+                    // Push the face to the bottom of the heap
+                    convexFaces.ChangeKey(oldFace.FibCell, -1.0);
                     RecycleFace(oldFace);
                     recycledFaceStack.Push(oldFace);
                 }
@@ -997,6 +997,14 @@
 
                 FindAffectedFaces(currentFace, currentVertex);
                 UpdateFaces(affectedFaceBuffer, currentVertex);
+            }
+
+            // Remove the remaining recycled faces
+            while (recycledFaceStack.Count > 0)
+            {
+                var f = recycledFaceStack.Pop();
+                convexFaces.Delete(f.FibCell);
+                f.FibCell = null;
             }
         }        
 
