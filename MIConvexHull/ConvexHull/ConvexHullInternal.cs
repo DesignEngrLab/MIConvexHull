@@ -21,9 +21,11 @@
 
         List<VertexWrap> origVertices;
         List<VertexWrap> convexHull;
-        internal FibonacciHeap<double, ConvexFaceInternal> convexFaces;
+        internal FibonacciHeap<double, ConvexFaceInternal> convexFaceHeap;
+        List<ConvexFaceInternal> convexFaces;
 
         bool computed = false;
+        bool initializing;
 
         int dimension;
         double[] center;
@@ -33,15 +35,13 @@
         double[] nDRightSide;
         double[,] nDNormalMatrix;
 
-        VertexWrap[] affectedBuffer;
-
-        VertexWrap[] uniqueVertexBuffer;
         ConvexFaceInternal[] updateBuffer;
         int[] updateIndices;
 
         Stack<ConvexFaceInternal> recycledFaceStack;
         List<ConvexFaceInternal> newFaceBuffer;
         List<ConvexFaceInternal> affectedFaceBuffer;
+        List<VertexWrap> beyondBuffer;
         #endregion
 
         /// <summary>
@@ -50,20 +50,20 @@
         void Initialize()
         {
             convexHull = new List<VertexWrap>();
-            convexFaces = new FibonacciHeap<double, ConvexFaceInternal>(HeapDirection.Decreasing, (x, y) => (x < y) ? -1 : 1);
+            convexFaceHeap = new FibonacciHeap<double, ConvexFaceInternal>(HeapDirection.Decreasing, (x, y) => (x < y) ? -1 : 1);
+            convexFaces = new List<ConvexFaceInternal>();
             center = new double[dimension];
 
             ntX = new double[dimension];
             ntY = new double[dimension];
             ntZ = new double[dimension];
             outDir = new double[dimension];
-            affectedBuffer = new VertexWrap[origVertices.Count];
-            uniqueVertexBuffer = new VertexWrap[origVertices.Count];
             updateBuffer = new ConvexFaceInternal[dimension];
             updateIndices = new int[dimension];
             recycledFaceStack = new Stack<ConvexFaceInternal>();
             newFaceBuffer = new List<ConvexFaceInternal>();
             affectedFaceBuffer = new List<ConvexFaceInternal>();
+            beyondBuffer = new List<VertexWrap>();
 
             if (dimension > 4)
             {
@@ -144,7 +144,7 @@
         /// Create the first faces from (dimension + 1) vertices.
         /// </summary>
         /// <returns></returns>
-        private FibonacciHeap<double, ConvexFaceInternal> InitiateFaceDatabase()
+        void InitiateFaceDatabase()
         {
             for (var i = 0; i < dimension + 1; i++)
             {
@@ -152,11 +152,11 @@
                 var newFace = new ConvexFaceInternal(dimension);
                 newFace.Vertices = vertices;
                 CalculateNormal(newFace);
-                newFace.FibCell = convexFaces.Enqueue(0.0, newFace);
+                newFace.FibCell = convexFaceHeap.Enqueue(0.0, newFace);
             }
 
             // update the adjacency (check all pairs of faces)
-            var faces = convexFaces.ToArray();
+            var faces = convexFaceHeap.ToArray();
             for (var i = 0; i < dimension; i++)
             {
                 for (var j = i + 1; j < dimension + 1; j++)
@@ -164,8 +164,6 @@
                     UpdateAdjacency(faces[i].Value, faces[j].Value);
                 }
             }
-
-            return convexFaces;
         }
 
         double[] outDir;
@@ -225,7 +223,7 @@
         {
             var facesUnder = new List<ConvexFaceInternal>();
 
-            foreach (var face in convexFaces.GetValues())
+            foreach (var face in convexFaceHeap.GetValues())
             {
                 if (IsVertexOverFace(currentVertex, face) >= 0)
                     facesUnder.Add(face);
@@ -257,14 +255,12 @@
 
             return acc;
         }
-        
+
         void FindAffectedFaces(ConvexFaceInternal currentFace, VertexWrap currentVertex)
         {
             affectedFaceBuffer.Clear();
             affectedFaceBuffer.Add(currentFace);
             TraverseAffectedFaces(currentFace, currentVertex);
-            int count = affectedFaceBuffer.Count;
-            for (int i = 0; i < count; i++) affectedFaceBuffer[i].Tag = 0;
         }
 
         /// <summary>
@@ -277,7 +273,7 @@
             for (int i = 0; i < dimension; i++)
             {
                 var adjFace = currentFace.AdjacentFaces[i];
-                
+
                 if (adjFace != null && adjFace.Tag == 0 && IsVertexOverFace(currentVertex, adjFace) >= 0)
                 {
                     affectedFaceBuffer.Add(adjFace);
@@ -352,62 +348,6 @@
         }
         
         /// <summary>
-        /// Mark and sweep two vertex lists to find unique vertices.
-        /// </summary>
-        int FillUniqueVertexBuffer(List<VertexWrap> beyond, VertexWrap[] affected, int numAffected)
-        {
-            int numUnique = 0;
-
-            for (int i = 0; i < numAffected; i++) affected[i].Marked = true;
-            for (int i = 0; i < beyond.Count; i++)
-            {
-                var v = beyond[i];
-                v.Marked = false;
-                uniqueVertexBuffer[numUnique++] = v;
-            }
-
-            for (int i = 0; i < numAffected; i++)
-            {
-                var v = affected[i];
-                if (v.Marked) uniqueVertexBuffer[numUnique++] = v;
-            }
-            
-            return numUnique;
-        }
-
-        /// <summary>
-        /// Find all unique affected vertices.
-        /// </summary>
-        int FillAffectedBuffer(List<ConvexFaceInternal> faces, VertexWrap current)
-        {
-            for (int i = 0; i < faces.Count; i++)
-            {
-                var vert = faces[i].VerticesBeyond;
-                for (int j = 0; j < vert.Count; j++)
-                {
-                    vert[j].Marked = false;
-                }
-            }
-
-            current.Marked = true;
-
-            int numAffected = 0;
-            for (int i = 0; i < faces.Count; i++)
-            {
-                var vert = faces[i].VerticesBeyond;
-                for (int j = 0; j < vert.Count; j++)
-                {
-                    var v = vert[j];
-                    if (v.Marked) continue;
-                    v.Marked = true;
-                    affectedBuffer[numAffected++] = v;
-                }
-            }
-
-            return numAffected;
-        }
-
-        /// <summary>
         /// Recycle face for future use.
         /// </summary>
         void RecycleFace(ConvexFaceInternal face)
@@ -416,8 +356,6 @@
             {
                 face.AdjacentFaces[i] = null;
             }
-
-            face.VerticesBeyond.Clear();
         }
         
         /// <summary>
@@ -429,20 +367,19 @@
         {
             var newFaces = newFaceBuffer;
             newFaces.Clear();
-                             
-            int numAffected = FillAffectedBuffer(oldFaces, currentVertex);
 
             for (int fIndex = 0; fIndex < oldFaces.Count; fIndex++)
             {
                 var oldFace = oldFaces[fIndex];
-                                
+
                 // Find the faces that need to be updated
                 int updateCount = 0;
                 for (int i = 0; i < dimension; i++)
                 {
-                    if (oldFace.AdjacentFaces[i] != null && !Contains(oldFaces, oldFace.AdjacentFaces[i]))
+                    var af = oldFace.AdjacentFaces[i];
+                    if (af != null && af.Tag == 0) // Tag == 0 when oldFaces does not contain af
                     {
-                        updateBuffer[updateCount] = oldFace.AdjacentFaces[i];
+                        updateBuffer[updateCount] = af;
                         updateIndices[updateCount] = i;
                         ++updateCount;
                     }
@@ -452,18 +389,18 @@
                 if (updateCount == 0)
                 {
                     // Push the face to the bottom of the heap
-                    convexFaces.ChangeKey(oldFace.FibCell, -1.0);
+                    convexFaceHeap.ChangeKey(oldFace.FibCell, -1.0);
                     RecycleFace(oldFace);
                     recycledFaceStack.Push(oldFace);
                 }
-                
+
                 for (int i = 0; i < updateCount; i++)
                 {
                     var adjacentFace = updateBuffer[i];
-                    var forbidden = updateIndices[i]; // index of the face that corresponds to this adjacent face
+                    var forbidden = updateIndices[i]; // Index of the face that corresponds to this adjacent face
 
                     ConvexFaceInternal newFace;
-                    
+
                     // Recycle the oldFace
                     if (i == updateCount - 1)
                     {
@@ -485,36 +422,41 @@
                         {
                             if (j != forbidden) vertices[c++] = oldFace.Vertices[j];
                         }
-                    }                    
+                    }
 
                     CalculateNormal(newFace);
                     UpdateNewFaceAdjacency(newFace, adjacentFace);
-                    
-                    // Enumerate all unique affected vertices
-                    var numUnique = FillUniqueVertexBuffer(adjacentFace.VerticesBeyond, affectedBuffer, numAffected);
 
-                    // Find all vertices visible from the new face
-                    FindBeyondVertices(newFace, numUnique);
-                    
+                    FindBeyondVertices(newFace, adjacentFace.VerticesBeyond, oldFace.VerticesBeyond, currentVertex);
+
                     newFaces.Add(newFace);
 
-                    // Update the face heap
-                    if (newFace.FibCell != null) convexFaces.ChangeKey(newFace.FibCell, newFace.MinVertexKey);
-                    else newFace.FibCell = convexFaces.Enqueue(newFace.MinVertexKey, newFace);
+                    // This face will definitely lie on the hull
+                    if (newFace.VerticesBeyond.Count == 0 && !initializing)
+                    {
+                        convexFaces.Add(newFace);
+                        if (newFace.FibCell != null) convexFaceHeap.Delete(newFace.FibCell);
+                        newFace.FibCell = null;
+                    }
+                    else // Update the face heap
+                    {
+                        if (newFace.FibCell != null) convexFaceHeap.ChangeKey(newFace.FibCell, newFace.MinVertexKey);
+                        else newFace.FibCell = convexFaceHeap.Enqueue(newFace.MinVertexKey, newFace);
+                    }
                 }
             }
-                                    
-            // if no face was added, quit ...
+
+            // If no face was added, quit ...
             if (newFaces.Count == 0) return;
-            
-            // check all pairs of faces and update their adjacency
+
+            // Check all pairs of faces and update their adjacency
             for (var i = 0; i < newFaces.Count - 1; i++)
             {
                 for (var j = i + 1; j < newFaces.Count; j++)
                 {
                     UpdateAdjacency(newFaces[i], newFaces[j]);
 
-                    // no need to continue if all faces were filled
+                    // No need to continue if all faces were filled
                     int k;
                     for (k = 0; k < dimension; k++)
                     {
@@ -525,22 +467,6 @@
             }
         }
         
-        /// <summary>
-        /// Calling this is cheaper than calling List.Contains
-        /// </summary>
-        /// <param name="fd"></param>
-        /// <param name="face"></param>
-        /// <returns></returns>
-        static bool Contains(List<ConvexFaceInternal> fd, ConvexFaceInternal face)
-        {
-            int count = fd.Count;
-            for (int i = 0; i < count; i++)
-            {
-                if (object.ReferenceEquals(fd[i], face)) return true;
-            }
-            return false;
-        }
-
         void SubtractFast(double[] x, double[] y, double[] target)
         {
             for (int i = 0; i < dimension; i++)
@@ -559,10 +485,19 @@
             var y = ntY;
             var z = ntZ;
 
-            var nx = x[3] * y[2] * z[1] - x[2] * y[3] * z[1] - x[3] * y[1] * z[2] + x[1] * y[3] * z[2] + x[2] * y[1] * z[3] - x[1] * y[2] * z[3];
-            var ny = -(x[3] * y[2] * z[0]) + x[2] * y[3] * z[0] + x[3] * y[0] * z[2] - x[0] * y[3] * z[2] - x[2] * y[0] * z[3] + x[0] * y[2] * z[3];
-            var nz = x[3] * y[1] * z[0] - x[1] * y[3] * z[0] - x[3] * y[0] * z[1] + x[0] * y[3] * z[1] + x[1] * y[0] * z[3] - x[0] * y[1] * z[3];
-            var nw = -(x[2] * y[1] * z[0]) + x[1] * y[2] * z[0] + x[2] * y[0] * z[1] - x[0] * y[2] * z[1] - x[1] * y[0] * z[2] + x[0] * y[1] * z[2];
+            // This was generated using Mathematica
+            var nx = x[3] * (y[2] * z[1] - y[1] * z[2])
+                   + x[2] * (y[1] * z[3] - y[3] * z[1])
+                   + x[1] * (y[3] * z[2] - y[2] * z[3]);
+            var ny = x[3] * (y[0] * z[2] - y[2] * z[0])
+                   + x[2] * (y[3] * z[0] - y[0] * z[3])
+                   + x[0] * (y[2] * z[3] - y[3] * z[2]);
+            var nz = x[3] * (y[1] * z[0] - y[0] * z[1])
+                   + x[1] * (y[0] * z[3] - y[3] * z[0])
+                   + x[0] * (y[3] * z[1] - y[1] * z[3]);
+            var nw = x[2] * (y[0] * z[1] - y[1] * z[0])
+                   + x[1] * (y[2] * z[0] - y[0] * z[2])
+                   + x[0] * (y[1] * z[2] - y[2] * z[1]);
 
             double norm = System.Math.Sqrt(nx * nx + ny * ny + nz * nz + nw * nw);
 
@@ -621,30 +556,81 @@
             }
         }
 
-        private void FindBeyondVertices(ConvexFaceInternal face, int numUniqueVertices)
+        private void IsBeyond(ConvexFaceInternal face, List<VertexWrap> beyondVertices, ref double min, ref VertexWrap minV, VertexWrap v)
+        {
+            double dotP = IsVertexOverFace(v, face);
+            if (dotP >= 0)
+            {
+                if (dotP > min)
+                {
+                    min = dotP;
+                    minV = v;
+                }
+                beyondVertices.Add(v);
+            }
+        }
+
+        /// <summary>
+        /// Used in the "initialization" code.
+        /// </summary>
+        void FindBeyondVertices(ConvexFaceInternal face, List<VertexWrap> vertices)
         {
             var beyondVertices = face.VerticesBeyond;
-                        
+
             double min = double.NegativeInfinity;
             VertexWrap minV = null;
 
-            for (int i = 0; i < numUniqueVertices; i++)
+            int count = vertices.Count;
+            for (int i = 0; i < count; i++)
             {
-                var v = uniqueVertexBuffer[i];
-                double dotP = IsVertexOverFace(v, face);
-                if (dotP >= 0)
-                {
-                    if (dotP > min)
-                    {
-                        min = dotP;
-                        minV = v;
-                    }
-                    beyondVertices.Add(v);
-                }
+                var v = vertices[i];
+                IsBeyond(face, beyondVertices, ref min, ref minV, v);
             }
             face.MinVertex = minV;
             face.MinVertexKey = beyondVertices.Count > 0 ? min : -1.0;
         }
+
+        /// <summary>
+        /// Used by update faces.
+        /// </summary>
+        void FindBeyondVertices(ConvexFaceInternal face, List<VertexWrap> beyond, List<VertexWrap> beyond1, VertexWrap current)
+        {
+            var beyondVertices = beyondBuffer; //face.VerticesBeyond;
+
+            double min = double.NegativeInfinity;
+            VertexWrap minV = null;
+
+            for (int i = 0; i < beyond1.Count; i++) beyond1[i].Marked = true;
+            current.Marked = false;
+            int count = beyond.Count;
+            for (int i = 0; i < count; i++)
+            {
+                var v = beyond[i];
+                if (v == current)
+                {
+                    continue;
+                }
+                v.Marked = false;
+                IsBeyond(face, beyondVertices, ref min, ref minV, v);
+            }
+
+            count = beyond1.Count;
+            for (int i = 0; i < count; i++)
+            {
+                var v = beyond1[i];
+                if (v.Marked) IsBeyond(face, beyondVertices, ref min, ref minV, v);
+            }
+
+            face.MinVertex = minV;
+            face.MinVertexKey = beyondVertices.Count > 0 ? min : -1.0;
+
+            // Pull the old switch a roo
+            var temp = face.VerticesBeyond;
+            face.VerticesBeyond = beyondVertices;
+            if (temp.Count > 0) temp.Clear();
+            beyondBuffer = temp;
+        }
+        
 
 
         private void UpdateCenter(VertexWrap currentVertex)
@@ -940,7 +926,7 @@
                     double acc = 0;
                     for (int fi = 0; fi < dimension; fi++)
                     {
-                        acc += (double)ternaryPosition[fi] * origVertices[m].Vertex.Position[fi];
+                        acc += (double)ternaryPosition[fi] * origVertices[m].PositionData[fi];
                     }
 
                     var extreme = flip * acc;
@@ -961,12 +947,15 @@
                 var currentVertex = origVertices[AklToussaintIndices[i]];
                 convexHull.Add(currentVertex);
                 UpdateCenter(currentVertex);
-                if (i == dimension)
-                    convexFaces = InitiateFaceDatabase();
+                if (i == dimension) InitiateFaceDatabase();
                 else if (i > dimension)
                 {
                     var facesUnderVertex = FindFacesBeneathInitialVertices(currentVertex);
+                    // Tag the faces
+                    for (int j = 0; j < facesUnderVertex.Count; j++) facesUnderVertex[j].Tag = 1;
                     UpdateFaces(facesUnderVertex, currentVertex);
+                    // "Untag" the faces
+                    for (int j = 0; j < facesUnderVertex.Count; j++) facesUnderVertex[j].Tag = 0;
                 }
                 origVertices.RemoveAt(AklToussaintIndices[i]);
             }
@@ -975,38 +964,48 @@
         private void FindConvexHull()
         {
             // Find initial approximation of the convex hull
+            initializing = true;
             AklTouHeuristic();
+            initializing = false;
 
             // Consider all remaining vertices. Store them with the faces that they are 'beyond'
-            var justTheFaces = convexFaces.GetValues().ToArray();
-            int vCount = origVertices.Count;
-            for (int i = 0; i < vCount; i++) uniqueVertexBuffer[i] = origVertices[i];
+            var justTheFaces = convexFaceHeap.GetValues().ToArray();
             foreach (var face in justTheFaces)
             {
-                FindBeyondVertices(face, vCount);
-                convexFaces.ChangeKey(face.FibCell, face.MinVertexKey);
+                FindBeyondVertices(face, origVertices);
+                if (face.VerticesBeyond.Count == 0)
+                {
+                    convexFaces.Add(face);
+                    convexFaceHeap.Delete(face.FibCell);
+                    face.FibCell = null;
+                }
+                else convexFaceHeap.ChangeKey(face.FibCell, face.MinVertexKey);
             }
-            
+
             // Now a final loop to expand the convex hull and faces based on these beyond vertices
-            while (!convexFaces.IsEmpty && convexFaces.Top.Priority >= 0)
+            while (!convexFaceHeap.IsEmpty && convexFaceHeap.Top.Priority >= 0)
             {
-                var currentFace = convexFaces.Top.Value; 
+                var currentFace = convexFaceHeap.Top.Value;
                 var currentVertex = currentFace.MinVertex;
                 convexHull.Add(currentVertex);
                 UpdateCenter(currentVertex);
 
+                // The affected faces get tagged
                 FindAffectedFaces(currentFace, currentVertex);
                 UpdateFaces(affectedFaceBuffer, currentVertex);
+                // Need to reset the tags
+                int count = affectedFaceBuffer.Count;
+                for (int i = 0; i < count; i++) affectedFaceBuffer[i].Tag = 0;
             }
 
-            // Remove the remaining recycled faces
+            // Remove any remaining recycled faces
             while (recycledFaceStack.Count > 0)
             {
                 var f = recycledFaceStack.Pop();
-                convexFaces.Delete(f.FibCell);
+                convexFaceHeap.Delete(f.FibCell);
                 f.FibCell = null;
             }
-        }        
+        }      
 
         private ConvexHullInternal(IEnumerable<IVertex> vertices)
         {
@@ -1042,8 +1041,8 @@
         {
             if (!computed) GetConvexHullInternal<TVertex>(-1, true);
 
-            var faces = convexFaces.GetValues().ToArray();
-            int cellCount = faces.Length;
+            var faces = convexFaces;
+            int cellCount = faces.Count;
             var cells = new TFace[cellCount];
 
             for (int i = 0; i < cellCount; i++)
@@ -1083,7 +1082,7 @@
         {
             ConvexHullInternal ch = new ConvexHullInternal(data.Cast<IVertex>());
             ch.GetConvexHullInternal<TVertex>(-1, true);
-            return ch.convexFaces.GetValues().ToList();
+            return ch.convexFaces;
         }
 
         internal static IEnumerable<TFace> GetConvexFaces<TVertex, TFace>(IEnumerable<TVertex> data)
