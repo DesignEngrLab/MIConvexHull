@@ -83,6 +83,20 @@ namespace MIConvexHull
              ****** this analytical approach and the SOR approach *****/
             return multiply(inverse(A, aLength), b, aLength, aLength);
         }
+
+        public static void solveDestructiveInto(double[,] A, double[] b, double[] target)
+        {
+            var aLength = A.GetLength(0);
+            if (aLength != A.GetLength(1))
+                throw new Exception("Matrix, A, must be square.");
+            if (aLength != b.Length)
+                throw new Exception("Matrix, A, must be have the same number of rows as the vector, b.");
+
+            /****** need code to determine when to switch between *****
+             ****** this analytical approach and the SOR approach *****/
+            inverseInPlace(A, aLength);
+            multiplyInto(A, b, aLength, aLength, target);
+        }
         #endregion
 
         #region inverse transpose
@@ -99,6 +113,19 @@ namespace MIConvexHull
             if (length == 1) return new[,] { { 1 / A[0, 0] } };
             return inverseWithLUResult(LUDecomposition(A, length), length);
         }
+
+        public static void inverseInPlace(double[,] A, int length)
+        {
+            if (length == 1)
+            {
+                A[0, 0] = 1 / A[0, 0];
+                return;
+            }
+            LUDecompositionInPlace(A, length);
+            inverseWithLUResult(A, length);
+        }
+
+
         /// <summary>
         /// Returns the LU decomposition of A in a new matrix.
         /// </summary>
@@ -133,6 +160,35 @@ namespace MIConvexHull
                 }
             }
             return B;
+        }
+
+        public static void LUDecompositionInPlace(double[,] A, int length)
+        {
+            var B = A;
+            // normalize row 0
+            for (var i = 1; i < length; i++) B[0, i] /= B[0, 0];
+
+            for (var i = 1; i < length; i++)
+            {
+                for (var j = i; j < length; j++)
+                {
+                    // do a column of L
+                    var sum = 0.0;
+                    for (var k = 0; k < i; k++)
+                        sum += B[j, k] * B[k, i];
+                    B[j, i] -= sum;
+                }
+                if (i == length - 1) continue;
+                for (var j = i + 1; j < length; j++)
+                {
+                    // do a row of U
+                    var sum = 0.0;
+                    for (var k = 0; k < i; k++)
+                        sum += B[i, k] * B[k, j];
+                    B[i, j] =
+                        (B[i, j] - sum) / B[i, i];
+                }
+            }
         }
 
         private static double[,] inverseWithLUResult(double[,] B, int length)
@@ -278,6 +334,12 @@ namespace MIConvexHull
         public static double[] normalize(IList<double> x, int length)
         {
             return divide(x, norm2(x), length);
+        }
+
+        public static void normalizeInPlace(double[] x, int length)
+        {
+            double f = 1.0 / norm2(x);
+            for (int i = 0; i < length; i++) x[i] *= f;
         }
         #endregion
 
@@ -482,6 +544,18 @@ namespace MIConvexHull
                     C[i] += A[i, j] * B[j];
             }
             return C;
+        }
+
+        public static void multiplyInto(double[,] A, double[] B, int numRows, int numCols, double[] target)
+        {
+            var C = target;
+
+            for (var i = 0; i != numRows; i++)
+            {
+                C[i] = 0.0;
+                for (var j = 0; j != numCols; j++)
+                    C[i] += A[i, j] * B[j];
+            }
         }
         /// <summary>
         /// The cross product of two double vectors, A and B, which are of length, 3.

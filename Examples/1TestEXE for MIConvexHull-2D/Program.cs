@@ -49,13 +49,11 @@ namespace TestEXE_for_MIConvexHull2D
             var now = DateTime.Now;
             var convexHull = ConvexHull.Create(vertices).Hull;
             var interval = DateTime.Now - now;
-            Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
+            Console.WriteLine("Out of the " + NumberOfVertices + " 2D vertices, there are " +
                 convexHull.Count() + " in the convex hull.");
             Console.WriteLine("time = " + interval);
 
             Console.ReadLine();
         }
-
-
     }
 }

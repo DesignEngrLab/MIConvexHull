@@ -3,7 +3,7 @@
     using System.Collections.Generic;
 
     /// <summary>
-    /// Wraps each IVertex to allow marking and indexing of nodes.
+    /// Wraps each IVertex to allow marking of nodes.
     /// </summary>
     class VertexWrap
     {
@@ -16,7 +16,7 @@
         /// Direct reference to PositionData makes IsVertexOverFace faster.
         /// </summary>
         public double[] PositionData;
-        
+
         /// <summary>
         /// Used mostly to enumerate unique vertices.
         /// </summary>
@@ -32,13 +32,13 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="ConvexFaceInternal"/> class.
         /// </summary>
-        /// <param name="dimension">The dimension.</param>
-        internal ConvexFaceInternal(int dimension)
+        internal ConvexFaceInternal(int dimension, List<VertexWrap> beyondList)
         {
             AdjacentFaces = new ConvexFaceInternal[dimension];
-            VerticesBeyond = new List<VertexWrap>();
+            VerticesBeyond = beyondList;
             Normal = new double[dimension];
             Vertices = new VertexWrap[dimension];
+            ListNode = new LinkedListNode<ConvexFaceInternal>(this);
         }
 
         /// <summary>
@@ -52,10 +52,9 @@
         public List<VertexWrap> VerticesBeyond;
 
         /// <summary>
-        /// Buffer the "minimum" vertex
+        /// The furthest vertex.
         /// </summary>
-        public double MinVertexKey;
-        public VertexWrap MinVertex;
+        public VertexWrap FurthestVertex;
 
         /// <summary>
         /// Gets or sets the vertices.
@@ -68,13 +67,18 @@
         public double[] Normal;
 
         /// <summary>
+        /// Face plane constant element.
+        /// </summary>
+        public double Offset;
+
+        /// <summary>
         /// Used to traverse affected faces and create the Delaunay representation.
         /// </summary>
         public int Tag;
 
         /// <summary>
-        /// FibonacciHeap cell storing this face.
+        /// Linked list node storing this face.
         /// </summary>
-        public FibonacciHeapCell<double, ConvexFaceInternal> FibCell;
+        public LinkedListNode<ConvexFaceInternal> ListNode;
     }
 }
