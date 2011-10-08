@@ -38,7 +38,7 @@ namespace TestEXE_for_MIConvexHull_Voronoi
     {
         static void Main()
         {
-            const int NumberOfVertices = 300;
+            const int NumberOfVertices = 150;
             const double size = 1000;
             const int dimension = 6;
 
@@ -46,7 +46,7 @@ namespace TestEXE_for_MIConvexHull_Voronoi
             Console.WriteLine("Ready? Push Return/Enter to start.");
             Console.ReadLine();
 
-            Console.WriteLine("Making " + NumberOfVertices + " random vertices.");
+            Console.WriteLine("Making " + NumberOfVertices + " random 6D vertices.");
             var vertices = new List<vertex>();
             for (var i = 0; i < NumberOfVertices; i++)
             {
@@ -58,7 +58,10 @@ namespace TestEXE_for_MIConvexHull_Voronoi
             Console.WriteLine("Running...");
             var now = DateTime.Now;
             var voronoi = VoronoiMesh.Create(vertices);
+            //var hull = ConvexHull.Create(vertices);
             var interval = DateTime.Now - now;
+            //Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
+            //    hull.Hull.Count() + " on the convex hull.");
             Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
                 voronoi.Cells.Count() + " voronoi points and " + voronoi.Edges.Count() + " voronoi edges.");
             Console.WriteLine("time = " + interval);
