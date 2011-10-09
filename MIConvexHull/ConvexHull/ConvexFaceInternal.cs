@@ -1,11 +1,9 @@
 ﻿namespace MIConvexHull
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// Wraps each IVertex to allow marking of nodes.
     /// </summary>
-    class VertexWrap
+    sealed class VertexWrap
     {
         /// <summary>
         /// Ref. to the original vertex.
@@ -27,18 +25,17 @@
     /// This internal class manages the faces of the convex hull. It is a 
     /// separate class from the desired user class.
     /// </summary>
-    class ConvexFaceInternal
+    sealed class ConvexFaceInternal
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ConvexFaceInternal"/> class.
         /// </summary>
-        internal ConvexFaceInternal(int dimension, List<VertexWrap> beyondList)
+        public ConvexFaceInternal(int dimension, VertexBuffer beyondList)
         {
             AdjacentFaces = new ConvexFaceInternal[dimension];
             VerticesBeyond = beyondList;
             Normal = new double[dimension];
             Vertices = new VertexWrap[dimension];
-            ListNode = new LinkedListNode<ConvexFaceInternal>(this);
         }
 
         /// <summary>
@@ -49,12 +46,17 @@
         /// <summary>
         /// Gets or sets the vertices beyond.
         /// </summary>
-        public List<VertexWrap> VerticesBeyond;
+        public VertexBuffer VerticesBeyond;
 
         /// <summary>
         /// The furthest vertex.
         /// </summary>
         public VertexWrap FurthestVertex;
+
+        /// <summary>
+        /// Distance to the furthest vertex.
+        /// </summary>
+        public double FurthestDistance;
 
         /// <summary>
         /// Gets or sets the vertices.
@@ -77,8 +79,18 @@
         public int Tag;
 
         /// <summary>
-        /// Linked list node storing this face.
+        /// Prev node in the list.
         /// </summary>
-        public LinkedListNode<ConvexFaceInternal> ListNode;
+        public ConvexFaceInternal Previous;
+
+        /// <summary>
+        /// Next node in the list.
+        /// </summary>
+        public ConvexFaceInternal Next;
+
+        /// <summary>
+        /// Is it present in the list.
+        /// </summary>
+        public bool InList;
     }
 }

@@ -55,7 +55,7 @@ namespace ExampleWithGraphics
             {
                 var now = DateTime.Now;
                 var hull = ConvexHull.Create(vertices);
-                CVXvertices = hull.Hull.ToList(); // convexHull.FindConvexHull(out CVXfaces);
+                CVXvertices = hull.Points.ToList(); // convexHull.FindConvexHull(out CVXfaces);
                 CVXfaces = hull.Faces.ToList();
                 var interval = DateTime.Now - now;
                 txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
@@ -148,7 +148,7 @@ namespace ExampleWithGraphics
                     }
             }
             Random rnd = new Random();
-            vertices = verts.Distinct(new samePoint()).Select(p =>new Vertex((Point3D)((Vector3D)p + 0.1 * new Vector3D(rnd.NextDouble(), rnd.NextDouble(), rnd.NextDouble())))).ToList();
+            vertices = verts.Distinct(new samePoint()).Select(p =>new Vertex((Point3D)((Vector3D)p + 0.05 * new Vector3D(rnd.NextDouble(), rnd.NextDouble(), rnd.NextDouble())))).ToList();
             //vertices = verts.Distinct(new samePoint()).Select(p => new Vertex(p)).ToList();
 
             txtBlkTimer.Text = "#verts=" + vertices.Count;

@@ -13,14 +13,24 @@
         where TCell : TriangulationCell<TVertex, TCell>, new()
         where TVertex : IVertex
     {
+        /// <summary>
+        /// Cells of the triangulation.
+        /// </summary>
         public IEnumerable<TCell> Cells { get; private set; }
 
+        /// <summary>
+        /// Creates the Delaunay triangulation of the input data.
+        /// Be careful with concurrency, because during the computation, the vertex position arrays get resized.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static DelaunayTriangulation<TVertex, TCell> Create(IEnumerable<TVertex> data)
         {
             if (data.Count() == 0) return new DelaunayTriangulation<TVertex, TCell> { Cells = Enumerable.Empty<TCell>() };
 
             int dimension = data.First().Position.Length;
 
+            // Resize the arrays and lift the data.
             foreach (var p in data)
             {
                 double lenSq = StarMath.norm2(p.Position, true);
@@ -30,15 +40,17 @@
                 p.Position[dimension] = lenSq;
             }
 
+            // Find the convex hull
             var delaunayFaces = ConvexHullInternal.GetConvexFacesInternal<TVertex, TCell>(data);
 
+            // Resize the data back
             foreach (var p in data)
             {
                 var v = p.Position;
                 Array.Resize(ref v, dimension);
                 p.Position = v;
             }
-
+            // Remove the "upper" faces
             for (var i = delaunayFaces.Count - 1; i >= 0; i--)
             {
                 var candidate = delaunayFaces[i];
@@ -58,11 +70,13 @@
                             }
                         }
                     }
-                    delaunayFaces.RemoveAt(i);
+                    var li = delaunayFaces.Count - 1;
+                    delaunayFaces[i] = delaunayFaces[li];
+                    delaunayFaces.RemoveAt(li);
                 }
             }
 
-            #region Create TFace List
+            // Create the "TCell" representation.
             int cellCount = delaunayFaces.Count;
             var cells = new TCell[cellCount];
 
@@ -74,8 +88,7 @@
                 cells[i] = new TCell
                 {
                     Vertices = vertices,
-                    AdjacentFaces = new TCell[dimension + 1],
-                    Normal = face.Normal
+                    Adjacency = new TCell[dimension + 1]
                 };
                 face.Tag = i;
             }
@@ -87,14 +100,16 @@
                 for (int j = 0; j <= dimension; j++)
                 {
                     if (face.AdjacentFaces[j] == null) continue;
-                    cell.AdjacentFaces[j] = cells[face.AdjacentFaces[j].Tag];
+                    cell.Adjacency[j] = cells[face.AdjacentFaces[j].Tag];
                 }
             }
-            #endregion
 
             return new DelaunayTriangulation<TVertex, TCell> { Cells = cells };
         }
 
+        /// <summary>
+        /// Can only be created using a factory method.
+        /// </summary>
         private DelaunayTriangulation()
         {
 

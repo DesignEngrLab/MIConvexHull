@@ -3,26 +3,34 @@
     /// <summary>
     /// A convex face representation containing adjacency information.
     /// </summary>
-    public abstract class ConvexFace<TVertex, TFace> 
+    public abstract class ConvexFace<TVertex, TFace>
         where TVertex : IVertex
         where TFace : ConvexFace<TVertex, TFace>
     {
         /// <summary>
-        /// If the face is "at infinity", AdjacentFaces[i] = null.
+        /// Adjacency. Array of length "dimension".
+        /// If F = Adjacency[i] then the vertices shared with F are Vertices[j] where j != i.
+        /// In the context of triangulation, can be null (indicates the cell is at boundary).
         /// </summary>
-        public TFace[] AdjacentFaces { get; set; }
+        public TFace[] Adjacency { get; set; }
 
         /// <summary>
-        /// Face vertices.
+        /// The vertices stored in clockwise order.
+        /// Unless I accidentally switch some index somewhere in which case the order is CCW. Either way, it is consistent.
+        /// 3D Normal = (V[1] - V[0]) x (V[2] - V[1]).
         /// </summary>
         public TVertex[] Vertices { get; set; }
 
         /// <summary>
-        /// Normal.
+        /// The normal vector of the face. Null if used in triangulation.
         /// </summary>
         public double[] Normal { get; set; }
     }
 
+    /// <summary>
+    /// A default convex face representation.
+    /// </summary>
+    /// <typeparam name="TVertex"></typeparam>
     public class DefaultConvexFace<TVertex> : ConvexFace<TVertex, DefaultConvexFace<TVertex>>
         where TVertex : IVertex
     {

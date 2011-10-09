@@ -268,6 +268,42 @@ namespace MIConvexHull
                        - (A[0, 2] * A[1, 1] * A[2, 0]);
             return determinantBig(A, length);
         }
+
+        /// <summary>
+        /// Modifies the matrix during the computation if the dimension > 3.
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static double determinantDestructive(double[,] A, int dimension)
+        {
+            if (A == null) throw new Exception("The matrix, A, is null.");
+            var length = dimension;
+            //if (length != A.GetLength(1))
+            //    throw new Exception("The determinant is only possible for square matrices.");
+            if (length == 0) return 0.0;
+            if (length == 1) return A[0, 0];
+            if (length == 2) return (A[0, 0] * A[1, 1]) - (A[0, 1] * A[1, 0]);
+            if (length == 3)
+                return (A[0, 0] * A[1, 1] * A[2, 2])
+                       + (A[0, 1] * A[1, 2] * A[2, 0])
+                       + (A[0, 2] * A[1, 0] * A[2, 1])
+                       - (A[0, 0] * A[1, 2] * A[2, 1])
+                       - (A[0, 1] * A[1, 0] * A[2, 2])
+                       - (A[0, 2] * A[1, 1] * A[2, 0]);
+            return determinantBigDestructive(A, length);
+        }
+
+        static double determinantBigDestructive(double[,] A, int length)
+        {
+            LUDecompositionInPlace(A, length);
+            var result = 1.0;
+            for (var i = 0; i < length; i++)
+                if (double.IsNaN(A[i, i]))
+                    return 0;
+                else result *= A[i, i];
+            return result;
+        }
+
         /// <summary>
         /// Returns the determinant of matrix, A. Only used internally for matrices larger than 3.
         /// </summary>

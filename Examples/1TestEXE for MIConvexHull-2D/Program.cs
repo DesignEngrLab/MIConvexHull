@@ -47,10 +47,10 @@ namespace TestEXE_for_MIConvexHull2D
                 vertices[i] = new vertex(size * r.NextDouble(), size * r.NextDouble());
             Console.WriteLine("Running...");
             var now = DateTime.Now;
-            var convexHull = ConvexHull.Create(vertices).Hull;
+            var convexHull = ConvexHull.Create(vertices).Points;
             var interval = DateTime.Now - now;
             Console.WriteLine("Out of the " + NumberOfVertices + " 2D vertices, there are " +
-                convexHull.Count() + " in the convex hull.");
+                convexHull.Count() + " on the convex hull.");
             Console.WriteLine("time = " + interval);
 
             Console.ReadLine();
