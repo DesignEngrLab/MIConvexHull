@@ -1,6 +1,7 @@
 ﻿namespace MIConvexHull
 {
     using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// Simple interface to unify different types of triangulations in the future.
@@ -29,6 +30,17 @@
             where TVertex : IVertex
         {
             return DelaunayTriangulation<TVertex, DefaultTriangulationCell<TVertex>>.Create(data);
+        }
+
+        /// <summary>
+        /// Creates the Delaunay triangulation of the input data.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static ITriangulation<DefaultVertex, DefaultTriangulationCell<DefaultVertex>> CreateDelaunay(IEnumerable<double[]> data)
+        {
+            var points = data.Select(p => new DefaultVertex { Position = p.ToArray() });
+            return DelaunayTriangulation<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>.Create(points);
         }
 
         /// <summary>

@@ -603,6 +603,7 @@
         private List<VertexWrap> FindInitialPoints(List<VertexWrap> extremes)
         {
             List<VertexWrap> initialPoints = new List<VertexWrap>() { extremes[0], extremes[1] };
+
             for (int i = 2; i <= Dimension; i++)
             {
                 double maximum = 0.0001;
@@ -620,7 +621,6 @@
                         maxPoint = extreme;
                     }
                 }
-
                 if (maxPoint != null) initialPoints.Add(maxPoint);
                 else
                 {

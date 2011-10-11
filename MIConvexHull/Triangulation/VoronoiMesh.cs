@@ -29,14 +29,24 @@
         /// Create the voronoi mesh.
         /// </summary>
         /// <typeparam name="TVertex"></typeparam>
-        /// <typeparam name="TCell"></typeparam>
-        /// <typeparam name="TEdge"></typeparam>
         /// <param name="data"></param>
         /// <returns></returns>
         public static VoronoiMesh<TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>> Create<TVertex>(IEnumerable<TVertex> data)
             where TVertex : IVertex
         {
             return VoronoiMesh<TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>>.Create(data);
+        }
+
+        /// <summary>
+        /// Create the voronoi mesh.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static VoronoiMesh<DefaultVertex, DefaultTriangulationCell<DefaultVertex>, VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>> 
+            Create(IEnumerable<double[]> data)
+        {
+            var points = data.Select(p => new DefaultVertex { Position = p.ToArray() });
+            return VoronoiMesh<DefaultVertex, DefaultTriangulationCell<DefaultVertex>, VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>.Create(points);
         }
 
         /// <summary>
@@ -100,6 +110,8 @@
         public static VoronoiMesh<TVertex, TCell, TEdge> Create(IEnumerable<TVertex> data)
         {
             if (data == null) throw new ArgumentNullException("data can't be null");
+
+            if (!(data is IList<TVertex>)) data = data.ToArray();
 
             var t = DelaunayTriangulation<TVertex, TCell>.Create(data);
             var vertices = t.Cells;
