@@ -26,6 +26,8 @@
         /// <returns></returns>
         public static DelaunayTriangulation<TVertex, TCell> Create(IEnumerable<TVertex> data)
         {
+            if (data == null) throw new ArgumentException("data can't be null.");
+            if (!(data is IList<TVertex>)) data = data.ToArray();
             if (data.Count() == 0) return new DelaunayTriangulation<TVertex, TCell> { Cells = Enumerable.Empty<TCell>() };
 
             int dimension = data.First().Position.Length;

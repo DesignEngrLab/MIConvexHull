@@ -38,13 +38,11 @@ namespace TestEXE_for_MIConvexHull2D
             Console.ReadLine();
 
             Console.WriteLine("Making " + NumberOfVertices + " random vertices.");
-            //var vertices = new List<IVertexConvHull>();
-            //for (int i = 0; i < NumberOfVertices; i++)
-            //    vertices.Add(new vertex(size * r.NextDouble(), size * r.NextDouble()));
 
             var vertices = new vertex[NumberOfVertices];
             for (var i = 0; i < NumberOfVertices; i++)
                 vertices[i] = new vertex(size * r.NextDouble(), size * r.NextDouble());
+
             Console.WriteLine("Running...");
             var now = DateTime.Now;
             var convexHull = ConvexHull.Create(vertices).Points;

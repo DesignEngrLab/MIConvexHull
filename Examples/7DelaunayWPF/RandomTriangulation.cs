@@ -65,40 +65,40 @@ namespace DelaunayWPF
                 model.Children.Add(t.CreateModel(color, radius));
             }
 
-            var redMaterial = new MaterialGroup 
-            { 
-                Children = new MaterialCollection
-                {
-                    new DiffuseMaterial(Brushes.Red),
-                    // give it some shine
-                    new SpecularMaterial(Brushes.LightYellow, 2.0) 
-                } 
-            };
+            //var redMaterial = new MaterialGroup 
+            //{ 
+            //    Children = new MaterialCollection
+            //    {
+            //        new DiffuseMaterial(Brushes.Red),
+            //        // give it some shine
+            //        new SpecularMaterial(Brushes.LightYellow, 2.0) 
+            //    } 
+            //};
 
-            var greenMaterial = new MaterialGroup
-            {
-                Children = new MaterialCollection
-                {
-                    new DiffuseMaterial(Brushes.Green),
-                    // give it some shine
-                    new SpecularMaterial(Brushes.LightYellow, 2.0) 
-                }
-            };
+            //var greenMaterial = new MaterialGroup
+            //{
+            //    Children = new MaterialCollection
+            //    {
+            //        new DiffuseMaterial(Brushes.Green),
+            //        // give it some shine
+            //        new SpecularMaterial(Brushes.LightYellow, 2.0) 
+            //    }
+            //};
 
-            var blueMaterial = new MaterialGroup
-            {
-                Children = new MaterialCollection
-                {
-                    new DiffuseMaterial(Brushes.Blue),
-                    // give it some shine
-                    new SpecularMaterial(Brushes.LightYellow, 2.0) 
-                }
-            };
+            //var blueMaterial = new MaterialGroup
+            //{
+            //    Children = new MaterialCollection
+            //    {
+            //        new DiffuseMaterial(Brushes.Blue),
+            //        // give it some shine
+            //        new SpecularMaterial(Brushes.LightYellow, 2.0) 
+            //    }
+            //};
 
-            CylinderMesh c = new CylinderMesh() { Length = 10, Radius = 0.5 };
-            model.Children.Add(new GeometryModel3D { Geometry = c.Geometry, Material = greenMaterial });
-            model.Children.Add(new GeometryModel3D { Geometry = c.Geometry, Material = redMaterial, Transform = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 0, 1), 90)) });
-            model.Children.Add(new GeometryModel3D { Geometry = c.Geometry, Material = blueMaterial, Transform = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(1, 0, 0), 90)) });
+            //CylinderMesh c = new CylinderMesh() { Length = 10, Radius = 0.5 };
+            //model.Children.Add(new GeometryModel3D { Geometry = c.Geometry, Material = greenMaterial });
+            //model.Children.Add(new GeometryModel3D { Geometry = c.Geometry, Material = redMaterial, Transform = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 0, 1), 90)) });
+            //model.Children.Add(new GeometryModel3D { Geometry = c.Geometry, Material = blueMaterial, Transform = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(1, 0, 0), 90)) });
 
             var triangulation = new RandomTriangulation();
             triangulation.tetrahedrons = tetrahedrons;
