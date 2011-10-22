@@ -20,10 +20,7 @@
  *************************************************************************/
 
 /*
- * Note: this will take 55-100 minutes to complete!
- * It will create around 14 thousand voronoi points, and 26 thousand voronoi
- * edges.
- * Why is this even included?! The idea was in path-planning where you have 
+ * Why is this included?! The idea was in path-planning where you have 
  * to maneuver in full 3-D space, and you have 6 variables: x, y, z, and rotations
  * about x, y, and z. The resulting graph could be used by a path-planning search process.
  */
@@ -31,14 +28,14 @@ namespace TestEXE_for_MIConvexHull_Voronoi
 {
     using System;
     using System.Collections.Generic;
-    using MIConvexHull;
     using System.Linq;
+    using MIConvexHull;
 
     static class Program
     {
         static void Main()
         {
-            const int NumberOfVertices = 300;
+            const int NumberOfVertices = 100;
             const double size = 1000;
             const int dimension = 6;
 
@@ -47,23 +44,20 @@ namespace TestEXE_for_MIConvexHull_Voronoi
             Console.ReadLine();
 
             Console.WriteLine("Making " + NumberOfVertices + " random 6D vertices.");
-            var vertices = new List<vertex>();
+            var vertices = new List<Vertex>();
             for (var i = 0; i < NumberOfVertices; i++)
             {
                 var location = new double[dimension];
                 for (var j = 0; j < dimension; j++)
                     location[j] = size * r.NextDouble();
-                vertices.Add(new vertex(location));
+                vertices.Add(new Vertex(location));
             }
             Console.WriteLine("Running...");
             var now = DateTime.Now;
             var voronoi = VoronoiMesh.Create(vertices);
-            //var hull = ConvexHull.Create(vertices);
             var interval = DateTime.Now - now;
-            //Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
-            //    hull.Hull.Count() + " on the convex hull.");
-            Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
-                voronoi.Cells.Count() + " voronoi points and " + voronoi.Edges.Count() + " voronoi edges.");
+            Console.WriteLine("Out of the {0} 6D vertices, there are {1} Voronoi cells and {2} edges.", 
+                NumberOfVertices, voronoi.Cells.Count(), voronoi.Edges.Count());
             Console.WriteLine("time = " + interval);
             Console.ReadLine();
         }

@@ -18,114 +18,123 @@ namespace ExampleWithGraphics
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const int NumberOfVertices = 100;
-        private double size;
-        private List<face> faces;
-        private List<vertex> vertices;
-        private List<VoronoiEdge<vertex, face>> edges;
+        private const int NumberOfVertices = 500;
+        private List<Vertex> vertices;
+        VoronoiMesh<Vertex, Cell, VoronoiEdge<Vertex, Cell>> voronoiMesh;
 
         public MainWindow()
         {
             InitializeComponent();
-            // btnMakePoints_Click(null, null);
+            this.Title += string.Format(" ({0} points)", NumberOfVertices);
+
+            btnFindDelaunay.IsEnabled = false;
+            btnFindVoronoi.IsEnabled = false;
         }
 
+        void ShowVertices()
+        {
+            for (var i = 0; i < NumberOfVertices; i++)
+            {
+                drawingCanvas.Children.Add(vertices[i]);
+            }
+        }
 
         private void btnMakePoints_Click(object sender, RoutedEventArgs e)
         {
             drawingCanvas.Children.Clear();
-            size = Math.Min(drawingCanvas.Height, drawingCanvas.Width);
-            vertices = new List<vertex>();
+            var sizeX = drawingCanvas.ActualWidth;
+            var sizeY = drawingCanvas.ActualHeight;
+            vertices = new List<Vertex>();
             var r = new Random();
 
             /****** Random Vertices ******/
             for (var i = 0; i < NumberOfVertices; i++)
             {
-                var vi = new vertex(size * r.NextDouble(), size * r.NextDouble());
+                var vi = new Vertex(sizeX * r.NextDouble(), sizeY * r.NextDouble());
                 vertices.Add(vi);
-                drawingCanvas.Children.Add(vi);
             }
+            
+            ShowVertices();
 
-            //int ls = 10;
-            //int offset = 50;
-            //for (var i = 0; i < ls; i++)
-            //{
-            //    for (int j = 0; j < ls; j++)
-            //    {
-            //        var vi = new vertex(i * size / (ls + 1) + offset, j * size / (ls + 1) + offset);
-            //        vertices.Add(vi);
-            //        drawingCanvas.Children.Add(vi);
-            //    }
-            //}
+            var now = DateTime.Now;
+            voronoiMesh = VoronoiMesh.Create<Vertex, Cell>(vertices);
+            var interval = DateTime.Now - now;
+            txtBlkTimer.Text = string.Format("{0:0.000}s", interval.TotalSeconds);
 
-            //var ver = new vertex(0, 0);
-            //vertices.Add(ver);
-            //drawingCanvas.Children.Add(ver);
-
-            //var tt = size;
-            //ver = new vertex(tt, 0);
-            //vertices.Add(ver);
-            //drawingCanvas.Children.Add(ver);
-
-            //ver = new vertex(0, tt);
-            //vertices.Add(ver);
-            //drawingCanvas.Children.Add(ver);
-
-            //ver = new vertex(tt, tt);
-            //vertices.Add(ver);
-            //drawingCanvas.Children.Add(ver);
-
-            btnDisplayDelaunay.IsDefault = true;
-            btnDisplayDelaunay.IsEnabled = false;
-            txtBlkTimer.Text = "00:00:00.000";
+            txtBlkTimer.Text = "0.000s";
+            btnFindDelaunay.IsEnabled = true;
+            btnFindVoronoi.IsEnabled = true;
         }
 
         private void btnFindDelaunay_Click(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("Running...");
-            var now = DateTime.Now;
-            faces = Triangulation.CreateDelaunay<vertex, face>(vertices).Cells.ToList();
-            var interval = DateTime.Now - now;
-            txtBlkTimer.Text = faces.Count.ToString() + " | " + interval.Hours + ":" + interval.Minutes
-                               + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
-            btnDisplayDelaunay.IsEnabled = true;
-            btnDisplayDelaunay.IsDefault = true;
+            drawingCanvas.Children.Clear();
+            btnFindDelaunay.IsEnabled = false;
+            btnFindVoronoi.IsEnabled = true;
+
+            foreach (var cell in voronoiMesh.Cells) drawingCanvas.Children.Add(cell.Visual);
+
+            ShowVertices();
         }
 
-        private void btnDisplayDelaunay_Click(object sender, RoutedEventArgs e)
+        static bool PointInCell(Cell c, Point p)
         {
-            foreach (var f in faces)
-                drawingCanvas.Children.Add((UIElement)f.Visual);
+            var v1 = c.Vertices[0].ToPoint();
+            var v2 = c.Vertices[1].ToPoint();
+            var v3 = c.Vertices[2].ToPoint();
+
+            var s0 = IsLeft(v1, v2, p);
+            var s1 = IsLeft(v2, v3, p);
+            var s2 = IsLeft(v3, v1, p);
+
+            return (s0 == s1) && (s1 == s2);
+        }
+
+        static int IsLeft(Point a, Point b, Point c)
+        {
+            return ((b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X)) > 0 ? 1 : -1;
+        }
+
+        static Point Center(Cell c)
+        {
+            var v1 = (Vector)c.Vertices[0].ToPoint();
+            var v2 = (Vector)c.Vertices[1].ToPoint();
+            var v3 = (Vector)c.Vertices[2].ToPoint();
+
+            return (Point)((v1 + v2 + v3) / 3);
         }
 
         private void btnFindVoronoi_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("sorry was too lazy to code this property.");
-            //Console.WriteLine("Running...");
-            //var now = DateTime.Now;
-            //List<IVertexConvHull> nodes;
-            //convexHull.FindVoronoiGraph(out nodes, out edges);
-            //var interval = DateTime.Now - now;
-            //txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
-            //                   + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
-            //btnDisplayVoronoi.IsEnabled = true;
-            //btnDisplayVoronoi.IsDefault = true;
+            drawingCanvas.Children.Clear();
+            btnFindVoronoi.IsEnabled = false;
+            btnFindDelaunay.IsEnabled = true;   
+            
+            foreach (var edge in voronoiMesh.Edges)
+            {
+                var from = edge.Source.Circumcenter;
+                var to = edge.Target.Circumcenter;
+                drawingCanvas.Children.Add(new Line { X1 = from.X, Y1 = from.Y, X2 = to.X, Y2 = to.Y, Stroke = Brushes.Black });
+            }
 
-        }
+            foreach (var cell in voronoiMesh.Cells)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    if (cell.Adjacency[i] == null)
+                    {
+                        var from = cell.Circumcenter;
+                        var t = cell.Vertices.Where((_, j) => j != i).ToArray();
+                        var factor = 100 * IsLeft(t[0].ToPoint(), t[1].ToPoint(), from) * IsLeft(t[0].ToPoint(), t[1].ToPoint(), Center(cell));
+                        var dir = new Point(0.5 * (t[0].Position[0] + t[1].Position[0]), 0.5 * (t[0].Position[1] + t[1].Position[1])) - from;
+                        var to = from + factor * dir;
+                        drawingCanvas.Children.Add(new Line { X1 = from.X, Y1 = from.Y, X2 = to.X, Y2 = to.Y, Stroke = Brushes.Black });
+                    }                    
+                }
+            }
 
-        private void btnDisplayVoronoi_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("sorry was too lazy to code this property.");
-            //foreach (var edge in edges)
-            //    drawingCanvas.Children.Add(
-            //        new Line
-            //            {
-            //                X1 = edge.Item1.coordinates[0],
-            //                Y1 = edge.Item1.coordinates[1],
-            //                X2 = edge.Item2.coordinates[0],
-            //                Y2 = edge.Item2.coordinates[1],
-            //                Stroke = Brushes.Red
-            //            });
+            ShowVertices();
+            drawingCanvas.Children.Add(new Rectangle { Width = drawingCanvas.ActualWidth, Height = drawingCanvas.ActualHeight, Stroke = Brushes.Black, StrokeThickness = 3 });
         }
     }
 }

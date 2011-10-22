@@ -24,7 +24,7 @@ namespace ExampleWithGraphics
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class face : ConvexFace<vertex, face>
+    public class Face : ConvexFace<Vertex, Face>
     {
 
     }

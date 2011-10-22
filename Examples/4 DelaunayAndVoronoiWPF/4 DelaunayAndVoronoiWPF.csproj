@@ -110,8 +110,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="face.cs" />
-    <Compile Include="vertex.cs" />
+    <Compile Include="Cell.cs" />
+    <Compile Include="Vertex.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainWindow.xaml.cs">
@@ -139,9 +139,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Properties\Petzold.Media3D.dll" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainWindow.xaml">

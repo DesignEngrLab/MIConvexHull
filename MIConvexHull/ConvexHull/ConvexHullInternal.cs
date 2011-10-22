@@ -107,7 +107,7 @@
 
             return faces;
         }
-
+        
         /// <summary>
         /// Calculates the normal and offset of the hyper-plane given by the face's vertices.
         /// </summary>

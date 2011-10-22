@@ -24,40 +24,18 @@ namespace TestEXE_for_MIConvexHull2D
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class vertex : IVertex
+    public class Vertex : IVertex
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="vertex"/> class.
+        /// Initializes a new instance of the <see cref="Vertex"/> class.
         /// </summary>
         /// <param name="x">The x position.</param>
         /// <param name="y">The y position.</param>
-        public vertex(double x, double y)
+        public Vertex(double x, double y)
         {
             Position = new double[2] { x, y };
         }
         
         public double[] Position { get; set; }
-    }
-
-    public class vertex3 : IVertex
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="vertex"/> class.
-        /// </summary>
-        /// <param name="x">The x position.</param>
-        /// <param name="y">The y position.</param>
-        public vertex3(double x, double y, double z)
-        {
-            Position = new double[] { x, y, z };
-        }
-
-        /// <summary>
-        /// Gets or sets the coordinates.
-        /// </summary>
-        /// <value>The coordinates.</value>
-        public double[] Position
-        {
-            get; set;
-        }
     }
 }
