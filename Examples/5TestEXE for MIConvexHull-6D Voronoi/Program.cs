@@ -56,8 +56,8 @@ namespace TestEXE_for_MIConvexHull_Voronoi
             var now = DateTime.Now;
             var voronoi = VoronoiMesh.Create(vertices);
             var interval = DateTime.Now - now;
-            Console.WriteLine("Out of the {0} 6D vertices, there are {1} Voronoi cells and {2} edges.", 
-                NumberOfVertices, voronoi.Cells.Count(), voronoi.Edges.Count());
+            Console.WriteLine("Out of the {0} 6D vertices, there are {1} Voronoi cells and {2} edges.",
+                NumberOfVertices, voronoi.Vertices.Count(), voronoi.Edges.Count());
             Console.WriteLine("time = " + interval);
             Console.ReadLine();
         }

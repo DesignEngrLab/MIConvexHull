@@ -33,9 +33,9 @@ namespace ExampleWithGraphics
 
         private void ClearAndDrawAxes()
         {
-            var init = viewport.Children[0];
+            var light = viewport.Children[0];
             viewport.Children.Clear();
-            viewport.Children.Add(init);
+            viewport.Children.Add(light);
             // Rendering the axis made the viewport render incorrectly.
             //var ax = new Axes { Extent = 60 };
             //viewport.Children.Add(ax);
@@ -51,11 +51,11 @@ namespace ExampleWithGraphics
             var interval = DateTime.Now - now;
             txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
                                + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
-            btnDisplay.IsEnabled = true;
-            btnDisplay.IsDefault = true;
+
+            Display();
         }
 
-        private void btnDisplay_Click(object sender, RoutedEventArgs e)
+        private void Display()
         {
             viewport.Children.Remove(modViz);
 
@@ -68,13 +68,7 @@ namespace ExampleWithGraphics
             var faceTris = new Int32Collection();
             foreach (var f in faces)
             {
-                // not needed since the vertices are stored in the clockwise order by default
-                //var orderImpliedNormal = StarMath.crossProduct3(
-                //    StarMath.subtract(f.Vertices[1].Position, f.Vertices[0].Position, 3),
-                //    StarMath.subtract(f.Vertices[2].Position, f.Vertices[1].Position, 3)
-                //    );
-                //if (StarMath.dotProduct(f.Normal, orderImpliedNormal, 3) < 0)
-                //    Array.Reverse(f.Vertices);
+                // The vertices are stored in clockwise order.
                 faceTris.Add(convexHullVertices.IndexOf(f.Vertices[0]));
                 faceTris.Add(convexHullVertices.IndexOf(f.Vertices[1]));
                 faceTris.Add(convexHullVertices.IndexOf(f.Vertices[2]));
@@ -120,7 +114,29 @@ namespace ExampleWithGraphics
             }
 
             btnRun.IsDefault = true;
-            btnDisplay.IsEnabled = false;
+            txtBlkTimer.Text = "00:00:00.000";
+        }
+
+        private void btnMakeRegularPoints_Click(object sender, RoutedEventArgs e)
+        {
+            ClearAndDrawAxes();
+            vertices = new List<Vertex>();
+            var r = new Random();
+            
+            for (int i = 0; i <= 10; i++)
+            {
+                for (int j = 0; j <= 10; j++)
+                {
+                    for (int k = 0; k <= 10; k++)
+                    {
+                        var v = new Vertex(-20 + 4 * i, -20 + 4 * j, -20 + 4 * k);
+                        vertices.Add(v);
+                        viewport.Children.Add(v);
+                    }
+                }
+            }
+
+            btnRun.IsDefault = true;
             txtBlkTimer.Text = "00:00:00.000";
         }
 
@@ -158,7 +174,6 @@ namespace ExampleWithGraphics
                 viewport.Children.Add(vi);
             }
             btnRun.IsDefault = true;
-            btnDisplay.IsEnabled = false;
             txtBlkTimer.Text = "00:00:00.000";
         }
     }

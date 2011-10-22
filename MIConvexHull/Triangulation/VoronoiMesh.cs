@@ -93,9 +93,9 @@
         }
 
         /// <summary>
-        /// Cells of the diagram.
+        /// Vertices of the diagram.
         /// </summary>
-        public IEnumerable<TCell> Cells { get; private set; }
+        public IEnumerable<TCell> Vertices { get; private set; }
 
         /// <summary>
         /// Edges connecting the cells. 
@@ -104,7 +104,7 @@
         public IEnumerable<TEdge> Edges { get; private set; }
 
         /// <summary>
-        /// Create a voronoi diagram of the input data.
+        /// Create a Voronoi diagram of the input data.
         /// </summary>
         /// <param name="data"></param>
         public static VoronoiMesh<TVertex, TCell, TEdge> Create(IEnumerable<TVertex> data)
@@ -128,7 +128,7 @@
 
             return new VoronoiMesh<TVertex, TCell, TEdge>
             {
-                Cells = vertices,
+                Vertices = vertices,
                 Edges = edges.ToList()
             };
         }
