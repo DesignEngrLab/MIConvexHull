@@ -1,15 +1,13 @@
 ﻿using System;
-using MIConvexHull;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
+using MIConvexHull;
 
 namespace TestEXE_for_MIConvexHull_No_Interfaces
 {
     class Program
     {
         static void Main()
-        {
+        {            
             const int NumberOfVertices = 30000;
             const double size = 1000;
             const int dimension = 3;
@@ -32,11 +30,10 @@ namespace TestEXE_for_MIConvexHull_No_Interfaces
             var now = DateTime.Now;
             var convexHull = ConvexHull.Create(vertices);
 
-            double[][] CVpoints = convexHull.Points.Select(p => p.Position).ToArray();
+            double[][] hullPoints = convexHull.Points.Select(p => p.Position).ToArray();
 
             var interval = DateTime.Now - now;
-            Console.WriteLine("Out of the " + NumberOfVertices + " vertices, there are " +
-                CVpoints.GetLength(0) + " in the convex hull.");
+            Console.WriteLine("Out of the {0} 2D vertices, there are {1} on the convex hull.", NumberOfVertices, hullPoints.Length);
             Console.WriteLine("time = " + interval);
             Console.ReadLine();
         }

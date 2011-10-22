@@ -29,7 +29,7 @@ namespace ExampleWithGraphics
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class vertex : Shape, IVertex
+    public class Vertex : Shape, IVertex
     {
 
         protected override Geometry DefiningGeometry
@@ -44,22 +44,27 @@ namespace ExampleWithGraphics
                 };
             }
         }
-        public vertex()
+
+        public Vertex()
         {
-            Fill = Brushes.Black;
+            Fill = Brushes.Red;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="vertex"/> class.
+        /// Initializes a new instance of the <see cref="Vertex"/> class.
         /// </summary>
         /// <param name="x">The x position.</param>
         /// <param name="y">The y position.</param>
-        public vertex(double x, double y)
+        public Vertex(double x, double y)
             : this()
         {
-            Position = new[] { x, y };
+            Position = new double[] { x, y };
         }
 
+        public Point ToPoint()
+        {
+            return new Point(Position[0], Position[1]);
+        }
 
         /// <summary>
         /// Gets or sets the Z. Not used by MIConvexHull2D.

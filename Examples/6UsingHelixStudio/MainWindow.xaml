@@ -2,15 +2,15 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
     xmlns:helix="clr-namespace:HelixToolkit;assembly=HelixToolkit"       
-        Title="MainWindow" Height="800" Width="800">
+        Title="Helix Studio Example" Height="800" Width="800">
 <!--xmlns:cp="http://schemas.charlespetzold.com/2007/xaml"-->
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_Open..." Click="OpenClick"/>
             <MenuItem Header="Find Convex Hull" Click="MIConvexHullMenuItem_Click"/>
             <MenuItem Header="Find Delaunay Triangulation" Click="FindDelaunayClick" />
-            <MenuItem Header="Find Voronoi" Click="FindVoronoiClick" />
-            <TextBlock Grid.Column="3" Name="txtBlkTimer" Text="00:00:00.000" 
+            <MenuItem Header="Add Noise" ToolTip="Translate each point by a small random vector." Click="AddNoiseClick" />
+            <TextBlock Grid.Column="3" Name="txtBlkTimer" Text="0.000s" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <Button Grid.Column="4" Name="btnDisplay" Content="Display" IsEnabled="False" Click="btnDisplay_Click"/>
         </Menu>

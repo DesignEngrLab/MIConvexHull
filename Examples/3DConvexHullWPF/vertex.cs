@@ -27,44 +27,30 @@ namespace ExampleWithGraphics
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class vertex : Sphere, IVertex
+    public class Vertex : ModelVisual3D, IVertex
     {
-        
+        static readonly Material material = new DiffuseMaterial(Brushes.Black);
+        static readonly SphereMesh mesh = new SphereMesh { Slices = 6, Stacks = 4, Radius = 0.5 };
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="vertex"/> class.
+        /// Initializes a new instance of the <see cref="Vertex"/> class.
         /// </summary>
         /// <param name="x">The x position.</param>
         /// <param name="y">The y position.</param>
         /// <param name="z">The z position.</param>
-        public vertex(double x, double y, double z)
+        public Vertex(double x, double y, double z)
         {
+            Content = new GeometryModel3D
+            {
+                Geometry = mesh.Geometry,
+                Material = material,
+                Transform = new TranslateTransform3D(x, y, z)
+            };
             Position = new double[] { x, y, z };
-            Center = new Point3D(x, y, z);
-            Radius = 0.5;
-
-            BackMaterial = new DiffuseMaterial(Brushes.Black);
         }
 
-        /// <summary>
-        /// Gets or sets the X.
-        /// </summary>
-        /// <value>The X position.</value>
-        private double X { get { return Position[0]; } set { Position[0] = value; } }
-
-        /// <summary>
-        /// Gets or sets the Y.
-        /// </summary>
-        /// <value>The Y position.</value>
-        private double Y { get { return Position[1]; } set { Position[1] = value; } }
-
-
-        /// <summary>
-        /// Gets or sets the Z. Not used by MIConvexHull2D.
-        /// </summary>
-        /// <value>The Z position.</value>
-        private double Z { get { return Position[2]; } set { Position[2] = value; } }
-
+        public Point3D Center { get { return new Point3D(Position[0], Position[1], Position[2]); } }
+        
         /// <summary>
         /// Gets or sets the coordinates.
         /// </summary>

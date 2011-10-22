@@ -1,39 +1,30 @@
-﻿#region
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
-using System.Windows.Shapes;
-using HelixToolkit;
-using MIConvexHull;
-using Microsoft.Win32;
-using StudioDemo;
-
-#endregion
-
-namespace ExampleWithGraphics
+﻿namespace ExampleWithGraphics
 {
-    class Vertex : IVertex
-    {
-        public double[] Position { get; set; }
-
-        public Vertex(Point3D point)
-        {
-            Position = new double[3] { point.X, point.Y, point.Z };
-        }
-    }
-
-
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Windows;
+    using System.Windows.Media;
+    using System.Windows.Media.Media3D;
+    using HelixToolkit;
+    using MIConvexHull;
+    using Microsoft.Win32;
+    
     /// <summary>
     ///   Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window  //, INotifyPropertyChanged
     {
+        class Vertex : IVertex
+        {
+            public double[] Position { get; set; }
+
+            public Vertex(Point3D point)
+            {
+                Position = new double[3] { point.X, point.Y, point.Z };
+            }
+        }
+
         private List<DefaultConvexFace<Vertex>> CVXfaces;
         private List<Vertex> CVXvertices;
         private List<DefaultTriangulationCell<Vertex>> Del_tetras;
@@ -41,12 +32,16 @@ namespace ExampleWithGraphics
         List<VoronoiEdge<Vertex, DefaultTriangulationCell<Vertex>>> Voro_edges;
         public Model3DGroup CurrentModel { get; set; }
         private MeshGeometry3D mesh;
-
         List<Vertex> vertices;
 
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        void UpdateTimer(TimeSpan elapsed)
+        {
+            txtBlkTimer.Text = string.Format("{0:0.000}s", elapsed.TotalSeconds);
         }
 
         private void MIConvexHullMenuItem_Click(object sender, RoutedEventArgs e)
@@ -55,11 +50,10 @@ namespace ExampleWithGraphics
             {
                 var now = DateTime.Now;
                 var hull = ConvexHull.Create(vertices);
-                CVXvertices = hull.Points.ToList(); // convexHull.FindConvexHull(out CVXfaces);
+                CVXvertices = hull.Points.ToList();
                 CVXfaces = hull.Faces.ToList();
                 var interval = DateTime.Now - now;
-                txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
-                                   + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
+                UpdateTimer(interval);
                 btnDisplay.IsEnabled = btnDisplay.IsDefault = true;
                 Voro_edges = null; Voro_nodes = null; Del_tetras = null;
             }
@@ -76,8 +70,7 @@ namespace ExampleWithGraphics
                 var now = DateTime.Now;
                 Del_tetras = Triangulation.CreateDelaunay(vertices).Cells.ToList();
                 var interval = DateTime.Now - now;
-                txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
-                                   + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
+                UpdateTimer(interval);
                 btnDisplay.IsEnabled = btnDisplay.IsDefault = true;
                 CVXvertices = null; CVXfaces = null; Voro_edges = null; Voro_nodes = null;
             }
@@ -86,35 +79,8 @@ namespace ExampleWithGraphics
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-
-        private void FindVoronoiClick(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var now = DateTime.Now;
-                var voronoi = VoronoiMesh.Create(vertices);
-                Voro_nodes = voronoi.Cells.ToList();
-                Voro_edges = voronoi.Edges.ToList();
-                var interval = DateTime.Now - now;
-                txtBlkTimer.Text = interval.Hours + ":" + interval.Minutes
-                                   + ":" + interval.Seconds + "." + interval.TotalMilliseconds;
-                btnDisplay.IsEnabled = btnDisplay.IsDefault = true;
-                CVXvertices = null; CVXfaces = null; Del_tetras = null;
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-        }
-
-
-
-
+        
         private const string OpenFileFilter = "3D model files (*.3ds;*.obj;*.lwo;*.stl)|*.3ds;*.obj;*.objz;*.lwo;*.stl";
-
-
-        //  public event PropertyChangedEventHandler PropertyChanged = new PropertyChangedEventHandler();
 
         private void OpenClick(object sender, RoutedEventArgs e)
         {
@@ -127,13 +93,7 @@ namespace ExampleWithGraphics
                 return;
             CurrentModel = ModelImporter.Load(d.FileName);
             if (viewport.Children.Count > 2) viewport.Children.RemoveAt(2);
-            viewport.Add(new ModelVisual3D
-                             {
-                                 Content = CurrentModel
-                             });
-            //var handler = PropertyChanged;
-            //handler(this, new PropertyChangedEventArgs(CurrentModel.ToString()));
-            //   PropertyChanged(this, new PropertyChangedEventArgs(CurrentModel.ToString()));
+            viewport.Add(new ModelVisual3D { Content = CurrentModel });
             viewport.ZoomToFit(100);
 
             var verts = new List<Point3D>();
@@ -147,9 +107,7 @@ namespace ExampleWithGraphics
                         verts.AddRange(mesh.Positions);
                     }
             }
-            Random rnd = new Random();
-            vertices = verts.Distinct(new samePoint()).Select(p =>new Vertex((Point3D)((Vector3D)p + 0.05 * new Vector3D(rnd.NextDouble(), rnd.NextDouble(), rnd.NextDouble())))).ToList();
-            //vertices = verts.Distinct(new samePoint()).Select(p => new Vertex(p)).ToList();
+            vertices = verts.Distinct(new Point3DComparer()).Select(p => new Vertex(p)).ToList();
 
             txtBlkTimer.Text = "#verts=" + vertices.Count;
             CVXvertices = null;
@@ -157,12 +115,19 @@ namespace ExampleWithGraphics
             btnDisplay.IsEnabled = false;
         }
 
+        private void AddNoiseClick(object sender, RoutedEventArgs e)
+        {
+            Random rnd = new Random();
+            vertices = vertices.Select(v => new Vertex((Point3D)(new Vector3D(v.Position[0], v.Position[1], v.Position[2]) + 
+                0.001 * new Vector3D(rnd.NextDouble() - 0.005, rnd.NextDouble() - 0.005, rnd.NextDouble() - 0.005)))).ToList();
+            MessageBox.Show("Noise added.", "Notification", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
         private void btnDisplay_Click(object sender, RoutedEventArgs e)
         {
             if ((CVXfaces != null) && (CVXvertices != null))
                 displayConvexHull();
             else if (Del_tetras != null) displayDelaunayTetras();
-            else if (Voro_nodes != null) displayVoronoi();
         }
 
         private void displayConvexHull()
@@ -191,7 +156,7 @@ namespace ExampleWithGraphics
                 center = StarMath.divide(center, 4, 3);
                 for (int i = 0; i < 4; i++)
                 {
-                    var newface = t.Vertices.ToList(); //new List<IVertexConvHull>((IVertexConvHull[])t.vertices.Clone());
+                    var newface = t.Vertices.ToList();
                     newface.RemoveAt(i);
                     var indices = Enumerable.Range(0, 4).Where(p => p != i).Select(p => p + offset);
                     if (!inTheProperOrder(center, newface))
@@ -213,27 +178,9 @@ namespace ExampleWithGraphics
                                                 StarMath.subtract(vertices[2].Position, vertices[1].Position, 3));
             return (StarMath.dotProduct(normal, outDir, 3) >= 0);
         }
-
-        private void displayVoronoi()
-        {
-            //if (viewport.Children.Count > 2) viewport.Children.RemoveAt(2);
-
-            //foreach (var edge in Voro_edges)
-            //    viewport.Add(new TubeVisual3D
-            //   {
-            //       BackMaterial = Materials.LightGray,
-            //       Material = Materials.Red,
-            //       Path = new Point3DCollection
-            //                                       {
-            //                                           new Point3D(edge.Source.Position[0],edge.Source.Position[1],edge.Source.Position[2]),
-            //                                           new Point3D(edge.Target.Position[0],edge.Target.Position[1],edge.Target.Position[2])
-            //                                       }
-            //   });
-        }
-
     }
 
-    internal class samePoint : IEqualityComparer<Point3D>
+    internal class Point3DComparer : IEqualityComparer<Point3D>
     {
         #region Implementation of IEqualityComparer<in Point3D>
 

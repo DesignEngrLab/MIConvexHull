@@ -24,25 +24,25 @@ namespace TestEXE_for_MIConvexHull_Voronoi
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class vertex : IVertex
+    public class Vertex : IVertex
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="vertex"/> class.
+        /// Initializes a new instance of the <see cref="Vertex"/> class.
         /// </summary>
         /// <param name="location">The location.</param>
-        public vertex(double[] location)
+        public Vertex(double[] location)
         {
             Position = location;
         }
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="vertex"/> class.
+        /// Initializes a new instance of the <see cref="Vertex"/> class.
         /// **** You must have a constructor that takes 0 arguments for 
         /// **** both the IVertexConvHull and IFaceConvHull inherited
         /// **** classes! ******
         /// </summary>
-        public vertex()
+        public Vertex()
         {
         }
 

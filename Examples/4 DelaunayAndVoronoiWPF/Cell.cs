@@ -28,11 +28,11 @@ namespace ExampleWithGraphics
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class face : TriangulationCell<vertex, face>
+    public class Cell : TriangulationCell<Vertex, Cell>
     {
         public class FaceVisual : Shape
         {
-            face f;
+            Cell f;
 
             protected override Geometry DefiningGeometry
             {
@@ -56,18 +56,68 @@ namespace ExampleWithGraphics
                 }
             }
 
-            public FaceVisual(face f)
+            public FaceVisual(Cell f)
             {
-                Stroke = Brushes.Blue;
+                Stroke = Brushes.Black;
                 StrokeThickness = 1.0;
                 Opacity = 0.5;
                 this.f = f;
             }
         }
 
-        public Shape Visual { get; private set; }
+        Point GetCircumcenter()
+        {
+            var points = Vertices;
 
-        public face()
+            double[,] m = new double[3, 3];
+
+            // x, y, 1
+            for (int i = 0; i < 3; i++)
+            {
+                m[i, 0] = points[i].Position[0];
+                m[i, 1] = points[i].Position[1];
+                m[i, 2] = 1;
+            }
+            var a = StarMath.determinant(m);
+
+            // size, y, 1
+            for (int i = 0; i < 3; i++)
+            {
+                m[i, 0] = StarMath.norm2(points[i].Position, true);
+            }
+            var dx = -StarMath.determinant(m);
+
+            // size, x, 1
+            for (int i = 0; i < 3; i++)
+            {
+                m[i, 1] = points[i].Position[0];
+            }
+            var dy = StarMath.determinant(m);
+
+            // size, x, y
+            for (int i = 0; i < 3; i++)
+            {
+                m[i, 2] = points[i].Position[1];
+            }
+            var c = -StarMath.determinant(m);
+            
+            var s = 1.0 / (2.0 * System.Math.Abs(a));
+            var r = System.Math.Abs(s) * System.Math.Sqrt(dx * dx + dy * dy - 4 * a * c);
+            return new Point(s * dx, s * dy);
+        }
+
+        public Shape Visual { get; private set; }
+        Point? circumCenter;
+        public Point Circumcenter
+        {
+            get
+            {
+                circumCenter = circumCenter ?? GetCircumcenter();
+                return circumCenter.Value;
+            }
+        }
+
+        public Cell()
         {
             Visual = new FaceVisual(this);
         }      
