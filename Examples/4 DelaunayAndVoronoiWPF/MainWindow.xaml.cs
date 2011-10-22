@@ -72,7 +72,7 @@ namespace ExampleWithGraphics
             btnFindDelaunay.IsEnabled = false;
             btnFindVoronoi.IsEnabled = true;
 
-            foreach (var cell in voronoiMesh.Cells) drawingCanvas.Children.Add(cell.Visual);
+            foreach (var cell in voronoiMesh.Vertices) drawingCanvas.Children.Add(cell.Visual);
 
             ShowVertices();
         }
@@ -117,7 +117,7 @@ namespace ExampleWithGraphics
                 drawingCanvas.Children.Add(new Line { X1 = from.X, Y1 = from.Y, X2 = to.X, Y2 = to.Y, Stroke = Brushes.Black });
             }
 
-            foreach (var cell in voronoiMesh.Cells)
+            foreach (var cell in voronoiMesh.Vertices)
             {
                 for (int i = 0; i < 3; i++)
                 {

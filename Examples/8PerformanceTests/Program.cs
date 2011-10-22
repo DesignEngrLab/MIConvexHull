@@ -105,9 +105,9 @@ namespace _8PerformanceTests
 
         static void TestConvexHull()
         {
-            var counts = new int[] { 100, 1000, 10000, 100000, 1000000 };
+            var counts = new int[] { 100, 1000, 10000, 100000 };
             const int minDimension = 2;
-            const int maxDimension = 3;
+            const int maxDimension = 6;
             const int nRuns = 3;
 
             Console.WriteLine("Convex Hull Test:");
@@ -115,18 +115,42 @@ namespace _8PerformanceTests
             Console.WriteLine("-----------------------------");
         }
 
+        static void Test3DConvexHull()
+        {
+            var counts = new int[] { 1000, 10000, 100000, 1000000, 10000000 };
+            const int minDimension = 3;
+            const int maxDimension = 3;
+            const int nRuns = 3;
+
+            Console.WriteLine("Convex Hull Test:");
+            DoTest(counts, minDimension, maxDimension, nRuns, TestNDConvexHull, "convex3d.csv");
+            Console.WriteLine("-----------------------------");
+        }
+
         static void TestDelaunay()
         {
-            var counts = new int[] { 100, 1000, 10000, 100000 };
-            const int minDimension = 2;
+            var counts = new int[] { 100, 250, 500, 1000 };
+            const int minDimension = 6;
             const int maxDimension = 6;
             const int nRuns = 3;
             
             Console.WriteLine("Delaunay Triangulation Test:");
-            DoTest(counts, minDimension, maxDimension, nRuns, TestNDDelau, "delaunay.csv");
+            DoTest(counts, minDimension, maxDimension, nRuns, TestNDDelau, "delaunay6d.csv");
             Console.WriteLine("-----------------------------");
         }
 
+        static void Test3DDelaunay()
+        {
+            var counts = new int[] { 1000, 10000, 25000, 50000, 100000, 500000 };
+            const int minDimension = 3;
+            const int maxDimension = 3;
+            const int nRuns = 3;
+
+            Console.WriteLine("Delaunay Triangulation Test:");
+            DoTest(counts, minDimension, maxDimension, nRuns, TestNDDelau, "delaunay3d.csv");
+            Console.WriteLine("-----------------------------");
+        }
+        
         static void TestVoronoi()
         {
             var counts = new int[] { 100, 1000, 10000, 100000 };
@@ -141,8 +165,8 @@ namespace _8PerformanceTests
 
         static void Main(string[] args)        
         {
-            TestConvexHull();
-            //TestDelaunay();
+            //Test3DConvexHull();
+            TestDelaunay();
             //TestVoronoi();
         }
     }

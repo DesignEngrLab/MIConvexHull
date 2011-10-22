@@ -25,10 +25,10 @@
             </Grid.ColumnDefinitions>
             <Button Grid.Column="0" Name="btnMakeSquarePoints" Click="btnMakeSquarePoints_Click"  Content="Make Rnd Uniform" IsDefault="True"/>
             <Button Grid.Column="1" Name="btnMakeCirclePoints" Click="btnMakeCirclePoints_Click"  Content="Make Rnd on Sphere" />
-            <Button Grid.Column="2" Name="btnRun" Click="btnRun_Click" Content="Analyze" />
-            <TextBlock Grid.Column="3" Name="txtBlkTimer" Text="00:00:00.000" 
+            <Button Grid.Column="2" Name="btnMakeRegularPoints" Click="btnMakeRegularPoints_Click"  Content="Make Regular Grid" />
+            <Button Grid.Column="3" Name="btnRun" Click="btnRun_Click" Content="Analyze" />
+            <TextBlock Grid.Column="4" Name="txtBlkTimer" Text="00:00:00.000" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <Button Grid.Column="4" Name="btnDisplay" Click="btnDisplay_Click" Content="Display" IsEnabled="False"/>
         </Grid>
         <ScrollBar Name="hscroll" Grid.Row="1"
                    Orientation="Horizontal" Minimum="-180" Maximum="180" />

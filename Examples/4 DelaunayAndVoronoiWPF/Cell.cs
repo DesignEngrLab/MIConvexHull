@@ -18,18 +18,22 @@
  *     Please find further details and contact information on GraphSynth
  *     at http://miconvexhull.codeplex.com
  *************************************************************************/
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace ExampleWithGraphics
 {
+    using System;
+    using System.Windows;
+    using System.Windows.Media;
+    using System.Windows.Shapes;
     using MIConvexHull;
+
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
     public class Cell : TriangulationCell<Vertex, Cell>
     {
+        static Random rnd = new Random();
+
         public class FaceVisual : Shape
         {
             Cell f;
@@ -43,7 +47,7 @@ namespace ExampleWithGraphics
                     {
                         StartPoint = new Point(f.Vertices[0].Position[0], f.Vertices[0].Position[1])
                     };
-                    for (int i = 1; i < f.Vertices.GetLength(0); i++)
+                    for (int i = 1; i < 3; i++)
                         pathFigure1.Segments.Add(
                             new LineSegment(
                                 new Point(f.Vertices[i].Position[0],
@@ -51,6 +55,7 @@ namespace ExampleWithGraphics
                     pathFigure1.IsClosed = true;
                     myPathGeometry.Figures.Add(pathFigure1);
 
+                    Fill = new SolidColorBrush(Color.FromRgb((byte)rnd.Next(255), (byte)rnd.Next(255), (byte)rnd.Next(255)));
 
                     return myPathGeometry;
                 }
@@ -67,6 +72,8 @@ namespace ExampleWithGraphics
 
         Point GetCircumcenter()
         {
+            // From MathWorld: http://mathworld.wolfram.com/Circumcircle.html
+
             var points = Vertices;
 
             double[,] m = new double[3, 3];
