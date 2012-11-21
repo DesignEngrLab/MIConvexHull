@@ -59,9 +59,8 @@ namespace ExampleWithGraphics
             var now = DateTime.Now;
             voronoiMesh = VoronoiMesh.Create<Vertex, Cell>(vertices);
             var interval = DateTime.Now - now;
-            txtBlkTimer.Text = string.Format("{0:0.000}s", interval.TotalSeconds);
+            txtBlkTimer.Text = string.Format("{0:0.000}s ({1} faces)", interval.TotalSeconds, voronoiMesh.Vertices.Count());
 
-            txtBlkTimer.Text = "0.000s";
             btnFindDelaunay.IsEnabled = true;
             btnFindVoronoi.IsEnabled = true;
         }
@@ -69,10 +68,33 @@ namespace ExampleWithGraphics
         private void btnFindDelaunay_Click(object sender, RoutedEventArgs e)
         {
             drawingCanvas.Children.Clear();
+
             btnFindDelaunay.IsEnabled = false;
             btnFindVoronoi.IsEnabled = true;
 
-            foreach (var cell in voronoiMesh.Vertices) drawingCanvas.Children.Add(cell.Visual);
+            foreach (var cell in voronoiMesh.Vertices)
+            {
+                drawingCanvas.Children.Add(cell.Visual);
+            }
+
+            ////foreach (var cell in voronoiMesh.Vertices)
+            ////{
+            ////    foreach (var n in cell.Adjacency)
+            ////    {
+            ////        if (n == null) continue;
+            ////        drawingCanvas.Children.Add(new Line { X1 = cell.Centroid.X, Y1 = cell.Centroid.Y, X2 = n.Centroid.X, Y2 = n.Centroid.Y, StrokeThickness = 1, Stroke = Brushes.Blue });
+            ////    }
+            ////}
+
+            ////foreach (var cell in voronoiMesh.Vertices)
+            ////{
+            ////    drawingCanvas.Children.Add(new Vertex(cell.Circumcenter.X, cell.Circumcenter.Y, cell.Brush));
+            ////    drawingCanvas.Children.Add(new Line { X1 = cell.Centroid.X, Y1 = cell.Centroid.Y, X2 = cell.Circumcenter.X, Y2 = cell.Circumcenter.Y, StrokeThickness = 1, Stroke = Brushes.Blue });
+            ////    ////foreach (var v in cell.Vertices)
+            ////    ////{
+            ////    ////    drawingCanvas.Children.Add(new Vertex(v.Position[0], v.Position[1], Brushes.Red));
+            ////    ////}
+            ////}
 
             ShowVertices();
         }

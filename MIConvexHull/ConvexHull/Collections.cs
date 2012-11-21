@@ -59,7 +59,7 @@
             count = 0;
         }
     }
-    
+        
     /// <summary>
     /// A priority based linked list.
     /// </summary>
@@ -153,6 +153,76 @@
 
             face.Next = null;
             face.Previous = null;
+        }
+    }
+
+    /// <summary>
+    /// Connector list.
+    /// </summary>
+    sealed class ConnectorList
+    {
+        FaceConnector first, last;
+
+        /// <summary>
+        /// Get the first element.
+        /// </summary>
+        public FaceConnector First { get { return first; } }
+
+        /// <summary>
+        /// Adds the element to the beginning.
+        /// </summary>
+        /// <param name="connector"></param>
+        void AddFirst(FaceConnector connector)
+        {
+            this.first.Previous = connector;
+            connector.Next = this.first;
+            this.first = connector;
+        }
+
+        /// <summary>
+        /// Adds a face to the list.
+        /// </summary>
+        /// <param name="element"></param>
+        public void Add(FaceConnector element)
+        {
+            if (this.last != null)
+            {
+                this.last.Next = element;
+            }
+            element.Previous = this.last;
+            this.last = element;
+            if (this.first == null)
+            {
+                this.first = element;
+            }
+        }
+
+        /// <summary>
+        /// Removes the element from the list.
+        /// </summary>
+        /// <param name="connector"></param>
+        public void Remove(FaceConnector connector)
+        {
+            if (connector.Previous != null)
+            {
+                connector.Previous.Next = connector.Next;
+            }
+            else if (/*first == face*/ connector.Previous == null)
+            {
+                this.first = connector.Next;
+            }
+
+            if (connector.Next != null)
+            {
+                connector.Next.Previous = connector.Previous;
+            }
+            else if (/*last == face*/ connector.Next == null)
+            {
+                this.last = connector.Previous;
+            }
+
+            connector.Next = null;
+            connector.Previous = null;
         }
     }
 }
