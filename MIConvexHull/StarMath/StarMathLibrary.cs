@@ -97,6 +97,78 @@ namespace MIConvexHull
             inverseInPlace(A, aLength);
             multiplyInto(A, b, aLength, aLength, target);
         }
+
+        /// <summary>
+        /// does gaussian elimination.
+        /// </summary>
+        /// <param name="nDim"></param>
+        /// <param name="pfMatr"></param>
+        /// <param name="pfVect"></param>
+        /// <param name="pfSolution"></param>
+        public static void gaussElimination(int nDim, double[][] pfMatr, double[] pfVect, double[] pfSolution)
+        {
+            double fMaxElem;
+            double fAcc;
+
+            int i, j, k, m;
+            
+            for (k = 0; k < (nDim - 1); k++) // base row of matrix
+            {
+                // search of line with max element
+                fMaxElem = Math.Abs(pfMatr[k][k]);
+                m = k;
+                for (i = k + 1; i < nDim; i++)
+                {
+                    if (fMaxElem < Math.Abs(pfMatr[i][k]))
+                    {
+                        fMaxElem = pfMatr[i][k];
+                        m = i;
+                    }
+                }
+
+                // permutation of base line (index k) and max element line(index m)
+                var rowK = pfMatr[k];
+                if (m != k)
+                {
+                    var rowM = pfMatr[m];
+                    for (i = k; i < nDim; i++)
+                    {                        
+                        fAcc = rowK[i];
+                        rowK[i] = rowM[i];
+                        rowM[i] = fAcc;
+                    }
+                    fAcc = pfVect[k];
+                    pfVect[k] = pfVect[m];
+                    pfVect[m] = fAcc;
+                }
+
+                //if( pfMatr[k*nDim + k] == 0.0) return 1; // needs improvement !!!
+
+                // triangulation of matrix with coefficients
+                for (j = (k + 1); j < nDim; j++) // current row of matrix
+                {
+                    var rowJ = pfMatr[j];
+                    fAcc = -rowJ[k] / rowK[k];
+                    for (i = k; i < nDim; i++)
+                    {
+                        rowJ[i] = rowJ[i] + fAcc * rowK[i];
+                    }
+                    pfVect[j] = pfVect[j] + fAcc * pfVect[k]; // free member recalculation
+                }
+            }
+
+            for (k = (nDim - 1); k >= 0; k--)
+            {
+                var rowK = pfMatr[k];
+                pfSolution[k] = pfVect[k];
+                for (i = (k + 1); i < nDim; i++)
+                {
+                    pfSolution[k] -= (rowK[i] * pfSolution[i]);
+                }
+                pfSolution[k] = pfSolution[k] / rowK[k];
+            }
+        }
+
         #endregion
 
         #region inverse transpose
@@ -355,10 +427,15 @@ namespace MIConvexHull
         /// <param name="x">The vector, x.</param>
         /// <param name="dontDoSqrt">if set to <c>true</c> [don't take the square root].</param>
         /// <returns>Scalar value of 2-norm.</returns>
-        public static double norm2(IEnumerable<double> x, Boolean dontDoSqrt = false)
+        public static double norm2(double[] x, int dim, Boolean dontDoSqrt = false)
         {
-            if (x == null) throw new Exception("The vector, x, is null.");
-            return dontDoSqrt ? x.Sum(a => a * a) : Math.Sqrt(x.Sum(a => a * a));
+            double norm = 0;
+            for (int i = 0; i < dim; i++)
+            {
+                var t = x[i];
+                norm += t * t;
+            }
+            return dontDoSqrt ? norm : Math.Sqrt(norm);
         }
         /// <summary>
         /// Returns to normalized vector (has lenght or 2-norm of 1))
@@ -367,14 +444,14 @@ namespace MIConvexHull
         /// <param name="x">The vector, x.</param>
         /// <param name="length">The length of the vector.</param>
         /// <returns>unit vector.</returns>
-        public static double[] normalize(IList<double> x, int length)
+        public static double[] normalize(double[] x, int length)
         {
-            return divide(x, norm2(x), length);
+            return divide(x, norm2(x, length), length);
         }
 
         public static void normalizeInPlace(double[] x, int length)
         {
-            double f = 1.0 / norm2(x);
+            double f = 1.0 / norm2(x, length);
             for (int i = 0; i < length; i++) x[i] *= f;
         }
         #endregion

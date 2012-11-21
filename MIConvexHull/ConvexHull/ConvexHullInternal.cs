@@ -28,16 +28,21 @@
         double[] ntX, ntY, ntZ;
         double[] nDNormalSolveVector;
         double[,] nDMatrix;
+        double[][] jaggedNDMatrix;
 
         ConvexFaceInternal[] UpdateBuffer;
         int[] UpdateIndices;
 
         Stack<ConvexFaceInternal> RecycledFaceStack;
+        Stack<FaceConnector> ConnectorStack;
         Stack<VertexBuffer> EmptyBufferStack;
         VertexBuffer EmptyBuffer; // this is used for VerticesBeyond for faces that are on the convex hull
         VertexBuffer BeyondBuffer;
-        List<ConvexFaceInternal> NewFaceBuffer;
         List<ConvexFaceInternal> AffectedFaceBuffer;
+
+        const int ConnectorTableSize = 2017;
+        ConnectorList[] ConnectorTable;
+
         #endregion
 
         /// <summary>
@@ -56,14 +61,21 @@
             UpdateBuffer = new ConvexFaceInternal[Dimension];
             UpdateIndices = new int[Dimension];
             RecycledFaceStack = new Stack<ConvexFaceInternal>();
+            ConnectorStack = new Stack<FaceConnector>();
             EmptyBufferStack = new Stack<VertexBuffer>();
             EmptyBuffer = new VertexBuffer();
-            NewFaceBuffer = new List<ConvexFaceInternal>();
             AffectedFaceBuffer = new List<ConvexFaceInternal>();
             BeyondBuffer = new VertexBuffer();
 
+            ConnectorTable = Enumerable.Range(0, ConnectorTableSize).Select(_ => new ConnectorList()).ToArray();
+
             nDNormalSolveVector = new double[Dimension];
-            for (var i = 0; i < Dimension; i++) nDNormalSolveVector[i] = 1.0;
+            jaggedNDMatrix = new double[Dimension][];
+            for (var i = 0; i < Dimension; i++)
+            {
+                nDNormalSolveVector[i] = 1.0;
+                jaggedNDMatrix[i] = new double[Dimension];
+            }
             nDMatrix = new double[Dimension, Dimension];
         }
 
@@ -95,6 +107,7 @@
                 var vertices = ConvexHull.Where((_, j) => i != j).ToArray(); // Skips the i-th vertex
                 var newFace = new ConvexFaceInternal(Dimension, new VertexBuffer());
                 newFace.Vertices = vertices;
+                Array.Sort(vertices, VertexWrapComparer.Instance);
                 CalculateFacePlane(newFace);
                 faces[i] = newFace;
             }
@@ -137,10 +150,9 @@
             {
                 for (int i = 0; i < Dimension; i++) normal[i] = -normal[i];
                 face.Offset = offset;
-                var temp = vertices[0];
-                vertices[0] = vertices[Dimension - 1];
-                vertices[Dimension - 1] = temp;
+                face.IsNormalFlipped = true;
             }
+            else face.IsNormalFlipped = false;
         }
 
         /// <summary>
@@ -227,6 +239,8 @@
             r.AdjacentFaces[i] = l;
         }
 
+        #region Memory stuff.
+        
         /// <summary>
         /// Recycle face for future use.
         /// </summary>
@@ -239,13 +253,62 @@
         }
 
         /// <summary>
+        /// Get a fresh face.
+        /// </summary>
+        /// <returns></returns>
+        ConvexFaceInternal GetNewFace()
+        {
+            return RecycledFaceStack.Count != 0
+                    ? RecycledFaceStack.Pop()
+                    : new ConvexFaceInternal(Dimension, EmptyBufferStack.Count != 0 ? EmptyBufferStack.Pop() : new VertexBuffer());
+        }
+
+        /// <summary>
+        /// Get a new connector.
+        /// </summary>
+        /// <returns></returns>
+        FaceConnector GetNewConnector()
+        {
+            return ConnectorStack.Count != 0
+                    ? ConnectorStack.Pop()
+                    : new FaceConnector(Dimension);
+        }        
+        #endregion
+
+        /// <summary>
+        /// Connect faces using a connector.
+        /// </summary>
+        /// <param name="connector"></param>
+        void ConnectFace(FaceConnector connector)
+        {
+            var index = connector.HashCode % ConnectorTableSize;
+            var list = ConnectorTable[index];
+
+            for (var current = list.First; current != null; current = current.Next)
+            {
+                if (FaceConnector.AreConnectable(connector, current, Dimension))
+                {
+                    list.Remove(current);
+                    FaceConnector.Connect(current, connector);
+                    current.Face = null;
+                    connector.Face = null;
+                    ConnectorStack.Push(current);
+                    ConnectorStack.Push(connector);
+                    return;
+                }
+            }
+
+            list.Add(connector);
+        }
+
+        /// <summary>
         /// Removes the faces "covered" by the current vertex and adds the newly created ones.
         /// </summary>
         private void CreateCone()
         {
             var oldFaces = AffectedFaceBuffer;
-            var newFaces = NewFaceBuffer;
-            newFaces.Clear();
+
+            var currentVertexIndex = CurrentVertex.Index;
 
             for (int fIndex = 0; fIndex < oldFaces.Count; fIndex++)
             {
@@ -277,36 +340,86 @@
                 for (int i = 0; i < updateCount; i++)
                 {
                     var adjacentFace = UpdateBuffer[i];
+
+                    int oldFaceAdjacentIndex = 0;
+                    var adjFaceAdjacency = adjacentFace.AdjacentFaces;
+                    for (int j = 0; j < Dimension; j++)
+                    {
+                        if (object.ReferenceEquals(oldFace, adjFaceAdjacency[j]))
+                        {
+                            oldFaceAdjacentIndex = j;
+                            break;
+                        }
+                    }
+
                     var forbidden = UpdateIndices[i]; // Index of the face that corresponds to this adjacent face
 
                     ConvexFaceInternal newFace;
+
+                    int oldVertexIndex;
+                    VertexWrap[] vertices;
 
                     // Recycle the oldFace
                     if (i == updateCount - 1)
                     {
                         RecycleFace(oldFace);
                         newFace = oldFace;
-                        var vertices = newFace.Vertices;
-                        // Make place for the currentVertex
-                        for (int j = forbidden; j > 0; j--) vertices[j] = vertices[j - 1];
-                        vertices[0] = CurrentVertex;
+                        vertices = newFace.Vertices;
+                        oldVertexIndex = vertices[forbidden].Index;
                     }
-                    else // Pop a face from the recycled stack or a new one
+                    else // Pop a face from the recycled stack or create a new one
                     {
-                        newFace = RecycledFaceStack.Count != 0 ?
-                            RecycledFaceStack.Pop() :
-                            new ConvexFaceInternal(Dimension, EmptyBufferStack.Count != 0 ? EmptyBufferStack.Pop() : new VertexBuffer());
-                        var vertices = newFace.Vertices;
-                        vertices[0] = CurrentVertex;
-                        for (int j = 0, c = 1; j < Dimension; j++)
+                        newFace = GetNewFace();
+                        vertices = newFace.Vertices;                        
+                        for (int j = 0; j < Dimension; j++) vertices[j] = oldFace.Vertices[j];
+                        oldVertexIndex = vertices[forbidden].Index;
+                    }
+
+                    int orderedPivotIndex;
+
+                    // correct the ordering
+                    if (currentVertexIndex < oldVertexIndex)
+                    {
+                        orderedPivotIndex = 0;
+                        for (int j = forbidden - 1; j >= 0; j--)
                         {
-                            if (j != forbidden) vertices[c++] = oldFace.Vertices[j];
+                            if (vertices[j].Index > currentVertexIndex) vertices[j + 1] = vertices[j];
+                            else
+                            {
+                                orderedPivotIndex = j + 1;
+                                break;
+                            }
                         }
                     }
+                    else
+                    {
+                        orderedPivotIndex = Dimension - 1;
+                        for (int j = forbidden + 1; j < Dimension; j++)
+                        {
+                            if (vertices[j].Index < currentVertexIndex) vertices[j - 1] = vertices[j];
+                            else
+                            {
+                                orderedPivotIndex = j - 1;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    vertices[orderedPivotIndex] = CurrentVertex;
 
                     CalculateFacePlane(newFace);
-                    UpdateAdjacency(newFace, adjacentFace);
+                    newFace.AdjacentFaces[orderedPivotIndex] = adjacentFace;
+                    adjacentFace.AdjacentFaces[oldFaceAdjacentIndex] = newFace;
 
+                    // let there be a connection.
+                    for (int j = 0; j < Dimension; j++)
+                    {
+                        if (j == orderedPivotIndex) continue;
+                        var connector = GetNewConnector();
+                        connector.Update(newFace, j, Dimension);
+                        ConnectFace(connector);
+                    }
+                    
                     // This could slightly help...
                     if (adjacentFace.VerticesBeyond.Count < oldFace.VerticesBeyond.Count)
                     {
@@ -316,8 +429,6 @@
                     {
                         FindBeyondVertices(newFace, oldFace.VerticesBeyond, adjacentFace.VerticesBeyond);
                     }
-
-                    newFaces.Add(newFace);
 
                     // This face will definitely lie on the hull
                     if (newFace.VerticesBeyond.Count == 0)
@@ -331,23 +442,6 @@
                     {
                         UnprocessedFaces.Add(newFace);
                     }
-                }
-            }
-
-            int newFaceCount = newFaces.Count;
-
-            // Check all pairs of faces and update their adjacency
-            for (var i = 0; i < newFaceCount - 1; i++)
-            {
-                var lf = newFaces[i];
-                for (var j = i + 1; j < newFaceCount; j++)
-                {
-                    UpdateAdjacency(lf, newFaces[j]);
-
-                    // No need to continue if all faces were filled
-                    int k;
-                    for (k = 0; k < Dimension; k++) if (lf.AdjacentFaces[k] == null) break;
-                    if (k == Dimension) break;
                 }
             }
         }
@@ -465,11 +559,14 @@
                 case 4: FindNormalVector4D(vertices, normalData); break;
                 default:
                     {
-                        var b = nDNormalSolveVector;
-                        var A = nDMatrix;
+                        for (var i = 0; i < Dimension; i++) nDNormalSolveVector[i] = 1.0;
                         for (var i = 0; i < Dimension; i++)
-                            StarMath.SetRow(i, A, vertices[i].Vertex.Position);
-                        StarMath.solveDestructiveInto(A, b, normalData);
+                        {
+                            var row = jaggedNDMatrix[i];
+                            var pos = vertices[i].Vertex.Position;
+                            for (int j = 0; j < Dimension; j++) row[j] = pos[j];
+                        }
+                        StarMath.gaussElimination(Dimension, jaggedNDMatrix, nDNormalSolveVector, normalData);
                         StarMath.normalizeInPlace(normalData, Dimension);
                         break;
                     }
@@ -552,7 +649,7 @@
             if (temp.Count > 0) temp.Clear();
             BeyondBuffer = temp;
         }
-
+                
         /// <summary>
         /// Recalculates the centroid of the current hull.
         /// </summary>
@@ -751,7 +848,7 @@
         /// <param name="dim"></param>
         private ConvexHullInternal(IEnumerable<IVertex> vertices)
         {
-            InputVertices = new List<VertexWrap>(vertices.Select((v, i) => new VertexWrap { Vertex = v, PositionData = v.Position }));
+            InputVertices = new List<VertexWrap>(vertices.Select((v, i) => new VertexWrap { Vertex = v, PositionData = v.Position, Index = i }));
             Dimension = DetermineDimension();
             Initialize();
         }
@@ -811,6 +908,18 @@
                 {
                     if (face.AdjacentFaces[j] == null) continue;
                     cell.Adjacency[j] = cells[face.AdjacentFaces[j].Tag];
+                }
+
+                // Fix the vertex orientation.
+                if (face.IsNormalFlipped)
+                {
+                    var tempVert = cell.Vertices[0];
+                    cell.Vertices[0] = cell.Vertices[Dimension - 1];
+                    cell.Vertices[Dimension - 1] = tempVert;
+
+                    var tempAdj = cell.Adjacency[0];
+                    cell.Adjacency[0] = cell.Adjacency[Dimension - 1];
+                    cell.Adjacency[Dimension - 1] = tempAdj;
                 }
             }
 

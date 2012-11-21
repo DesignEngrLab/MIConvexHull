@@ -15,7 +15,7 @@
         public TFace[] Adjacency { get; set; }
 
         /// <summary>
-        /// The vertices stored in clockwise order.
+        /// The vertices stored in clockwise order (for dimensions 2 - 4, higher dimensions the order is arbitrary).
         /// Unless I accidentally switch some index somewhere in which case the order is CCW. Either way, it is consistent.
         /// 3D Normal = (V[1] - V[0]) x (V[2] - V[1]).
         /// </summary>

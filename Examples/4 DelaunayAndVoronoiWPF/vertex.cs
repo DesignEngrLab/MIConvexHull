@@ -39,15 +39,15 @@ namespace ExampleWithGraphics
                 return new EllipseGeometry
                 {
                     Center = new Point(Position[0], Position[1]),
-                    RadiusX = 2,
-                    RadiusY = 2
+                    RadiusX = 1.5,
+                    RadiusY = 1.5
                 };
             }
         }
 
-        public Vertex()
+        public Vertex(Brush fill = null)
         {
-            Fill = Brushes.Red;
+            Fill = fill ?? Brushes.Red;
         }
 
         /// <summary>
@@ -55,8 +55,8 @@ namespace ExampleWithGraphics
         /// </summary>
         /// <param name="x">The x position.</param>
         /// <param name="y">The y position.</param>
-        public Vertex(double x, double y)
-            : this()
+        public Vertex(double x, double y, Brush fill = null)
+            : this(fill)
         {
             Position = new double[] { x, y };
         }

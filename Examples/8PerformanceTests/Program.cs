@@ -105,10 +105,10 @@ namespace _8PerformanceTests
 
         static void TestConvexHull()
         {
-            var counts = new int[] { 100, 1000, 10000, 100000 };
+            var counts = new int[] { 100, 250, 500 };
             const int minDimension = 2;
-            const int maxDimension = 6;
-            const int nRuns = 3;
+            const int maxDimension = 8;
+            const int nRuns = 1;
 
             Console.WriteLine("Convex Hull Test:");
             DoTest(counts, minDimension, maxDimension, nRuns, TestNDConvexHull, "convex.csv");
@@ -129,10 +129,10 @@ namespace _8PerformanceTests
 
         static void TestDelaunay()
         {
-            var counts = new int[] { 100, 250, 500, 1000 };
-            const int minDimension = 6;
+            var counts = new int[] { 100, 250, 500 };
+            const int minDimension = 4;
             const int maxDimension = 6;
-            const int nRuns = 3;
+            const int nRuns = 1;
             
             Console.WriteLine("Delaunay Triangulation Test:");
             DoTest(counts, minDimension, maxDimension, nRuns, TestNDDelau, "delaunay6d.csv");
@@ -141,7 +141,7 @@ namespace _8PerformanceTests
 
         static void Test3DDelaunay()
         {
-            var counts = new int[] { 1000, 10000, 25000, 50000, 100000, 500000 };
+            var counts = new int[] { 1000, 10000, 25000, 50000 };
             const int minDimension = 3;
             const int maxDimension = 3;
             const int nRuns = 3;
@@ -158,15 +158,16 @@ namespace _8PerformanceTests
             const int maxDimension = 6;
             const int nRuns = 3;
 
-            Console.WriteLine("Delaunay Triangulation Test:");
+            Console.WriteLine("Voronoi Test:");
             DoTest(counts, minDimension, maxDimension, nRuns, TestNDVoronoi, "voronoi.csv");
             Console.WriteLine("-----------------------------");
         }
 
         static void Main(string[] args)        
         {
-            //Test3DConvexHull();
-            TestDelaunay();
+            TestConvexHull();
+            //Test3DDelaunay();
+            //TestConvexHull();
             //TestVoronoi();
         }
     }

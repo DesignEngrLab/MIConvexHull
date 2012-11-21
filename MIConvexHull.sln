@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIConvexHull", "MIConvexHull\MIConvexHull.csproj", "{2337776D-7D0C-40AA-A439-C26C3CE24FAB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "1TestEXE for MIConvexHull-2D", "Examples\1TestEXE for MIConvexHull-2D\1TestEXE for MIConvexHull-2D.csproj", "{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}"

@@ -22,6 +22,7 @@
 namespace ExampleWithGraphics
 {
     using System;
+    using System.Linq;
     using System.Windows;
     using System.Windows.Media;
     using System.Windows.Shapes;
@@ -34,30 +35,37 @@ namespace ExampleWithGraphics
     {
         static Random rnd = new Random();
 
+        public Brush Brush { get; private set; }
+
         public class FaceVisual : Shape
         {
             Cell f;
 
+            Geometry geometry;
             protected override Geometry DefiningGeometry
             {
                 get
                 {
-                    var myPathGeometry = new PathGeometry();
+                    if (geometry != null) return geometry;
+
+                    var myPathGeometry = new PathGeometry() { };
                     var pathFigure1 = new PathFigure
                     {
                         StartPoint = new Point(f.Vertices[0].Position[0], f.Vertices[0].Position[1])
                     };
                     for (int i = 1; i < 3; i++)
+                    {
                         pathFigure1.Segments.Add(
                             new LineSegment(
                                 new Point(f.Vertices[i].Position[0],
-                                          f.Vertices[i].Position[1]), true));
+                                          f.Vertices[i].Position[1]), true) { IsSmoothJoin = true });
+                    }
                     pathFigure1.IsClosed = true;
                     myPathGeometry.Figures.Add(pathFigure1);
 
-                    Fill = new SolidColorBrush(Color.FromRgb((byte)rnd.Next(255), (byte)rnd.Next(255), (byte)rnd.Next(255)));
-
-                    return myPathGeometry;
+                    Fill = f.Brush;
+                    geometry = myPathGeometry;
+                    return geometry;
                 }
             }
 
@@ -65,8 +73,11 @@ namespace ExampleWithGraphics
             {
                 Stroke = Brushes.Black;
                 StrokeThickness = 1.0;
-                Opacity = 0.5;
+                Opacity = 0.3;
                 this.f = f;
+
+                var fill = new SolidColorBrush(Color.FromRgb((byte)rnd.Next(255), (byte)rnd.Next(255), (byte)rnd.Next(255)));
+                f.Brush = fill;
             }
         }
 
@@ -90,7 +101,7 @@ namespace ExampleWithGraphics
             // size, y, 1
             for (int i = 0; i < 3; i++)
             {
-                m[i, 0] = StarMath.norm2(points[i].Position, true);
+                m[i, 0] = StarMath.norm2(points[i].Position, 2, true);
             }
             var dx = -StarMath.determinant(m);
 
@@ -107,10 +118,15 @@ namespace ExampleWithGraphics
                 m[i, 2] = points[i].Position[1];
             }
             var c = -StarMath.determinant(m);
-            
-            var s = 1.0 / (2.0 * System.Math.Abs(a));
+
+            var s = -1.0 / (2.0 * a);
             var r = System.Math.Abs(s) * System.Math.Sqrt(dx * dx + dy * dy - 4 * a * c);
             return new Point(s * dx, s * dy);
+        }
+
+        Point GetCentroid()
+        {
+            return new Point(Vertices.Select(v => v.Position[0]).Average(), Vertices.Select(v => v.Position[1]).Average());
         }
 
         public Shape Visual { get; private set; }
@@ -121,6 +137,16 @@ namespace ExampleWithGraphics
             {
                 circumCenter = circumCenter ?? GetCircumcenter();
                 return circumCenter.Value;
+            }
+        }
+
+        Point? centroid;
+        public Point Centroid
+        {
+            get
+            {
+                centroid = centroid ?? GetCentroid();
+                return centroid.Value;
             }
         }
 

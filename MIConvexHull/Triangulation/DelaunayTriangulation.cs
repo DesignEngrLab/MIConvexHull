@@ -35,7 +35,7 @@
             // Resize the arrays and lift the data.
             foreach (var p in data)
             {
-                double lenSq = StarMath.norm2(p.Position, true);
+                double lenSq = StarMath.norm2(p.Position, dimension, true);
                 var v = p.Position;
                 Array.Resize(ref v, dimension + 1);
                 p.Position = v;
