@@ -33,6 +33,8 @@
         ConvexFaceInternal[] UpdateBuffer;
         int[] UpdateIndices;
 
+
+        Stack<ConvexFaceInternal> TraverseStack;
         Stack<ConvexFaceInternal> RecycledFaceStack;
         Stack<FaceConnector> ConnectorStack;
         Stack<VertexBuffer> EmptyBufferStack;
@@ -58,6 +60,7 @@
             ntX = new double[Dimension];
             ntY = new double[Dimension];
             ntZ = new double[Dimension];
+            TraverseStack = new Stack<ConvexFaceInternal>();
             UpdateBuffer = new ConvexFaceInternal[Dimension];
             UpdateIndices = new int[Dimension];
             RecycledFaceStack = new Stack<ConvexFaceInternal>();
@@ -154,7 +157,7 @@
             }
             else face.IsNormalFlipped = false;
         }
-
+        
         /// <summary>
         /// Check if the vertex is "visible" from the face.
         /// The vertex is "over face" if the return value is >= 0.
@@ -170,6 +173,25 @@
             for (int i = 0; i < Dimension; i++) distance += normal[i] * p[i];
             return distance;
         }
+        
+        //unsafe double GetVertexDistance(VertexWrap v, ConvexFaceInternal f)
+        //{
+        //    fixed (double* pNormal = f.Normal)
+        //    fixed (double* pP = v.PositionData)
+        //    {
+        //        double* normal = pNormal;
+        //        double* p = pP;
+
+        //        double distance = f.Offset;
+        //        for (int i = 0; i < Dimension; i++)
+        //        {
+        //            distance += (*normal) * (*p);
+        //            normal++;
+        //            p++;
+        //        }
+        //        return distance;
+        //    }
+        //}
 
         /// <summary>
         /// Tags all faces seen from the current vertex with 1.
@@ -181,24 +203,43 @@
             AffectedFaceBuffer.Add(currentFace);
             TraverseAffectedFaces(currentFace);
         }
-
+        
         /// <summary>
         /// Recursively traverse all the relevant faces.
         /// </summary>
         void TraverseAffectedFaces(ConvexFaceInternal currentFace)
         {
+            TraverseStack.Clear();
+            TraverseStack.Push(currentFace);
             currentFace.Tag = 1;
 
-            for (int i = 0; i < Dimension; i++)
+            while (TraverseStack.Count > 0)
             {
-                var adjFace = currentFace.AdjacentFaces[i];
-
-                if (adjFace.Tag == 0 && GetVertexDistance(CurrentVertex, adjFace) >= 0)
+                var top = TraverseStack.Pop();
+                for (int i = 0; i < Dimension; i++)
                 {
-                    AffectedFaceBuffer.Add(adjFace);
-                    TraverseAffectedFaces(adjFace);
+                    var adjFace = top.AdjacentFaces[i];
+
+                    if (adjFace.Tag == 0 && GetVertexDistance(CurrentVertex, adjFace) >= 0)
+                    {
+                        AffectedFaceBuffer.Add(adjFace);
+                        //TraverseAffectedFaces(adjFace);
+                        adjFace.Tag = 1;
+                        TraverseStack.Push(adjFace);
+                    }
                 }
             }
+            
+            ////for (int i = 0; i < Dimension; i++)
+            ////{
+            ////    var adjFace = currentFace.AdjacentFaces[i];
+
+            ////    if (adjFace.Tag == 0 && GetVertexDistance(CurrentVertex, adjFace) >= 0)
+            ////    {
+            ////        AffectedFaceBuffer.Add(adjFace);
+            ////        TraverseAffectedFaces(adjFace);
+            ////    }
+            ////}
         }
 
         /// <summary>
@@ -251,7 +292,7 @@
                 face.AdjacentFaces[i] = null;
             }
         }
-
+        
         /// <summary>
         /// Get a fresh face.
         /// </summary>
@@ -284,6 +325,7 @@
             var index = connector.HashCode % ConnectorTableSize;
             var list = ConnectorTable[index];
 
+            int count = 0;
             for (var current = list.First; current != null; current = current.Next)
             {
                 if (FaceConnector.AreConnectable(connector, current, Dimension))
@@ -607,7 +649,7 @@
             for (int i = 0; i < count; i++) IsBeyond(face, beyondVertices, InputVertices[i]);
 
             face.FurthestVertex = FurthestVertex;
-            face.FurthestDistance = MaxDistance;
+            //face.FurthestDistance = MaxDistance;
         }
 
         /// <summary>
@@ -641,7 +683,7 @@
             }
 
             face.FurthestVertex = FurthestVertex;
-            face.FurthestDistance = MaxDistance;
+            //face.FurthestDistance = MaxDistance;
 
             // Pull the old switch a roo
             var temp = face.VerticesBeyond;
@@ -699,13 +741,34 @@
         /// <returns></returns>
         private List<VertexWrap> FindInitialPoints(List<VertexWrap> extremes)
         {
-            List<VertexWrap> initialPoints = new List<VertexWrap>() { extremes[0], extremes[1] };
+            List<VertexWrap> initialPoints = new List<VertexWrap>();// { extremes[0], extremes[1] };
+
+            VertexWrap first = null, second = null;
+            double maxDist = 0;
+            for (int i = 0; i < extremes.Count - 1; i++)
+            {
+                var a = extremes[i];
+                for (int j = i + 1; j < extremes.Count; j++)
+                {
+                    var b = extremes[j];
+                    var dist = StarMath.norm2(StarMath.subtract(a.PositionData, b.PositionData, Dimension), Dimension, true);
+                    if (dist > maxDist)
+                    {
+                        first = a;
+                        second = b;
+                        maxDist = dist;
+                    }
+                }
+            }
+
+            initialPoints.Add(first);
+            initialPoints.Add(second);
 
             for (int i = 2; i <= Dimension; i++)
             {
                 double maximum = 0.0001;
                 VertexWrap maxPoint = null;
-                for (int j = 2; j < extremes.Count; j++)
+                for (int j = 0; j < extremes.Count; j++)
                 {
                     var extreme = extremes[j];
                     if (initialPoints.Contains(extreme)) continue;
