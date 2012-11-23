@@ -92,7 +92,8 @@
         {
             if (face.InList)
             {
-                if (this.first.FurthestDistance < face.FurthestDistance)
+                //if (this.first.FurthestDistance < face.FurthestDistance)
+                if (this.first.VerticesBeyond.Count < face.VerticesBeyond.Count)
                 {
                     Remove(face);
                     AddFirst(face);
@@ -102,7 +103,8 @@
 
             face.InList = true;
 
-            if (first != null && first.FurthestDistance < face.FurthestDistance)
+            //if (first != null && first.FurthestDistance < face.FurthestDistance)
+            if (first != null && first.VerticesBeyond.Count < face.VerticesBeyond.Count)
             {
                 this.first.Previous = face;
                 face.Next = this.first;
