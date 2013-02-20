@@ -7,8 +7,8 @@ namespace MIConvexHull
 {
   internal static  class Constants
   {
-      internal const double epsilon = 1e-6;
-      internal const double epsilonSquared = 1e-12;
+      internal const double epsilon = 1e-8;
+      internal const double epsilonSquared = 1e-16;
 
 
       /// <summary>
