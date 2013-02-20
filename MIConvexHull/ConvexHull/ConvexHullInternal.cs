@@ -8,8 +8,9 @@
     {
         bool Computed;
         readonly int Dimension;
-
+        
         List<VertexWrap> InputVertices;
+        List<VertexWrap> OriginalInputVertices;
         List<VertexWrap> ConvexHull;
         FaceList UnprocessedFaces;
         List<ConvexFaceInternal> ConvexFaces;
@@ -88,10 +89,10 @@
         int DetermineDimension()
         {
             var r = new Random();
-            var VCount = InputVertices.Count;
+            var VCount = OriginalInputVertices.Count;
             var dimensions = new List<int>();
             for (var i = 0; i < 10; i++)
-                dimensions.Add(InputVertices[r.Next(VCount)].Vertex.Position.Length);
+                dimensions.Add(OriginalInputVertices[r.Next(VCount)].Vertex.Position.Length);
             var dimension = dimensions.Min();
             if (dimension != dimensions.Max()) throw new ArgumentException("Invalid input data (non-uniform dimension).");
             return dimension;
@@ -705,8 +706,9 @@
         /// <summary>
         /// Find the (dimension+1) initial points and create the simplexes.
         /// </summary>
-        void InitConvexHull()
+        void InitConvexHull(Boolean removeDuplicates)
         {
+            if (removeDuplicates) SortAndRemoveRepeats();
             var extremes = FindExtremes();
             var initialPoints = FindInitialPoints(extremes);
 
@@ -766,7 +768,7 @@
 
             for (int i = 2; i <= Dimension; i++)
             {
-                double maximum = 0.0001;
+                double maximum = Constants.epsilon;
                 VertexWrap maxPoint = null;
                 for (int j = 0; j < extremes.Count; j++)
                 {
@@ -879,10 +881,10 @@
         /// <summary>
         /// Fins the convex hull.
         /// </summary>
-        void FindConvexHull()
+        void FindConvexHull(Boolean removeDuplicates)
         {
             // Find the (dimension+1) initial points and create the simplexes.
-            InitConvexHull();
+            InitConvexHull(removeDuplicates);
 
             // Expand the convex hull and faces.
             while (UnprocessedFaces.First != null)
@@ -905,13 +907,32 @@
         }
 
         /// <summary>
+        /// Sorts the vertices and remove any repeats.
+        /// </summary>
+        private void SortAndRemoveRepeats()
+        {
+            var vertexSort = new VertexSort(Dimension);
+            InputVertices.Sort(vertexSort);
+            InputVertices.RemoveAll(vertexWrap =>
+                                    vertexSort.Duplicates.Any(dupes =>
+                                                              Constants.SamePosition(dupes.PositionData,
+                                                                                      vertexWrap.PositionData, Dimension)));
+            InputVertices.AddRange(vertexSort.Duplicates);
+            for (int i = 0; i < InputVertices.Count; i++)
+            {
+                InputVertices[i].Index = i;
+                InputVertices[i].Marked = false;
+            }
+        }
+
+        /// <summary>
         /// Wraps the vertices and determines the dimension if it's unknown.
         /// </summary>
         /// <param name="vertices"></param>
         /// <param name="dim"></param>
         private ConvexHullInternal(IEnumerable<IVertex> vertices)
         {
-            InputVertices = new List<VertexWrap>(vertices.Select((v, i) => new VertexWrap { Vertex = v, PositionData = v.Position, Index = i }));
+            OriginalInputVertices = new List<VertexWrap>(vertices.Select((v, i) => new VertexWrap { Vertex = v, PositionData = v.Position, Index = i }));
             Dimension = DetermineDimension();
             Initialize();
         }
@@ -924,11 +945,23 @@
         /// <returns></returns>
         private IEnumerable<TVertex> GetConvexHullInternal<TVertex>(bool onlyCompute = false) where TVertex : IVertex
         {
+            InputVertices = new List<VertexWrap>(OriginalInputVertices);
             if (Computed) return onlyCompute ? null : ConvexHull.Select(v => (TVertex)v.Vertex).ToArray();
 
             if (Dimension < 2) throw new ArgumentException("Dimension of the input must be 2 or greater.");
-
-            FindConvexHull();
+            try
+            {
+                FindConvexHull(false);
+                /* first attempt assume that the input does not have duplicate vertices. */
+            }
+            catch (InvalidOperationException e)
+            {
+                /* if the code throws this error then it resulted from a singularity in the data. This
+                 * may have been caused by duplicate vertices. So, now we re-run the FindConvexHull routine
+                 * by first removing duplicates. */
+                InputVertices = new List<VertexWrap>(OriginalInputVertices);
+                FindConvexHull(true);
+            }
             Computed = true;
             return onlyCompute ? null : ConvexHull.Select(v => (TVertex)v.Vertex).ToArray();
         }
