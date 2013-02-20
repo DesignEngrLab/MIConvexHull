@@ -8,7 +8,7 @@
     {
         bool Computed;
         readonly int Dimension;
-        
+
         List<VertexWrap> InputVertices;
         List<VertexWrap> OriginalInputVertices;
         List<VertexWrap> ConvexHull;
@@ -124,7 +124,7 @@
 
             return faces;
         }
-        
+
         /// <summary>
         /// Calculates the normal and offset of the hyper-plane given by the face's vertices.
         /// </summary>
@@ -158,7 +158,7 @@
             }
             else face.IsNormalFlipped = false;
         }
-        
+
         /// <summary>
         /// Check if the vertex is "visible" from the face.
         /// The vertex is "over face" if the return value is >= 0.
@@ -174,7 +174,7 @@
             for (int i = 0; i < Dimension; i++) distance += normal[i] * p[i];
             return distance;
         }
-        
+
         //unsafe double GetVertexDistance(VertexWrap v, ConvexFaceInternal f)
         //{
         //    fixed (double* pNormal = f.Normal)
@@ -204,7 +204,7 @@
             AffectedFaceBuffer.Add(currentFace);
             TraverseAffectedFaces(currentFace);
         }
-        
+
         /// <summary>
         /// Recursively traverse all the relevant faces.
         /// </summary>
@@ -230,7 +230,7 @@
                     }
                 }
             }
-            
+
             ////for (int i = 0; i < Dimension; i++)
             ////{
             ////    var adjFace = currentFace.AdjacentFaces[i];
@@ -282,7 +282,7 @@
         }
 
         #region Memory stuff.
-        
+
         /// <summary>
         /// Recycle face for future use.
         /// </summary>
@@ -293,7 +293,7 @@
                 face.AdjacentFaces[i] = null;
             }
         }
-        
+
         /// <summary>
         /// Get a fresh face.
         /// </summary>
@@ -314,7 +314,7 @@
             return ConnectorStack.Count != 0
                     ? ConnectorStack.Pop()
                     : new FaceConnector(Dimension);
-        }        
+        }
         #endregion
 
         /// <summary>
@@ -413,7 +413,7 @@
                     else // Pop a face from the recycled stack or create a new one
                     {
                         newFace = GetNewFace();
-                        vertices = newFace.Vertices;                        
+                        vertices = newFace.Vertices;
                         for (int j = 0; j < Dimension; j++) vertices[j] = oldFace.Vertices[j];
                         oldVertexIndex = vertices[forbidden].Index;
                     }
@@ -447,7 +447,7 @@
                             }
                         }
                     }
-                    
+
                     vertices[orderedPivotIndex] = CurrentVertex;
 
                     CalculateFacePlane(newFace);
@@ -462,7 +462,7 @@
                         connector.Update(newFace, j, Dimension);
                         ConnectFace(connector);
                     }
-                    
+
                     // This could slightly help...
                     if (adjacentFace.VerticesBeyond.Count < oldFace.VerticesBeyond.Count)
                     {
@@ -692,7 +692,7 @@
             if (temp.Count > 0) temp.Clear();
             BeyondBuffer = temp;
         }
-                
+
         /// <summary>
         /// Recalculates the centroid of the current hull.
         /// </summary>
@@ -912,12 +912,63 @@
         private void SortAndRemoveRepeats()
         {
             var vertexSort = new VertexSort(Dimension);
+            /* the reason for sorting is that it is a tried and true technique which is likely has a lower time
+             * complexity than the brute force approach to detecting duplicates (nested for-loops). So, first we
+             * sort and then we can quickly remove the duplicates. During the compare function, we make note of 
+             * any duplicates that exist. */
             InputVertices.Sort(vertexSort);
-            InputVertices.RemoveAll(vertexWrap =>
-                                    vertexSort.Duplicates.Any(dupes =>
-                                                              Constants.SamePosition(dupes.PositionData,
-                                                                                      vertexWrap.PositionData, Dimension)));
-            InputVertices.AddRange(vertexSort.Duplicates);
+            var dupes = vertexSort.Duplicates;
+            dupes.Sort(vertexSort);
+            while (dupes.Count > 0)
+            {
+                var lowerBound = 0;
+                var upperBound = InputVertices.Count;
+                var index = (int)(InputVertices.Count / dupes.Count) - 1;
+                /* the idea here is that the best guess for the index is the fraction through the list. For example,
+                 * if InputVertices is 1000 and there are 5 duplicates - and since both lists are sorted - the first
+                 * duplicate is around 200. It doesn't matter if this is too high, the binary search can go in either 
+                 * direction. */
+                var dupe = dupes[0];
+                while (upperBound > lowerBound)
+                {
+                    if (index == 0) upperBound = 0;
+                    else if (vertexSort.Compare(dupe, InputVertices[index]) == 1)
+                    {
+                        lowerBound = index;
+                        index = (lowerBound + upperBound) / 2;
+                        if (index == lowerBound) index++;
+                    }
+                    else if (vertexSort.Compare(dupe, InputVertices[index]) == 0)
+                    {
+                        if (vertexSort.Compare(dupe, InputVertices[index - 1]) == 1)
+                        {
+                            lowerBound = upperBound = index;
+                        }
+                        else
+                        {
+                            upperBound = index;
+                            index = (lowerBound + upperBound) / 2;
+                        }
+                    }
+
+                    else if (vertexSort.Compare(dupe, InputVertices[index]) == -1)
+                    {
+                        if (vertexSort.Compare(dupe, InputVertices[index + 1]) == 0)
+                        {
+                            lowerBound = upperBound = index = index + 1;
+                        }
+                        else
+                        {
+                            upperBound = index;
+                            index = (lowerBound + upperBound) / 2;
+                        }
+                    }
+                }
+                while (index < InputVertices.Count - 1 && vertexSort.Compare(InputVertices[index], InputVertices[index + 1]) == 0)
+                    InputVertices.RemoveAt(index);
+                dupes.RemoveAt(0);
+            }
+            /* now, need to reset the InputVertices. */
             for (int i = 0; i < InputVertices.Count; i++)
             {
                 InputVertices[i].Index = i;

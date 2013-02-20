@@ -18,6 +18,7 @@ namespace MIConvexHull
         }
         public int Compare(VertexWrap x, VertexWrap y)
         {
+            if (x == y) return 0;
             for (int i = 0; i < dimension; i++)
             {
                 if (x.PositionData[i] < y.PositionData[i]) return -1;
@@ -31,14 +32,10 @@ namespace MIConvexHull
         {
             for (int i = 0; i < Duplicates.Count; i++)
             {
-                if (SamePosition(x.PositionData, Duplicates[i].PositionData, dimension))
+                if (Constants.SamePosition(x.PositionData, Duplicates[i].PositionData, dimension))
                     return false;
             }
             return true;
-        }
-        public static bool SamePosition(double[] pt1, double[] pt2, int dimension)
-        {
-            return (StarMath.norm2(StarMath.subtract(pt1,pt2,dimension), dimension,true) < Constants.epsilonSquared);
         }
 
     }
