@@ -12,7 +12,6 @@ namespace MIConvexHull
 
         public VertexSort(int Dimension)
         {
-            // TODO: Complete member initialization
             this.dimension = Dimension;
             Duplicates = new List<VertexWrap>();
         }

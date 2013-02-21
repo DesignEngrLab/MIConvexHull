@@ -912,23 +912,28 @@
         private void SortAndRemoveRepeats()
         {
             var vertexSort = new VertexSort(Dimension);
-            /* the reason for sorting is that it is a tried and true technique which is likely has a lower time
-             * complexity than the brute force approach to detecting duplicates (nested for-loops). So, first we
-             * sort and then we can quickly remove the duplicates. During the compare function, we make note of 
-             * any duplicates that exist. */
+            /* the reason for sorting is that it is a tried and true technique which  likely has a lower time
+             * complexity than the brute force approach to detecting duplicates (nested for-loops...clearly O(n^2)). 
+             * So, first we sort and then we can quickly remove the duplicates. During the compare function, 
+             * we make note of any duplicates that exist. */
             InputVertices.Sort(vertexSort);
             var dupes = vertexSort.Duplicates;
             dupes.Sort(vertexSort);
+            /* now the list of InputVertices has been sorted and the duplicates as well. All that is left is
+             * to go through InputVerties and remove all duplicates. This could actually be done in a single
+             * line of LINQ code, but it is believed that this verbose method, which takes advantage of the 
+             * fact that both lists are now sorted is much quick and should have a time complexity much less
+             * than O(n). */
+            var lowerBound = 0;
+            var upperBound = InputVertices.Count - 1;
             while (dupes.Count > 0)
             {
-                var lowerBound = 0;
-                var upperBound = InputVertices.Count;
-                var index = (int)(InputVertices.Count / dupes.Count) - 1;
+                var dupe = dupes[0];
+                var index = (int)(upperBound - lowerBound) / dupes.Count;
                 /* the idea here is that the best guess for the index is the fraction through the list. For example,
                  * if InputVertices is 1000 and there are 5 duplicates - and since both lists are sorted - the first
                  * duplicate is around 200. It doesn't matter if this is too high, the binary search can go in either 
                  * direction. */
-                var dupe = dupes[0];
                 while (upperBound > lowerBound)
                 {
                     if (index == 0) upperBound = 0;
@@ -967,6 +972,8 @@
                 while (index < InputVertices.Count - 1 && vertexSort.Compare(InputVertices[index], InputVertices[index + 1]) == 0)
                     InputVertices.RemoveAt(index);
                 dupes.RemoveAt(0);
+                lowerBound = index;
+                upperBound = InputVertices.Count - 1;
             }
             /* now, need to reset the InputVertices. */
             for (int i = 0; i < InputVertices.Count; i++)
@@ -996,14 +1003,14 @@
         /// <returns></returns>
         private IEnumerable<TVertex> GetConvexHullInternal<TVertex>(bool onlyCompute = false) where TVertex : IVertex
         {
-            InputVertices = new List<VertexWrap>(OriginalInputVertices);
             if (Computed) return onlyCompute ? null : ConvexHull.Select(v => (TVertex)v.Vertex).ToArray();
 
             if (Dimension < 2) throw new ArgumentException("Dimension of the input must be 2 or greater.");
             try
             {
+                InputVertices = new List<VertexWrap>(OriginalInputVertices);
                 FindConvexHull(false);
-                /* first attempt assume that the input does not have duplicate vertices. */
+                /* first attempt assumes that the input does not have duplicate vertices. */
             }
             catch (InvalidOperationException e)
             {
@@ -1011,6 +1018,7 @@
                  * may have been caused by duplicate vertices. So, now we re-run the FindConvexHull routine
                  * by first removing duplicates. */
                 InputVertices = new List<VertexWrap>(OriginalInputVertices);
+                Initialize();
                 FindConvexHull(true);
             }
             Computed = true;
