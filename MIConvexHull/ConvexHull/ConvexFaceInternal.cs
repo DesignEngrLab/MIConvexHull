@@ -161,6 +161,7 @@
             VerticesBeyond = beyondList;
             Normal = new double[dimension];
             Vertices = new VertexWrap[dimension];
+            OrderedVertices = new VertexWrap[dimension];
         }
 
         /// <summary>
@@ -178,16 +179,21 @@
         /// </summary>
         public VertexWrap FurthestVertex;
 
-        /////// <summary>
-        /////// Distance to the furthest vertex.
-        /////// </summary>
-        ////public double FurthestDistance;
+        /// <summary>
+        /// Distance to the furthest vertex.
+        /// </summary>
+        public double FurthestDistance;
 
         /// <summary>
         /// Gets or sets the vertices.
         /// </summary>
         public VertexWrap[] Vertices;
-        
+
+        /// <summary>
+        /// Vertices ordered by index.
+        /// </summary>
+        public VertexWrap[] OrderedVertices;
+
         /// <summary>
         /// Gets or sets the normal vector.
         /// </summary>
