@@ -42,6 +42,22 @@
     }
 
     /// <summary>
+    /// For deferred face addition.
+    /// </summary>
+    sealed class DeferredFace
+    {
+        /// <summary>
+        /// The faces.
+        /// </summary>
+        public ConvexFaceInternal Face, Pivot, OldFace;
+
+        /// <summary>
+        /// The indices.
+        /// </summary>
+        public int FaceIndex, PivotIndex;
+    }
+
+    /// <summary>
     /// A helper class used to connect faces.
     /// </summary>
     sealed class FaceConnector
@@ -161,7 +177,6 @@
             VerticesBeyond = beyondList;
             Normal = new double[dimension];
             Vertices = new VertexWrap[dimension];
-            OrderedVertices = new VertexWrap[dimension];
         }
 
         /// <summary>
@@ -179,21 +194,16 @@
         /// </summary>
         public VertexWrap FurthestVertex;
 
-        /// <summary>
-        /// Distance to the furthest vertex.
-        /// </summary>
-        public double FurthestDistance;
+        /////// <summary>
+        /////// Distance to the furthest vertex.
+        /////// </summary>
+        ////public double FurthestDistance;
 
         /// <summary>
         /// Gets or sets the vertices.
         /// </summary>
         public VertexWrap[] Vertices;
-
-        /// <summary>
-        /// Vertices ordered by index.
-        /// </summary>
-        public VertexWrap[] OrderedVertices;
-
+        
         /// <summary>
         /// Gets or sets the normal vector.
         /// </summary>

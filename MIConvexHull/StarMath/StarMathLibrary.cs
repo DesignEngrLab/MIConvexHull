@@ -114,8 +114,10 @@ namespace MIConvexHull
             
             for (k = 0; k < (nDim - 1); k++) // base row of matrix
             {
+                var rowK = pfMatr[k];
+
                 // search of line with max element
-                fMaxElem = Math.Abs(pfMatr[k][k]);
+                fMaxElem = Math.Abs(rowK[k]);
                 m = k;
                 for (i = k + 1; i < nDim; i++)
                 {
@@ -126,8 +128,7 @@ namespace MIConvexHull
                     }
                 }
 
-                // permutation of base line (index k) and max element line(index m)
-                var rowK = pfMatr[k];
+                // permutation of base line (index k) and max element line(index m)                
                 if (m != k)
                 {
                     var rowM = pfMatr[m];
