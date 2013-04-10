@@ -19,46 +19,28 @@ namespace _8PerformanceTests
                 for (int j = 0; j < dim; j++) v[j] = size * rnd.NextDouble();
                 vertices[i] = new DefaultVertex { Position = v };
             }
-            ////File.WriteAllLines("i:/test/7Ddata.txt",
-            ////    new string[] { "7 test", numVert.ToString() }
-            ////    .Concat(vertices.Select(v => string.Join(" ", v.Position.Select(p => p.ToString()))))
-            ////    .ToArray()
-            ////    );
             return vertices;
         }
 
         static TimeSpan RunComputation<T>(Func<T> a)
         {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
             var now = DateTime.Now;
             a();
             var interval = DateTime.Now - now;
             GC.Collect();
-            GC.WaitForPendingFinalizers();
             return interval;
         }
 
         static TimeSpan TestNDConvexHull(int dim, int numVert, double size)
         {
             var vertices = CreateRandomVertices(dim, numVert, size);
-            return RunComputation(() => 
-                {
-                    var h = ConvexHull.Create(vertices);
-                   // Console.WriteLine(h.Points.Count());
-                    return h;
-                });
+            return RunComputation(() => ConvexHull.Create(vertices));
         }
 
         static TimeSpan TestNDDelau(int dim, int numVert, double size)
         {
             var vertices = CreateRandomVertices(dim, numVert, size);
-            return RunComputation(() => 
-            {
-                var r = Triangulation.CreateDelaunay(vertices);
-                Console.WriteLine(r.Cells.Count());
-                return r;
-            });
+            return RunComputation(() => Triangulation.CreateDelaunay(vertices));
         }
 
         static TimeSpan TestNDVoronoi(int dim, int numVert, double size)
@@ -135,7 +117,7 @@ namespace _8PerformanceTests
 
         static void Test3DConvexHull()
         {
-            var counts = new int[] { 1000000 };
+            var counts = new int[] { 1000, 10000, 100000, 1000000, 10000000 };
             const int minDimension = 3;
             const int maxDimension = 3;
             const int nRuns = 3;
@@ -147,9 +129,9 @@ namespace _8PerformanceTests
 
         static void TestDelaunay()
         {
-            var counts = new int[] { 350 };
-            const int minDimension = 7;
-            const int maxDimension = 7;
+            var counts = new int[] { 100, 250, 500 };
+            const int minDimension = 4;
+            const int maxDimension = 6;
             const int nRuns = 1;
             
             Console.WriteLine("Delaunay Triangulation Test:");
@@ -159,10 +141,10 @@ namespace _8PerformanceTests
 
         static void Test3DDelaunay()
         {
-            var counts = new int[] { 100000 };
+            var counts = new int[] { 1000, 10000, 25000, 50000 };
             const int minDimension = 3;
             const int maxDimension = 3;
-            const int nRuns = 1;
+            const int nRuns = 3;
 
             Console.WriteLine("Delaunay Triangulation Test:");
             DoTest(counts, minDimension, maxDimension, nRuns, TestNDDelau, "delaunay3d.csv");
@@ -184,7 +166,7 @@ namespace _8PerformanceTests
         static void Main(string[] args)        
         {
             TestConvexHull();
-            //TestDelaunay();
+            //Test3DDelaunay();
             //TestConvexHull();
             //TestVoronoi();
         }
