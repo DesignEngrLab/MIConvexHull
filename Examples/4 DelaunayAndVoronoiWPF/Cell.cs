@@ -81,6 +81,22 @@ namespace ExampleWithGraphics
             }
         }
 
+        double Det(double[,] m)
+        {
+            return m[0, 0] * ((m[1, 1] * m[2, 2]) - (m[2, 1] * m[1, 2])) - m[0, 1] * (m[1, 0] * m[2, 2] - m[2, 0] * m[1, 2]) + m[0, 2] * (m[1, 0] * m[2, 1] - m[2, 0] * m[1, 1]);
+        }
+
+        double LengthSquared(double[] v)
+        {
+            double norm = 0;
+            for (int i = 0; i < v.Length; i++)
+            {
+                var t = v[i];
+                norm += t * t;
+            }
+            return norm;
+        }
+
         Point GetCircumcenter()
         {
             // From MathWorld: http://mathworld.wolfram.com/Circumcircle.html
@@ -96,28 +112,28 @@ namespace ExampleWithGraphics
                 m[i, 1] = points[i].Position[1];
                 m[i, 2] = 1;
             }
-            var a = StarMath.determinant(m);
+            var a = Det(m);
 
             // size, y, 1
             for (int i = 0; i < 3; i++)
             {
-                m[i, 0] = StarMath.norm2(points[i].Position, 2, true);
+                m[i, 0] = LengthSquared(points[i].Position);
             }
-            var dx = -StarMath.determinant(m);
+            var dx = -Det(m);
 
             // size, x, 1
             for (int i = 0; i < 3; i++)
             {
                 m[i, 1] = points[i].Position[0];
             }
-            var dy = StarMath.determinant(m);
+            var dy = Det(m);
 
             // size, x, y
             for (int i = 0; i < 3; i++)
             {
                 m[i, 2] = points[i].Position[1];
             }
-            var c = -StarMath.determinant(m);
+            var c = -Det(m);
 
             var s = -1.0 / (2.0 * a);
             var r = System.Math.Abs(s) * System.Math.Sqrt(dx * dx + dy * dy - 4 * a * c);

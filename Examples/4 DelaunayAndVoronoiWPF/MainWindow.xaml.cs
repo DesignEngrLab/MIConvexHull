@@ -33,7 +33,7 @@ namespace ExampleWithGraphics
 
         void ShowVertices()
         {
-            for (var i = 0; i < NumberOfVertices; i++)
+            for (var i = 0; i < vertices.Count; i++)
             {
                 drawingCanvas.Children.Add(vertices[i]);
             }
@@ -47,17 +47,35 @@ namespace ExampleWithGraphics
             vertices = new List<Vertex>();
             var r = new Random();
 
-            /****** Random Vertices ******/
+            ///****** Random Vertices ******/
             for (var i = 0; i < NumberOfVertices; i++)
             {
                 var vi = new Vertex(sizeX * r.NextDouble(), sizeY * r.NextDouble());
                 vertices.Add(vi);
             }
+
+            //vertices = new List<Vertex>
+            //{
+            //    //new Vertex(307.2758, 679.7065),
+            //    new Vertex(329.4038, 952.6477),
+            //    new Vertex(651.7878, 630.2637),
+            //    new Vertex(329.4038, 307.8797),
+            //    new Vertex(  7.0198, 630.2637)
+            //};
+
             
             ShowVertices();
 
             var now = DateTime.Now;
-            voronoiMesh = VoronoiMesh.Create<Vertex, Cell>(vertices);
+            try
+            {
+                voronoiMesh = VoronoiMesh.Create<Vertex, Cell>(vertices);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error");
+                return;
+            }
             var interval = DateTime.Now - now;
             txtBlkTimer.Text = string.Format("{0:0.000}s ({1} faces)", interval.TotalSeconds, voronoiMesh.Vertices.Count());
 

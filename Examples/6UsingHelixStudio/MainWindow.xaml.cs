@@ -142,6 +142,55 @@
             mesh.TriangleIndices = faceTriCollection;
 
         }
+
+        public static double[] add(IList<double> A, IList<double> B, int length)
+        {
+            var c = new double[length];
+            for (var i = 0; i != length; i++)
+                c[i] = A[i] + B[i];
+            return c;
+        }
+
+        public static double[] divide(IList<double> B, double a, int length)
+        { 
+            return multiply((1 / a), B, length); 
+        }
+
+        public static double[] multiply(double a, IList<double> B, int length)
+        {
+            // scale vector B by the amount of scalar a
+            var c = new double[length];
+            for (var i = 0; i != length; i++)
+                c[i] = a * B[i];
+            return c;
+        }
+
+        public static double[] subtract(IList<double> A, IList<double> B, int length)
+        {
+            var c = new double[length];
+            for (var i = 0; i != length; i++)
+                c[i] = A[i] - B[i];
+            return c;
+        }
+
+        public static double[] crossProduct3(IList<double> A, IList<double> B)
+        {
+            return new[]
+                       {
+                           A[1]*B[2] - B[1]*A[2],
+                           A[2]*B[0] - B[2]*A[0],
+                           A[0]*B[1] - B[0]*A[1]
+                       };
+        }
+
+        public static double dotProduct(IList<double> A, IList<double> B, int length)
+        {
+            var c = 0.0;
+            for (var i = 0; i != length; i++)
+                c += A[i] * B[i];
+            return c;
+        }
+
         private void displayDelaunayTetras()
         {
             var verts = new List<Point3D>();
@@ -152,8 +201,8 @@
                 verts.AddRange(t.Vertices.Select(p => new Point3D(p.Position[0], p.Position[1], p.Position[2])));
                 var center = new double[3];
                 foreach (var v in t.Vertices)
-                    center = StarMath.add(center, v.Position, 3);
-                center = StarMath.divide(center, 4, 3);
+                    center = add(center, v.Position, 3);
+                center = divide(center, 4, 3);
                 for (int i = 0; i < 4; i++)
                 {
                     var newface = t.Vertices.ToList();
@@ -171,12 +220,12 @@
         private bool inTheProperOrder(double[] center, List<Vertex> vertices)
         {
             var outDir = new double[3];
-            outDir = vertices.Aggregate(outDir, (current, v) => StarMath.add(current, v.Position, 3));
-            outDir = StarMath.divide(outDir, 3, 3);
-            outDir = StarMath.subtract(outDir, center, 3);
-            var normal = StarMath.crossProduct3(StarMath.subtract(vertices[1].Position, vertices[0].Position, 3),
-                                                StarMath.subtract(vertices[2].Position, vertices[1].Position, 3));
-            return (StarMath.dotProduct(normal, outDir, 3) >= 0);
+            outDir = vertices.Aggregate(outDir, (current, v) => add(current, v.Position, 3));
+            outDir = divide(outDir, 3, 3);
+            outDir = subtract(outDir, center, 3);
+            var normal = crossProduct3(subtract(vertices[1].Position, vertices[0].Position, 3),
+                                                subtract(vertices[2].Position, vertices[1].Position, 3));
+            return (dotProduct(normal, outDir, 3) >= 0);
         }
     }
 
