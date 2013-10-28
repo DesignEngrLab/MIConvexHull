@@ -1,4 +1,20 @@
-﻿namespace MIConvexHull
+﻿/******************************************************************************
+ *
+ *    MIConvexHull, Copyright (C) 2013 David Sehnal, Matthew Campbell
+ *
+ *  This library is free software; you can redistribute it and/or modify it 
+ *  under the terms of  the GNU Lesser General Public License as published by 
+ *  the Free Software Foundation; either version 2.1 of the License, or 
+ *  (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful, 
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser 
+ *  General Public License for more details.
+ *  
+ *****************************************************************************/
+
+namespace MIConvexHull
 {
     using System;
     using System.Collections.Generic;
@@ -14,7 +30,6 @@
         FaceList UnprocessedFaces;
         List<ConvexFaceInternal> ConvexFaces;
 
-        #region "Buffers"
         VertexWrap CurrentVertex;
         double MaxDistance;
         VertexWrap FurthestVertex;
@@ -23,32 +38,23 @@
         /// The centroid of the currently computed hull.
         /// </summary>
         double[] Center;
-
-        // Buffers for normal computation.
-        double[] ntX, ntY, ntZ;
-        double[] nDNormalSolveVector;
-        double[,] nDMatrix;
-        double[][] jaggedNDMatrix;
-
+        
         ConvexFaceInternal[] UpdateBuffer;
         int[] UpdateIndices;
 
-
         Stack<ConvexFaceInternal> TraverseStack;
-        Stack<ConvexFaceInternal> RecycledFaceStack;
-        Stack<FaceConnector> ConnectorStack;
-        Stack<VertexBuffer> EmptyBufferStack;
+
         VertexBuffer EmptyBuffer; // this is used for VerticesBeyond for faces that are on the convex hull
         VertexBuffer BeyondBuffer;
         List<ConvexFaceInternal> AffectedFaceBuffer;
-        List<DeferredFace> ConeFaceBuffer;
-        Stack<DeferredFace> ConeFaceStack;
+        List<DeferredFace> ConeFaceBuffer;        
         HashSet<VertexWrap> SingularVertices;
 
         const int ConnectorTableSize = 2017;
         ConnectorList[] ConnectorTable;
 
-        #endregion
+        ObjectManager ObjectManager;
+        MathHelper MathHelper;
 
         /// <summary>
         /// Initialize buffers and lists.
@@ -59,33 +65,20 @@
             UnprocessedFaces = new FaceList(); // new LinkedList<ConvexFaceInternal>();
             ConvexFaces = new List<ConvexFaceInternal>();
 
-            Center = new double[Dimension];
-            ntX = new double[Dimension];
-            ntY = new double[Dimension];
-            ntZ = new double[Dimension];
+            ObjectManager = new MIConvexHull.ObjectManager(Dimension);
+            MathHelper = new MIConvexHull.MathHelper(Dimension);
+
+            Center = new double[Dimension];            
             TraverseStack = new Stack<ConvexFaceInternal>();
             UpdateBuffer = new ConvexFaceInternal[Dimension];
             UpdateIndices = new int[Dimension];
-            RecycledFaceStack = new Stack<ConvexFaceInternal>();
-            ConnectorStack = new Stack<FaceConnector>();
-            EmptyBufferStack = new Stack<VertexBuffer>();
             EmptyBuffer = new VertexBuffer();
             AffectedFaceBuffer = new List<ConvexFaceInternal>();
             ConeFaceBuffer = new List<DeferredFace>();
-            ConeFaceStack = new Stack<DeferredFace>();
             SingularVertices = new HashSet<VertexWrap>();
             BeyondBuffer = new VertexBuffer();
 
-            ConnectorTable = Enumerable.Range(0, ConnectorTableSize).Select(_ => new ConnectorList()).ToArray();
-
-            nDNormalSolveVector = new double[Dimension];
-            jaggedNDMatrix = new double[Dimension][];
-            for (var i = 0; i < Dimension; i++)
-            {
-                nDNormalSolveVector[i] = 1.0;
-                jaggedNDMatrix[i] = new double[Dimension];
-            }
-            nDMatrix = new double[Dimension, Dimension];
+            ConnectorTable = Enumerable.Range(0, ConnectorTableSize).Select(_ => new ConnectorList()).ToArray();           
         }
 
         /// <summary>
@@ -139,12 +132,11 @@
         {
             var vertices = face.Vertices;
             var normal = face.Normal;
-            FindNormalVector(vertices, normal);
+            MathHelper.FindNormalVector(vertices, normal);
 
             if (double.IsNaN(normal[0]))
             {
                 return false;
-                //ThrowSingular();
             }
 
             double offset = 0.0;
@@ -169,42 +161,7 @@
 
             return true;
         }
-        
-        /// <summary>
-        /// Check if the vertex is "visible" from the face.
-        /// The vertex is "over face" if the return value is >= 0.
-        /// </summary>
-        /// <param name="v"></param>
-        /// <param name="f"></param>
-        /// <returns>The vertex is "over face" if the result is positive.</returns>
-        double GetVertexDistance(VertexWrap v, ConvexFaceInternal f)
-        {
-            double[] normal = f.Normal;
-            double[] p = v.PositionData;
-            double distance = f.Offset;
-            for (int i = 0; i < Dimension; i++) distance += normal[i] * p[i];
-            return distance;
-        }
-        
-        //unsafe double GetVertexDistance(VertexWrap v, ConvexFaceInternal f)
-        //{
-        //    fixed (double* pNormal = f.Normal)
-        //    fixed (double* pP = v.PositionData)
-        //    {
-        //        double* normal = pNormal;
-        //        double* p = pP;
-
-        //        double distance = f.Offset;
-        //        for (int i = 0; i < Dimension; i++)
-        //        {
-        //            distance += (*normal) * (*p);
-        //            normal++;
-        //            p++;
-        //        }
-        //        return distance;
-        //    }
-        //}
-
+                
         /// <summary>
         /// Tags all faces seen from the current vertex with 1.
         /// </summary>
@@ -232,26 +189,14 @@
                 {
                     var adjFace = top.AdjacentFaces[i];
 
-                    if (adjFace.Tag == 0 && GetVertexDistance(CurrentVertex, adjFace) >= 0)
+                    if (adjFace.Tag == 0 && MathHelper.GetVertexDistance(CurrentVertex, adjFace) >= Constants.PlaneDistanceTolerance)
                     {
                         AffectedFaceBuffer.Add(adjFace);
-                        //TraverseAffectedFaces(adjFace);
                         adjFace.Tag = 1;
                         TraverseStack.Push(adjFace);
                     }
                 }
             }
-            
-            ////for (int i = 0; i < Dimension; i++)
-            ////{
-            ////    var adjFace = currentFace.AdjacentFaces[i];
-
-            ////    if (adjFace.Tag == 0 && GetVertexDistance(CurrentVertex, adjFace) >= 0)
-            ////    {
-            ////        AffectedFaceBuffer.Add(adjFace);
-            ////        TraverseAffectedFaces(adjFace);
-            ////    }
-            ////}
         }
 
         /// <summary>
@@ -291,43 +236,7 @@
             }
             r.AdjacentFaces[i] = l;
         }
-
-        #region Memory stuff.
         
-        /// <summary>
-        /// Recycle face for future use.
-        /// </summary>
-        void RecycleFace(ConvexFaceInternal face)
-        {
-            for (int i = 0; i < Dimension; i++)
-            {
-                face.AdjacentFaces[i] = null;
-            }
-        }
-        
-        /// <summary>
-        /// Get a fresh face.
-        /// </summary>
-        /// <returns></returns>
-        ConvexFaceInternal GetNewFace()
-        {
-            return RecycledFaceStack.Count != 0
-                    ? RecycledFaceStack.Pop()
-                    : new ConvexFaceInternal(Dimension, EmptyBufferStack.Count != 0 ? EmptyBufferStack.Pop() : new VertexBuffer());
-        }
-
-        /// <summary>
-        /// Get a new connector.
-        /// </summary>
-        /// <returns></returns>
-        FaceConnector GetNewConnector()
-        {
-            return ConnectorStack.Count != 0
-                    ? ConnectorStack.Pop()
-                    : new FaceConnector(Dimension);
-        }        
-        #endregion
-
         /// <summary>
         /// Creates a new deferred face.
         /// </summary>
@@ -337,9 +246,9 @@
         /// <param name="pivotIndex"></param>
         /// <param name="oldFace"></param>
         /// <returns></returns>
-        DeferredFace GetDeferredFace(ConvexFaceInternal face, int faceIndex, ConvexFaceInternal pivot, int pivotIndex, ConvexFaceInternal oldFace)
+        DeferredFace MakeDeferredFace(ConvexFaceInternal face, int faceIndex, ConvexFaceInternal pivot, int pivotIndex, ConvexFaceInternal oldFace)
         {
-            var ret = ConeFaceStack.Count > 0 ? ConeFaceStack.Pop() : new DeferredFace();
+            var ret = ObjectManager.GetDeferredFace();
             
             ret.Face = face;
             ret.FaceIndex = faceIndex;
@@ -367,8 +276,8 @@
                     FaceConnector.Connect(current, connector);
                     current.Face = null;
                     connector.Face = null;
-                    ConnectorStack.Push(current);
-                    ConnectorStack.Push(connector);
+                    ObjectManager.DepositConnector(current);
+                    ObjectManager.DepositConnector(connector);
                     return;
                 }
             }
@@ -423,8 +332,8 @@
                     int oldVertexIndex;
                     VertexWrap[] vertices;
 
-                    newFace = GetNewFace();
-                    vertices = newFace.Vertices;                        
+                    newFace = ObjectManager.GetFace();
+                    vertices = newFace.Vertices;
                     for (int j = 0; j < Dimension; j++) vertices[j] = oldFace.Vertices[j];
                     oldVertexIndex = vertices[forbidden].Index;
 
@@ -465,7 +374,7 @@
                         return false;
                     }
 
-                    ConeFaceBuffer.Add(GetDeferredFace(newFace, orderedPivotIndex, adjacentFace, oldFaceAdjacentIndex, oldFace));
+                    ConeFaceBuffer.Add(MakeDeferredFace(newFace, orderedPivotIndex, adjacentFace, oldFaceAdjacentIndex, oldFace));
                 }
             }
             
@@ -497,7 +406,7 @@
                 for (int j = 0; j < Dimension; j++)
                 {
                     if (j == orderedPivotIndex) continue;
-                    var connector = GetNewConnector();
+                    var connector = ObjectManager.GetConnector();
                     connector.Update(newFace, j, Dimension);
                     ConnectFace(connector);
                 }
@@ -517,7 +426,7 @@
                 {
                     ConvexFaces.Add(newFace);
                     UnprocessedFaces.Remove(newFace);
-                    EmptyBufferStack.Push(newFace.VerticesBeyond);
+                    ObjectManager.DepositVertexBuffer(newFace.VerticesBeyond);
                     newFace.VerticesBeyond = EmptyBuffer;
                 }
                 else // Add the face to the list
@@ -526,7 +435,7 @@
                 }
 
                 // recycle the object.
-                ConeFaceStack.Push(face);
+                ObjectManager.DepositDeferredFace(face);
             }
 
             // Recycle the affected faces.
@@ -534,138 +443,10 @@
             {
                 var face = AffectedFaceBuffer[fIndex];
                 UnprocessedFaces.Remove(face);
-                RecycleFace(face);
-                RecycledFaceStack.Push(face);
+                ObjectManager.DepositFace(face);                
             }
         }
-
-        /// <summary>
-        /// Subtracts vectors x and y and stores the result to target.
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="target"></param>
-        void SubtractFast(double[] x, double[] y, double[] target)
-        {
-            for (int i = 0; i < Dimension; i++)
-            {
-                target[i] = x[i] - y[i];
-            }
-        }
-
-        /// <summary>
-        /// Finds 4D normal vector.
-        /// </summary>
-        /// <param name="vertices"></param>
-        /// <param name="normal"></param>
-        void FindNormalVector4D(VertexWrap[] vertices, double[] normal)
-        {
-            SubtractFast(vertices[1].PositionData, vertices[0].PositionData, ntX);
-            SubtractFast(vertices[2].PositionData, vertices[1].PositionData, ntY);
-            SubtractFast(vertices[3].PositionData, vertices[2].PositionData, ntZ);
-
-            var x = ntX;
-            var y = ntY;
-            var z = ntZ;
-
-            // This was generated using Mathematica
-            var nx = x[3] * (y[2] * z[1] - y[1] * z[2])
-                   + x[2] * (y[1] * z[3] - y[3] * z[1])
-                   + x[1] * (y[3] * z[2] - y[2] * z[3]);
-            var ny = x[3] * (y[0] * z[2] - y[2] * z[0])
-                   + x[2] * (y[3] * z[0] - y[0] * z[3])
-                   + x[0] * (y[2] * z[3] - y[3] * z[2]);
-            var nz = x[3] * (y[1] * z[0] - y[0] * z[1])
-                   + x[1] * (y[0] * z[3] - y[3] * z[0])
-                   + x[0] * (y[3] * z[1] - y[1] * z[3]);
-            var nw = x[2] * (y[0] * z[1] - y[1] * z[0])
-                   + x[1] * (y[2] * z[0] - y[0] * z[2])
-                   + x[0] * (y[1] * z[2] - y[2] * z[1]);
-
-            double norm = System.Math.Sqrt(nx * nx + ny * ny + nz * nz + nw * nw);
-
-            double f = 1.0 / norm;
-            normal[0] = f * nx;
-            normal[1] = f * ny;
-            normal[2] = f * nz;
-            normal[3] = f * nw;
-        }
-
-        /// <summary>
-        /// Finds 3D normal vector.
-        /// </summary>
-        /// <param name="vertices"></param>
-        /// <param name="normal"></param>
-        void FindNormalVector3D(VertexWrap[] vertices, double[] normal)
-        {
-            SubtractFast(vertices[1].PositionData, vertices[0].PositionData, ntX);
-            SubtractFast(vertices[2].PositionData, vertices[1].PositionData, ntY);
-
-            var x = ntX;
-            var y = ntY;
-
-            var nx = x[1] * y[2] - x[2] * y[1];
-            var ny = x[2] * y[0] - x[0] * y[2];
-            var nz = x[0] * y[1] - x[1] * y[0];
-
-            double norm = System.Math.Sqrt(nx * nx + ny * ny + nz * nz);
-
-            double f = 1.0 / norm;
-            normal[0] = f * nx;
-            normal[1] = f * ny;
-            normal[2] = f * nz;
-        }
-
-        /// <summary>
-        /// Finds 2D normal vector.
-        /// </summary>
-        /// <param name="vertices"></param>
-        /// <param name="normal"></param>
-        void FindNormalVector2D(VertexWrap[] vertices, double[] normal)
-        {
-            SubtractFast(vertices[1].PositionData, vertices[0].PositionData, ntX);
-
-            var x = ntX;
-
-            var nx = -x[1];
-            var ny = x[0];
-
-            double norm = System.Math.Sqrt(nx * nx + ny * ny);
-
-            double f = 1.0 / norm;
-            normal[0] = f * nx;
-            normal[1] = f * ny;
-        }
-
-        /// <summary>
-        /// Finds normal vector of a hyper-plane given by vertices.
-        /// Stores the results to normalData.
-        /// </summary>
-        /// <param name="vertices"></param>
-        /// <param name="normalData"></param>
-        private void FindNormalVector(VertexWrap[] vertices, double[] normalData)
-        {
-            switch (Dimension)
-            {
-                case 2: FindNormalVector2D(vertices, normalData); break;
-                case 3: FindNormalVector3D(vertices, normalData); break;
-                case 4: FindNormalVector4D(vertices, normalData); break;
-                default:
-                    {
-                        for (var i = 0; i < Dimension; i++) nDNormalSolveVector[i] = 1.0;
-                        for (var i = 0; i < Dimension; i++)
-                        {
-                            var row = jaggedNDMatrix[i];
-                            var pos = vertices[i].Vertex.Position;
-                            for (int j = 0; j < Dimension; j++) row[j] = pos[j];
-                        }
-                        StarMath.gaussElimination(Dimension, jaggedNDMatrix, nDNormalSolveVector, normalData);
-                        StarMath.normalizeInPlace(normalData, Dimension);
-                        break;
-                    }
-            }
-        }
-
+        
         /// <summary>
         /// Check whether the vertex v is beyond the given face. If so, add it to beyondVertices.
         /// </summary>
@@ -674,8 +455,8 @@
         /// <param name="v"></param>
         void IsBeyond(ConvexFaceInternal face, VertexBuffer beyondVertices, VertexWrap v)
         {
-            double distance = GetVertexDistance(v, face);
-            if (distance >= 0)
+            double distance = MathHelper.GetVertexDistance(v, face);
+            if (distance >= Constants.PlaneDistanceTolerance)
             {
                 if (distance > MaxDistance)
                 {
@@ -809,13 +590,15 @@
 
             VertexWrap first = null, second = null;
             double maxDist = 0;
+            double[] temp = new double[Dimension];
             for (int i = 0; i < extremes.Count - 1; i++)
             {
                 var a = extremes[i];
                 for (int j = i + 1; j < extremes.Count; j++)
                 {
                     var b = extremes[j];
-                    var dist = StarMath.norm2(StarMath.subtract(a.PositionData, b.PositionData, Dimension), Dimension, true);
+                    MathHelper.SubtractFast(a.PositionData, b.PositionData, temp);
+                    var dist = MathHelper.LengthSquared(temp);
                     if (dist > maxDist)
                     {
                         first = a;
@@ -837,7 +620,7 @@
                     var extreme = extremes[j];
                     if (initialPoints.Contains(extreme)) continue;
 
-                    var val = GetSimplexVolume(extreme, initialPoints);
+                    var val = GetSquaredDistanceSum(extreme, initialPoints);
 
                     if (val > maximum)
                     {
@@ -854,7 +637,7 @@
                         var point = InputVertices[j];
                         if (initialPoints.Contains(point)) continue;
 
-                        var val = GetSimplexVolume(point, initialPoints);
+                        var val = GetSquaredDistanceSum(point, initialPoints);
 
                         if (val > maximum)
                         {
@@ -871,25 +654,24 @@
         }
 
         /// <summary>
-        /// Computes the volume of the (n=initialPoints.Count)D simplex defined by the
-        /// pivot and initialPoints.
-        /// This is computed as the determinant of the matrix | initialPoints[i] - pivot |
+        /// Computes the sum of square distances to the initial points.
         /// </summary>
         /// <param name="pivot"></param>
         /// <param name="initialPoints"></param>
         /// <returns></returns>
-        double GetSimplexVolume(VertexWrap pivot, List<VertexWrap> initialPoints)
+        double GetSquaredDistanceSum(VertexWrap pivot, List<VertexWrap> initialPoints)
         {
             var initPtsNum = initialPoints.Count;
-            //var m = nDMatrix;
             var sum = 0.0;
         
             for (int i = 0; i < initPtsNum; i++)
             {
                 var initPt = initialPoints[i];
                 for (int j = 0; j < Dimension; j++)
-                    sum += (initPt.PositionData[j] - pivot.PositionData[j]) 
-                        * (initPt.PositionData[j] - pivot.PositionData[j]);
+                {
+                    double t = (initPt.PositionData[j] - pivot.PositionData[j]);
+                    sum += t * t;
+                }
             }
 
             return sum;
@@ -963,7 +745,7 @@
 
                 ConvexFaces.Add(face);
                 UnprocessedFaces.Remove(face);
-                EmptyBufferStack.Push(face.VerticesBeyond);
+                ObjectManager.DepositVertexBuffer(face.VerticesBeyond);
                 face.VerticesBeyond = EmptyBuffer;
             }
         }
@@ -1078,7 +860,7 @@
                     cell.Adjacency[Dimension - 1] = tempAdj;
                 }
             }
-
+            
             return cells;
         }
 
