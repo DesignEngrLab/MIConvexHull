@@ -7,19 +7,12 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("MIConvexHull")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("UT-ADLab")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("MIConvexHull")]
-[assembly: AssemblyCopyright("Copyright © UT-ADLab 2010")]
+[assembly: AssemblyCopyright("Copyright © 2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-// Setting ComVisible to false makes the types in this assembly not visible 
-// to COM components.  If you need to access a type in this assembly from 
-// COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(false)]
-
-// The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("d24b97d6-7b40-4bb5-b831-806d40106a83")]
 
 // Version information for an assembly consists of the following four values:
 //

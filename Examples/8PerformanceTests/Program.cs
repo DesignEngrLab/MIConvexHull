@@ -101,6 +101,7 @@ namespace _8PerformanceTests
 
             w.Dispose();
             dataStream.Dispose();
+            Console.ReadLine();
         }
 
         static void TestConvexHull()

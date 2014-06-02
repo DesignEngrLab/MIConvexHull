@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIConvexHull", "MIConvexHull\MIConvexHull.csproj", "{2337776D-7D0C-40AA-A439-C26C3CE24FAB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "1TestEXE for MIConvexHull-2D", "Examples\1TestEXE for MIConvexHull-2D\1TestEXE for MIConvexHull-2D.csproj", "{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}"
@@ -40,15 +42,13 @@ Global
 		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Debug|x64.ActiveCfg = Debug|x64
-		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Debug|x64.Build.0 = Debug|x64
+		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Release|x64.ActiveCfg = Release|x64
-		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Release|x64.Build.0 = Release|x64
+		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Release|x64.ActiveCfg = Release|Any CPU
 		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Release|x86.ActiveCfg = Release|Any CPU
 		{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
