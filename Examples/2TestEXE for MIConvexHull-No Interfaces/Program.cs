@@ -28,6 +28,7 @@ namespace TestEXE_for_MIConvexHull_No_Interfaces
             }
             Console.WriteLine("Running...");
             var now = DateTime.Now;
+            
             var convexHull = ConvexHull.Create(vertices);
 
             double[][] hullPoints = convexHull.Points.Select(p => p.Position).ToArray();
