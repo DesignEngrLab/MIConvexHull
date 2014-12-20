@@ -1,6 +1,6 @@
 ﻿/******************************************************************************
  *
- *    MIConvexHull, Copyright (C) 2013 David Sehnal, Matthew Campbell
+ *    MIConvexHull, Copyright (C) 2014 David Sehnal, Matthew Campbell
  *
  *  This library is free software; you can redistribute it and/or modify it 
  *  under the terms of  the GNU Lesser General Public License as published by 
@@ -17,6 +17,7 @@
 namespace MIConvexHull
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// A helper class mostly for normal computation. If convex hulls are computed
@@ -26,6 +27,8 @@ namespace MIConvexHull
     class MathHelper
     {
         readonly int Dimension;
+
+        double[] PositionData;
 
         double[] ntX, ntY, ntZ;
         double[] nDNormalSolveVector;
@@ -119,43 +122,32 @@ namespace MIConvexHull
             }
             return norm;
         }
-
-        void Normalize(double[] x)
-        {
-            double norm = 0;
-            for (int i = 0; i < Dimension; i++)
-            {
-                var t = x[i];
-                norm += t * t;
-            }
-            double f = 1.0 / Math.Sqrt(norm);
-            for (int i = 0; i < Dimension; i++) x[i] *= f;
-        }
-
+        
         /// <summary>
         /// Subtracts vectors x and y and stores the result to target.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="target"></param>
-        public void SubtractFast(double[] x, double[] y, double[] target)
+        public void SubtractFast(int x, int y, double[] target)
         {
-            for (int i = 0; i < Dimension; i++)
+            int u = x * Dimension, v = y * Dimension;
+            for (int i = 0; i < target.Length; i++)
             {
-                target[i] = x[i] - y[i];
+                target[i] = PositionData[u + i] - PositionData[v + i];
             }
         }
-
+        
         /// <summary>
         /// Finds 4D normal vector.
         /// </summary>
         /// <param name="vertices"></param>
         /// <param name="normal"></param>
-        void FindNormalVector4D(VertexWrap[] vertices, double[] normal)
+        void FindNormalVector4D(int[] vertices, double[] normal)
         {
-            SubtractFast(vertices[1].PositionData, vertices[0].PositionData, ntX);
-            SubtractFast(vertices[2].PositionData, vertices[1].PositionData, ntY);
-            SubtractFast(vertices[3].PositionData, vertices[2].PositionData, ntZ);
+            SubtractFast(vertices[1], vertices[0], ntX);
+            SubtractFast(vertices[2], vertices[1], ntY);
+            SubtractFast(vertices[3], vertices[2], ntZ);
 
             var x = ntX;
             var y = ntY;
@@ -189,10 +181,10 @@ namespace MIConvexHull
         /// </summary>
         /// <param name="vertices"></param>
         /// <param name="normal"></param>
-        void FindNormalVector3D(VertexWrap[] vertices, double[] normal)
+        void FindNormalVector3D(int[] vertices, double[] normal)
         {
-            SubtractFast(vertices[1].PositionData, vertices[0].PositionData, ntX);
-            SubtractFast(vertices[2].PositionData, vertices[1].PositionData, ntY);
+            SubtractFast(vertices[1], vertices[0], ntX);
+            SubtractFast(vertices[2], vertices[1], ntY);
 
             var x = ntX;
             var y = ntY;
@@ -214,9 +206,9 @@ namespace MIConvexHull
         /// </summary>
         /// <param name="vertices"></param>
         /// <param name="normal"></param>
-        void FindNormalVector2D(VertexWrap[] vertices, double[] normal)
+        void FindNormalVector2D(int[] vertices, double[] normal)
         {
-            SubtractFast(vertices[1].PositionData, vertices[0].PositionData, ntX);
+            SubtractFast(vertices[1], vertices[0], ntX);
 
             var x = ntX;
 
@@ -229,36 +221,89 @@ namespace MIConvexHull
             normal[0] = f * nx;
             normal[1] = f * ny;
         }
+        
+        void Normalize(double[] x)
+        {
+            double norm = 0;
+            for (int i = 0; i < x.Length; i++)
+            {
+                var t = x[i];
+                norm += t * t;
+            }
+            double f = 1.0 / Math.Sqrt(norm);
+            for (int i = 0; i < x.Length; i++) x[i] *= f;
+        }
 
+        void FindNormalVectorND(int[] vertices, double[] normalData)
+        {
+            for (var i = 0; i < nDNormalSolveVector.Length; i++) nDNormalSolveVector[i] = 1.0;
+            for (var i = 0; i < vertices.Length; i++)
+            {
+                var row = jaggedNDMatrix[i];
+                var offset = vertices[i] * Dimension;
+                for (int j = 0; j < row.Length; j++) row[j] = PositionData[offset + j];
+            }
+            GaussElimination(Dimension, jaggedNDMatrix, nDNormalSolveVector, normalData);
+            Normalize(normalData);
+        }
+        
         /// <summary>
         /// Finds normal vector of a hyper-plane given by vertices.
         /// Stores the results to normalData.
         /// </summary>
         /// <param name="vertices"></param>
         /// <param name="normalData"></param>
-        public void FindNormalVector(VertexWrap[] vertices, double[] normalData)
+        public void FindNormalVector(int[] vertices, double[] normalData)
         {
             switch (Dimension)
             {
                 case 2: FindNormalVector2D(vertices, normalData); break;
                 case 3: FindNormalVector3D(vertices, normalData); break;
                 case 4: FindNormalVector4D(vertices, normalData); break;
-                default:
-                    {
-                        for (var i = 0; i < Dimension; i++) nDNormalSolveVector[i] = 1.0;
-                        for (var i = 0; i < Dimension; i++)
-                        {
-                            var row = jaggedNDMatrix[i];
-                            var pos = vertices[i].Vertex.Position;
-                            for (int j = 0; j < Dimension; j++) row[j] = pos[j];
-                        }
-                        GaussElimination(Dimension, jaggedNDMatrix, nDNormalSolveVector, normalData);
-                        Normalize(normalData);
-                        break;
-                    }
+                default: FindNormalVectorND(vertices, normalData); break;
             }
         }
 
+
+        /// <summary>
+        /// Calculates the normal and offset of the hyper-plane given by the face's vertices.
+        /// </summary>
+        /// <param name="face"></param>
+        /// <param name="center"></param>
+        /// <returns></returns>
+        public bool CalculateFacePlane(ConvexFaceInternal face, double[] center)
+        {
+            var vertices = face.Vertices;
+            var normal = face.Normal;
+            FindNormalVector(vertices, normal);
+
+            if (double.IsNaN(normal[0]))
+            {
+                return false;
+            }
+
+            double offset = 0.0;
+            double centerDistance = 0.0;
+            var fi = vertices[0] * Dimension; 
+            for (int i = 0; i < Dimension; i++)
+            {
+                double n = normal[i];
+                offset += n * PositionData[fi + i];
+                centerDistance += n * center[i];
+            }
+            face.Offset = -offset;
+            centerDistance -= offset;
+
+            if (centerDistance > 0)
+            {
+                for (int i = 0; i < Dimension; i++) normal[i] = -normal[i];
+                face.Offset = offset;
+                face.IsNormalFlipped = true;
+            }
+            else face.IsNormalFlipped = false;
+
+            return true;
+        }
 
         /// <summary>
         /// Check if the vertex is "visible" from the face.
@@ -267,17 +312,103 @@ namespace MIConvexHull
         /// <param name="v"></param>
         /// <param name="f"></param>
         /// <returns>The vertex is "over face" if the result is positive.</returns>
-        public double GetVertexDistance(VertexWrap v, ConvexFaceInternal f)
+        public double GetVertexDistance(int v, ConvexFaceInternal f)
         {
             double[] normal = f.Normal;
-            double[] p = v.PositionData;
+            int x = v * Dimension;
             double distance = f.Offset;
-            for (int i = 0; i < Dimension; i++) distance += normal[i] * p[i];
+            for (int i = 0; i < normal.Length; i++) distance += normal[i] * PositionData[x + i];
             return distance;
         }
 
-        public MathHelper(int dimension)
+        /// <summary>
+        /// Computes the volume of an n-dimensional simplex.
+        /// Buffer needs to be array of shape Dimension x Dimension.
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <param name="vertices"></param>
+        /// <param name="buffer">Needs to be array of shape Dimension x Dimension</param>
+        /// <returns></returns>
+        public static double GetSimplexVolume(ConvexFaceInternal cell, IList<IVertex> vertices, double[][] buffer)
         {
+            var xs = cell.Vertices;
+            var pivot = vertices[xs[0]].Position;
+            double f = 1.0;
+            for (int i = 1; i < xs.Length; i++)
+            {
+                f *= i + 1;
+                var point = vertices[xs[i]].Position;
+                for (int j = 0; j < point.Length; j++) buffer[i - 1][j] = point[j] - pivot[j];
+            }
+
+            return Math.Abs(DeterminantDestructive(buffer)) / f;
+        }
+
+        #region Determinants
+        /// <summary>
+        /// Modifies the matrix during the computation if the dimension > 3.
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static double DeterminantDestructive(double[][] A)
+        {
+            switch (A.Length)
+            {
+                case 0: return 0.0;
+                case 1: return A[0][0];
+                case 2: return (A[0][0] * A[1][1]) - (A[0][1] * A[1][0]);
+                case 3: return (A[0][0] * A[1][1] * A[2][2])
+                       + (A[0][1] * A[1][2] * A[2][0])
+                       + (A[0][2] * A[1][0] * A[2][1])
+                       - (A[0][0] * A[1][2] * A[2][1])
+                       - (A[0][1] * A[1][0] * A[2][2])
+                       - (A[0][2] * A[1][1] * A[2][0]);
+                default: return DeterminantBigDestructive(A);
+            }
+        }
+
+        static double DeterminantBigDestructive(double[][] A)
+        {
+            LUDecompositionInPlace(A);
+            var result = 1.0;
+            for (var i = 0; i < A.Length; i++)
+                if (double.IsNaN(A[i][i]))
+                    return 0;
+                else result *= A[i][i];
+            return result;
+        }
+        static void LUDecompositionInPlace(double[][] A)
+        {
+            int length = A.Length;
+            // normalize row 0
+            for (var i = 1; i < A.Length; i++) A[0][i] /= A[0][0];
+
+            for (var i = 1; i < A.Length; i++)
+            {
+                for (var j = i; j < A.Length; j++)
+                {
+                    // do a column of L
+                    var sum = 0.0;
+                    for (var k = 0; k < i; k++)
+                        sum += A[j][k] * A[k][i];
+                    A[j][i] -= sum;
+                }
+                if (i == length - 1) continue;
+                for (var j = i + 1; j < A.Length; j++)
+                {
+                    // do a row of U
+                    var sum = 0.0;
+                    for (var k = 0; k < i; k++) sum += A[i][k] * A[k][j];
+                    A[i][j] = (A[i][j] - sum) / A[i][i];
+                }
+            }
+        }
+
+        #endregion
+
+        public MathHelper(int dimension, double[] positions)
+        {
+            this.PositionData = positions;
             this.Dimension = dimension;
 
             ntX = new double[Dimension];

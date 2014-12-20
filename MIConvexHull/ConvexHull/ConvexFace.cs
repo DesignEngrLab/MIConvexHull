@@ -1,6 +1,6 @@
 ﻿/******************************************************************************
  *
- *    MIConvexHull, Copyright (C) 2013 David Sehnal, Matthew Campbell
+ *    MIConvexHull, Copyright (C) 2014 David Sehnal, Matthew Campbell
  *
  *  This library is free software; you can redistribute it and/or modify it 
  *  under the terms of  the GNU Lesser General Public License as published by 
@@ -31,7 +31,7 @@ namespace MIConvexHull
         public TFace[] Adjacency { get; set; }
 
         /// <summary>
-        /// The vertices stored in clockwise order (for dimensions 2 - 4, higher dimensions the order is arbitrary).
+        /// The vertices stored in clockwise order for dimensions 2 - 4, in higher dimensions the order is arbitrary.
         /// Unless I accidentally switch some index somewhere in which case the order is CCW. Either way, it is consistent.
         /// 3D Normal = (V[1] - V[0]) x (V[2] - V[1]).
         /// </summary>

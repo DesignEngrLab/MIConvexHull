@@ -39,7 +39,8 @@
         <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="6">
             <TextBlock VerticalAlignment="Center" Foreground="White">Number of points:</TextBlock>
             <TextBox Margin="5,0,0,0" x:Name="numPoints" Width="40" Text="100" />
-            <Button Padding="3,1" Margin="5,0,0,0" Click="GenerateButton_Click">Generate</Button>
+            <Button Padding="3,1" Margin="5,0,0,0" Click="GenerateButton_Click">Generate Random</Button>
+            <Button Padding="3,1" Margin="5,0,0,0" Click="GenerateUniformButton_Click">Uniform</Button>
             <Button Padding="3,1" Margin="25,0,0,0" Click="ExpandButton_Click">Expand</Button>
             <Button Padding="3,1" Margin="3,0,0,0" Click="ExpandRandomButton_Click">Expand Random</Button>
             <Button Padding="3,1" Margin="3,0,0,0" Click="CollapseButton_Click">Collapse</Button>

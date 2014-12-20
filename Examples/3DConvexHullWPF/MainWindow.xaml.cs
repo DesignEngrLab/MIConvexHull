@@ -63,6 +63,7 @@ namespace ExampleWithGraphics
             foreach (var chV in convexHullVertices)
             {
                 CVPoints.Add(chV.Center);
+                viewport.Children.Add(chV.AsHullVertex());
             }
             
             var faceTris = new Int32Collection();

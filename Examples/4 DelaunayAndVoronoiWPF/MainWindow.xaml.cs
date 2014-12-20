@@ -8,6 +8,7 @@ using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 using MIConvexHull;
 using System.Linq;
+using System.Diagnostics;
 
 #endregion
 
@@ -18,8 +19,8 @@ namespace ExampleWithGraphics
     /// </summary>
     public partial class MainWindow : Window
     {
+        private List<Vertex> Vertices;
         private const int NumberOfVertices = 500;
-        private List<Vertex> vertices;
         VoronoiMesh<Vertex, Cell, VoronoiEdge<Vertex, Cell>> voronoiMesh;
 
         public MainWindow()
@@ -31,7 +32,7 @@ namespace ExampleWithGraphics
             btnFindVoronoi.IsEnabled = false;
         }
 
-        void ShowVertices()
+        void ShowVertices(List<Vertex> vertices)
         {
             for (var i = 0; i < vertices.Count; i++)
             {
@@ -39,48 +40,106 @@ namespace ExampleWithGraphics
             }
         }
 
-        private void btnMakePoints_Click(object sender, RoutedEventArgs e)
+
+
+        void MakeGrid(int n, List<Vertex> vertices)
         {
-            drawingCanvas.Children.Clear();
             var sizeX = drawingCanvas.ActualWidth;
             var sizeY = drawingCanvas.ActualHeight;
-            vertices = new List<Vertex>();
-            var r = new Random();
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    var vi = new Vertex(i * sizeX / (n - 1), j * sizeY / (n - 1));
+                    vertices.Add(vi);
+                }
+            }
+        }
 
-            ///****** Random Vertices ******/
-            for (var i = 0; i < NumberOfVertices; i++)
+        void MakeCircle(int n, List<Vertex> vertices)
+        {
+            var sizeX = drawingCanvas.ActualWidth;
+            var sizeY = drawingCanvas.ActualHeight;
+            for (int i = 0; i < n - 1; i++)
+            {
+                var x = 0.5 * sizeX + 0.38 * sizeX * Math.Cos(i * 2 * Math.PI / (n - 1));
+                var y = 0.5 * sizeY + 0.38 * sizeY * Math.Sin(i * 2 * Math.PI / (n - 1));
+                vertices.Add(new Vertex(x, y));
+            }
+        }
+
+        void MakeRandom(int n, List<Vertex> vertices)
+        {
+            var r = new Random();
+            var sizeX = drawingCanvas.ActualWidth;
+            var sizeY = drawingCanvas.ActualHeight;
+            for (var i = 0; i < n; i++)
             {
                 var vi = new Vertex(sizeX * r.NextDouble(), sizeY * r.NextDouble());
                 vertices.Add(vi);
             }
+        }
 
-            //vertices = new List<Vertex>
-            //{
-            //    //new Vertex(307.2758, 679.7065),
-            //    new Vertex(329.4038, 952.6477),
-            //    new Vertex(651.7878, 630.2637),
-            //    new Vertex(329.4038, 307.8797),
-            //    new Vertex(  7.0198, 630.2637)
-            //};
+        void Create(List<Vertex> vertices, bool translate)
+        {
 
-            
-            ShowVertices();
+            drawingCanvas.Children.Clear();
+            ShowVertices(vertices);
 
-            var now = DateTime.Now;
+            var config = !translate
+                ? new TriangulationComputationConfig()
+                : new TriangulationComputationConfig
+                {
+                    PointTranslationType = PointTranslationType.TranslateInternal,
+                    PlaneDistanceTolerance = 0.00001,
+                    // the translation radius should be lower than PlaneDistanceTolerance / 2
+                    PointTranslationGenerator = TriangulationComputationConfig.RandomShiftByRadius(0.000001, 0)
+                };
+
             try
             {
-                voronoiMesh = VoronoiMesh.Create<Vertex, Cell>(vertices);
+                voronoiMesh = VoronoiMesh.Create<Vertex, Cell>(vertices, config);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error");
                 return;
             }
-            var interval = DateTime.Now - now;
-            txtBlkTimer.Text = string.Format("{0:0.000}s ({1} faces)", interval.TotalSeconds, voronoiMesh.Vertices.Count());
+            txtBlkTimer.Text = string.Format("{0} faces", voronoiMesh.Vertices.Count());
+
+            Vertices = vertices;
 
             btnFindDelaunay.IsEnabled = true;
             btnFindVoronoi.IsEnabled = true;
+        }
+
+        private void btnMakePoints_Click(object sender, RoutedEventArgs e)
+        {
+            var vs = new List<Vertex>();
+            MakeRandom(NumberOfVertices, vs);
+            Create(vs, false);           
+        }
+
+        private void btnMakeGrid_Click(object sender, RoutedEventArgs e)
+        {
+            var vs = new List<Vertex>();
+            MakeGrid(10, vs);
+            Create(vs, true);
+        }
+
+        private void btnMakeCircle_Click(object sender, RoutedEventArgs e)
+        {
+            var vs = new List<Vertex>();
+            MakeCircle(25, vs);
+            Create(vs, true);
+        }
+
+        private void btnMakeFancy_Click(object sender, RoutedEventArgs e)
+        {
+            var vs = new List<Vertex>();
+            MakeGrid(10, vs);
+            MakeCircle(25, vs);
+            Create(vs, true);
         }
 
         private void btnFindDelaunay_Click(object sender, RoutedEventArgs e)
@@ -94,27 +153,8 @@ namespace ExampleWithGraphics
             {
                 drawingCanvas.Children.Add(cell.Visual);
             }
-
-            ////foreach (var cell in voronoiMesh.Vertices)
-            ////{
-            ////    foreach (var n in cell.Adjacency)
-            ////    {
-            ////        if (n == null) continue;
-            ////        drawingCanvas.Children.Add(new Line { X1 = cell.Centroid.X, Y1 = cell.Centroid.Y, X2 = n.Centroid.X, Y2 = n.Centroid.Y, StrokeThickness = 1, Stroke = Brushes.Blue });
-            ////    }
-            ////}
-
-            ////foreach (var cell in voronoiMesh.Vertices)
-            ////{
-            ////    drawingCanvas.Children.Add(new Vertex(cell.Circumcenter.X, cell.Circumcenter.Y, cell.Brush));
-            ////    drawingCanvas.Children.Add(new Line { X1 = cell.Centroid.X, Y1 = cell.Centroid.Y, X2 = cell.Circumcenter.X, Y2 = cell.Circumcenter.Y, StrokeThickness = 1, Stroke = Brushes.Blue });
-            ////    ////foreach (var v in cell.Vertices)
-            ////    ////{
-            ////    ////    drawingCanvas.Children.Add(new Vertex(v.Position[0], v.Position[1], Brushes.Red));
-            ////    ////}
-            ////}
-
-            ShowVertices();
+            
+            ShowVertices(Vertices);
         }
 
         static bool PointInCell(Cell c, Point p)
@@ -173,7 +213,7 @@ namespace ExampleWithGraphics
                 }
             }
 
-            ShowVertices();
+            ShowVertices(Vertices);
             drawingCanvas.Children.Add(new Rectangle { Width = drawingCanvas.ActualWidth, Height = drawingCanvas.ActualHeight, Stroke = Brushes.Black, StrokeThickness = 3 });
         }
     }

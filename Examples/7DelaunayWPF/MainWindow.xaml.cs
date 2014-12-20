@@ -34,14 +34,14 @@ namespace DelaunayWPF
 
         RandomTriangulation triangulation;
 
-        void Create()
+        void Create(bool uniform = false)
         {
             if (triangulation != null) viewport.Children.Remove(triangulation);
 
             int count;
             if (!int.TryParse(numPoints.Text, out count) && count < 10) count = 100;
 
-            triangulation = RandomTriangulation.Create(count, 10);
+            triangulation = RandomTriangulation.Create(count, 10, uniform);
             viewport.Children.Add(triangulation);
 
             infoText.Text = string.Format("{0} tetrahedrons", triangulation.Count);
@@ -55,6 +55,11 @@ namespace DelaunayWPF
         private void GenerateButton_Click(object sender, RoutedEventArgs e)
         {
             Create();
+        }
+
+        private void GenerateUniformButton_Click(object sender, RoutedEventArgs e)
+        {
+            Create(true);
         }
 
         private void ExpandButton_Click(object sender, RoutedEventArgs e)

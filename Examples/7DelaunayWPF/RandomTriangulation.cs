@@ -28,34 +28,50 @@ namespace DelaunayWPF
         /// </summary>
         /// <param name="count">Number of vertices to generate</param>
         /// <param name="radius">Radius of the vertices</param>
+        /// <param name="uniform"></param>
         /// <returns>Triangulation</returns>
-        public static RandomTriangulation Create(int count, double radius)
+        public static RandomTriangulation Create(int count, double radius, bool uniform)
         {
             Random rnd = new Random();
+            List<Vertex> vertices;
 
-            // generate some random points
-            Func<double> nextRandom = () => 2 * radius * rnd.NextDouble() - radius;
-            var vertices = Enumerable.Range(0, count)
-                .Select(_ => new Vertex(nextRandom(), nextRandom(), nextRandom()))
-                .ToList();
-
-            //var vertices = new List<Vertex>();
-            //int d = 4;
-            //double cs = 10.0;
-            //for (int i = 0; i < d; i++)
-            //{
-            //    for (int j = 0; j < d; j++)
-            //    {
-            //        for (int k = 0; k < d; k++)
-            //        {
-            //            //vertices.Add(new Vertex(10 * i - 20 + rnd.NextDouble(), 10 * j - 20 - rnd.NextDouble(), 10 * k - 20 + rnd.NextDouble()));
-            //            vertices.Add(new Vertex(-10 * i, 10 * j, 10 * k));
-            //        }
-            //    }
-            //}
+            if (!uniform)
+            {
+                // generate some random points
+                Func<double> nextRandom = () => 2 * radius * rnd.NextDouble() - radius;
+                vertices = Enumerable.Range(0, count)
+                    .Select(_ => new Vertex(nextRandom(), nextRandom(), nextRandom()))
+                    .ToList();
+            }
+            else
+            {
+                vertices = new List<Vertex>();
+                int d = Math.Max((int)Math.Ceiling(Math.Sqrt(count)) / 2, 3);
+                double cs = 2 * radius / (d - 1);
+                for (int i = 0; i < d; i++)
+                {
+                    for (int j = 0; j < d; j++)
+                    {
+                        for (int k = 0; k < d; k++)
+                        {
+                            vertices.Add(new Vertex(cs * i - cs * (d - 1) / 2, cs * j - cs * (d - 1) / 2, cs * k - cs * (d - 1) / 2));
+                        }
+                    }
+                }
+            }
 
             // calculate the triangulation
-            var tetrahedrons = Triangulation.CreateDelaunay<Vertex, Tetrahedron>(vertices).Cells;
+            var config = !uniform
+               ? new TriangulationComputationConfig()
+               : new TriangulationComputationConfig
+               {
+                   PointTranslationType = PointTranslationType.TranslateInternal,
+                   PlaneDistanceTolerance = 0.000001,
+                   // the translation radius should be lower than PlaneDistanceTolerance / 2
+                   PointTranslationGenerator = TriangulationComputationConfig.RandomShiftByRadius(0.0000001, 0)
+               };
+
+            var tetrahedrons = Triangulation.CreateDelaunay<Vertex, Tetrahedron>(vertices, config).Cells;
 
             // create a model for each tetrahedron, pick a random color
             Model3DGroup model = new Model3DGroup();

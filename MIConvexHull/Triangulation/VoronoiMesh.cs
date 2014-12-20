@@ -1,6 +1,6 @@
 ﻿/******************************************************************************
  *
- *    MIConvexHull, Copyright (C) 2013 David Sehnal, Matthew Campbell
+ *    MIConvexHull, Copyright (C) 2014 David Sehnal, Matthew Campbell
  *
  *  This library is free software; you can redistribute it and/or modify it 
  *  under the terms of  the GNU Lesser General Public License as published by 
@@ -32,13 +32,14 @@ namespace MIConvexHull
         /// <typeparam name="TCell"></typeparam>
         /// <typeparam name="TEdge"></typeparam>
         /// <param name="data"></param>
+        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
         /// <returns></returns>
-        public static VoronoiMesh<TVertex, TCell, TEdge> Create<TVertex, TCell, TEdge>(IEnumerable<TVertex> data)
+        public static VoronoiMesh<TVertex, TCell, TEdge> Create<TVertex, TCell, TEdge>(IList<TVertex> data, TriangulationComputationConfig config = null)
             where TCell : TriangulationCell<TVertex, TCell>, new()
             where TVertex : IVertex
             where TEdge : VoronoiEdge<TVertex, TCell>, new()
         {
-            return VoronoiMesh<TVertex, TCell, TEdge>.Create(data);
+            return VoronoiMesh<TVertex, TCell, TEdge>.Create(data, config);
         }
 
         /// <summary>
@@ -46,23 +47,25 @@ namespace MIConvexHull
         /// </summary>
         /// <typeparam name="TVertex"></typeparam>
         /// <param name="data"></param>
+        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
         /// <returns></returns>
-        public static VoronoiMesh<TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>> Create<TVertex>(IEnumerable<TVertex> data)
+        public static VoronoiMesh<TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>> Create<TVertex>(IList<TVertex> data, TriangulationComputationConfig config = null)
             where TVertex : IVertex
         {
-            return VoronoiMesh<TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>>.Create(data);
+            return VoronoiMesh<TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>>.Create(data, config);
         }
 
         /// <summary>
         /// Create the voronoi mesh.
         /// </summary>
         /// <param name="data"></param>
+        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
         /// <returns></returns>
-        public static VoronoiMesh<DefaultVertex, DefaultTriangulationCell<DefaultVertex>, VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>> 
-            Create(IEnumerable<double[]> data)
+        public static VoronoiMesh<DefaultVertex, DefaultTriangulationCell<DefaultVertex>, VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>
+            Create(IList<double[]> data, TriangulationComputationConfig config = null)
         {
-            var points = data.Select(p => new DefaultVertex { Position = p.ToArray() });
-            return VoronoiMesh<DefaultVertex, DefaultTriangulationCell<DefaultVertex>, VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>.Create(points);
+            var points = data.Select(p => new DefaultVertex { Position = p.ToArray() }).ToList();
+            return VoronoiMesh<DefaultVertex, DefaultTriangulationCell<DefaultVertex>, VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>.Create(points, config);
         }
 
         /// <summary>
@@ -70,14 +73,14 @@ namespace MIConvexHull
         /// </summary>
         /// <typeparam name="TVertex"></typeparam>
         /// <typeparam name="TCell"></typeparam>
-        /// <typeparam name="TEdge"></typeparam>
         /// <param name="data"></param>
+        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
         /// <returns></returns>
-        public static VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>> Create<TVertex, TCell>(IEnumerable<TVertex> data)
+        public static VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>> Create<TVertex, TCell>(IList<TVertex> data, TriangulationComputationConfig config = null)
             where TVertex : IVertex
             where TCell : TriangulationCell<TVertex, TCell>, new()
         {
-            return VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>>.Create(data);
+            return VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>>.Create(data, config);
         }
     }
 
@@ -123,13 +126,12 @@ namespace MIConvexHull
         /// Create a Voronoi diagram of the input data.
         /// </summary>
         /// <param name="data"></param>
-        public static VoronoiMesh<TVertex, TCell, TEdge> Create(IEnumerable<TVertex> data)
+        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
+        public static VoronoiMesh<TVertex, TCell, TEdge> Create(IList<TVertex> data, TriangulationComputationConfig config)
         {
-            if (data == null) throw new ArgumentNullException("data can't be null");
-
-            if (!(data is IList<TVertex>)) data = data.ToArray();
-
-            var t = DelaunayTriangulation<TVertex, TCell>.Create(data);
+            if (data == null) throw new ArgumentNullException("data");
+            
+            var t = DelaunayTriangulation<TVertex, TCell>.Create(data, config);
             var vertices = t.Cells;
             var edges = new HashSet<TEdge>(new EdgeComparer());
 

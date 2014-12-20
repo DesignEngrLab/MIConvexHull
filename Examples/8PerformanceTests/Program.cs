@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using MIConvexHull;
 using System.IO;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace _8PerformanceTests
 {
     class Program
     {
-        static Random rnd = new Random();
+        static Random rnd = new Random(0);
         static DefaultVertex[] CreateRandomVertices(int dim, int numVert, double size)
         {
             var vertices = new DefaultVertex[numVert];
@@ -24,11 +26,12 @@ namespace _8PerformanceTests
 
         static TimeSpan RunComputation<T>(Func<T> a)
         {
-            var now = DateTime.Now;
-            a();
-            var interval = DateTime.Now - now;
             GC.Collect();
-            return interval;
+            var sw = Stopwatch.StartNew();
+            a();
+            sw.Stop();
+            GC.Collect();
+            return sw.Elapsed;
         }
 
         static TimeSpan TestNDConvexHull(int dim, int numVert, double size)
@@ -101,7 +104,7 @@ namespace _8PerformanceTests
 
             w.Dispose();
             dataStream.Dispose();
-            Console.ReadLine();
+            //Console.ReadLine();
         }
 
         static void TestConvexHull()
@@ -118,7 +121,7 @@ namespace _8PerformanceTests
 
         static void Test3DConvexHull()
         {
-            var counts = new int[] { 1000, 10000, 100000, 1000000, 10000000 };
+            var counts = new int[] { 1000, 10000, 100000, 1000000/*, 10000000*/ };
             const int minDimension = 3;
             const int maxDimension = 3;
             const int nRuns = 3;
@@ -166,9 +169,9 @@ namespace _8PerformanceTests
 
         static void Main(string[] args)        
         {
-            TestConvexHull();
-            //Test3DDelaunay();
             //TestConvexHull();
+            Test3DDelaunay();
+            //Test3DConvexHull();
             //TestVoronoi();
         }
     }

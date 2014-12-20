@@ -1,6 +1,6 @@
 ﻿/******************************************************************************
  *
- *    MIConvexHull, Copyright (C) 2013 David Sehnal, Matthew Campbell
+ *    MIConvexHull, Copyright (C) 2014 David Sehnal, Matthew Campbell
  *
  *  This library is free software; you can redistribute it and/or modify it 
  *  under the terms of  the GNU Lesser General Public License as published by 
@@ -16,6 +16,7 @@
 
 namespace MIConvexHull
 {
+    using System;
     using System.Collections.Generic;
 
     /// <summary>
@@ -29,68 +30,152 @@ namespace MIConvexHull
     {
         readonly int Dimension;
 
-        Stack<ConvexFaceInternal> RecycledFaceStack;
-        Stack<FaceConnector> ConnectorStack;
-        Stack<VertexBuffer> EmptyBufferStack;
-        Stack<DeferredFace> DeferredFaceStack;
+        ConvexHullInternal Hull;
+        int FacePoolSize, FacePoolCapacity;
+        ConvexFaceInternal[] FacePool;
+        IndexBuffer FreeFaceIndices;
+        FaceConnector ConnectorStack;
+        SimpleList<IndexBuffer> EmptyBufferStack;
+        SimpleList<DeferredFace> DeferredFaceStack;
 
-        public void DepositFace(ConvexFaceInternal face)
+        /// <summary>
+        /// Return the face to the pool for later use.
+        /// </summary>
+        /// <param name="faceIndex"></param>
+        public void DepositFace(int faceIndex)
         {
-            for (int i = 0; i < Dimension; i++)
+            var face = FacePool[faceIndex];
+            var af = face.AdjacentFaces;
+            for (int i = 0; i < af.Length; i++)
             {
-                face.AdjacentFaces[i] = null;
+                af[i] = -1;
             }
-            RecycledFaceStack.Push(face);
+            FreeFaceIndices.Push(faceIndex);
         }
 
-        public ConvexFaceInternal GetFace()
+        /// <summary>
+        /// Reallocate the face pool, including the AffectedFaceFlags
+        /// </summary>
+        void ReallocateFacePool()
         {
-            return RecycledFaceStack.Count != 0
-                    ? RecycledFaceStack.Pop()
-                    : new ConvexFaceInternal(Dimension, GetVertexBuffer());
+            var newPool = new ConvexFaceInternal[2 * FacePoolCapacity];
+            var newTags = new bool[2 * FacePoolCapacity];
+            Array.Copy(FacePool, newPool, FacePoolCapacity);
+            Buffer.BlockCopy(Hull.AffectedFaceFlags, 0, newTags, 0, FacePoolCapacity * sizeof(bool));
+            FacePoolCapacity = 2 * FacePoolCapacity;
+            Hull.FacePool = newPool;
+            this.FacePool = newPool;
+            Hull.AffectedFaceFlags = newTags;
         }
 
+        /// <summary>
+        /// Create a new face and put it in the pool.
+        /// </summary>
+        /// <returns></returns>
+        int CreateFace()
+        {
+            var index = FacePoolSize;
+            var face = new ConvexFaceInternal(Dimension, index, GetVertexBuffer());
+            FacePoolSize++;
+            if (FacePoolSize > FacePoolCapacity) ReallocateFacePool();
+            FacePool[index] = face;
+            return index;
+        }
+
+        /// <summary>
+        /// Return index of an unused face or creates a new one.
+        /// </summary>
+        /// <returns></returns>
+        public int GetFace()
+        {
+            if (FreeFaceIndices.Count > 0) return FreeFaceIndices.Pop();
+            return CreateFace();
+        }
+
+        /// <summary>
+        /// Store a face connector in the "embedded" linked list.
+        /// </summary>
+        /// <param name="connector"></param>
         public void DepositConnector(FaceConnector connector)
         {
-            ConnectorStack.Push(connector);
+            if (ConnectorStack == null)
+            {
+                connector.Next = null;
+                ConnectorStack = connector;
+            }
+            else
+            {
+                connector.Next = ConnectorStack;
+                ConnectorStack = connector;
+            }
         }
 
+        /// <summary>
+        /// Get an unused face connector. If none is available, create it.
+        /// </summary>
+        /// <returns></returns>
         public FaceConnector GetConnector()
         {
-            return ConnectorStack.Count != 0
-                    ? ConnectorStack.Pop()
-                    : new FaceConnector(Dimension);
+            if (ConnectorStack == null) return new FaceConnector(Dimension);
+
+            var ret = ConnectorStack;
+            ConnectorStack = ConnectorStack.Next;
+            ret.Next = null;
+            return ret;
         }
 
-        public void DepositVertexBuffer(VertexBuffer buffer)
+        /// <summary>
+        /// Deposit the index buffer.
+        /// </summary>
+        /// <param name="buffer"></param>
+        public void DepositVertexBuffer(IndexBuffer buffer)
         {
             buffer.Clear();
             EmptyBufferStack.Push(buffer);
         }
 
-        public VertexBuffer GetVertexBuffer()
+        /// <summary>
+        /// Get a store index buffer or create a new instance.
+        /// </summary>
+        /// <returns></returns>
+        public IndexBuffer GetVertexBuffer()
         {
-            return EmptyBufferStack.Count != 0 ? EmptyBufferStack.Pop() : new VertexBuffer();
+            return EmptyBufferStack.Count != 0 ? EmptyBufferStack.Pop() : new IndexBuffer();
         }
 
+        /// <summary>
+        /// Deposit the deferred face.
+        /// </summary>
+        /// <param name="face"></param>
         public void DepositDeferredFace(DeferredFace face)
         {
             DeferredFaceStack.Push(face);
         }
 
+        /// <summary>
+        /// Get the deferred face.
+        /// </summary>
+        /// <returns></returns>
         public DeferredFace GetDeferredFace()
         {
             return DeferredFaceStack.Count != 0 ? DeferredFaceStack.Pop() : new DeferredFace();
         }
-                
-        public ObjectManager(int dimension)
-        {
-            this.Dimension = dimension;
 
-            RecycledFaceStack = new Stack<ConvexFaceInternal>();
-            ConnectorStack = new Stack<FaceConnector>();
-            EmptyBufferStack = new Stack<VertexBuffer>();
-            DeferredFaceStack = new Stack<DeferredFace>();
+        /// <summary>
+        /// Create the manager.
+        /// </summary>
+        /// <param name="hull"></param>
+        public ObjectManager(ConvexHullInternal hull)
+        {
+            this.Dimension = hull.Dimension;
+            this.Hull = hull;
+            this.FacePool = hull.FacePool;
+            this.FacePoolSize = 0;
+            this.FacePoolCapacity = hull.FacePool.Length;
+            this.FreeFaceIndices = new IndexBuffer();
+
+            this.EmptyBufferStack = new SimpleList<IndexBuffer>();
+            this.DeferredFaceStack = new SimpleList<DeferredFace>();
         }
     }
 }
