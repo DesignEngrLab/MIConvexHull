@@ -73,11 +73,11 @@ namespace MIConvexHull
         /// This function is called for each coordinate of each point as
         /// Position[i] -> Position[i] + PointTranslationGenerator()
         /// 
-        /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        /// The function should be set up so that the translation is lower than 
-        /// the PlaneDistanceTolerance. Otherwise, unwanted faces could be 
-        /// created as result.
-        /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        /// From my testing the function should be set up so that the 
+        /// translation magnitude is lower than the PlaneDistanceTolerance. 
+        /// Otherwise, flat faces in triangulation could be created as a result.
+        /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         /// 
         /// An example of the translation function that would shift each coordinate 
         /// in 0.0000005 in either direction is:
@@ -103,7 +103,7 @@ namespace MIConvexHull
 
         static Func<double> Closure(double radius, Random rnd)
         {
-            return () => radius * (0.5 + rnd.NextDouble());
+            return () => radius * (rnd.NextDouble() - 0.5);
         }
 
         /// <summary>

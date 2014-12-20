@@ -18,50 +18,11 @@ namespace MIConvexHull
 {
     using System.Collections.Generic;
 
-
-    /// <summary>
-    /// Represents the result of the "lifted" computation.
-    /// </summary>
-    class ConvexHullInternalTriangulationResult
-    {
-        public IVertex[] Vertices { get; set; }
-
-        public IndexBuffer Faces { get; set; }
-
-        public ConvexFaceInternal[] FacePool { get; set; }
-    }
-
     /*
      * Code here handles triangulation related stuff.
      */
     internal partial class ConvexHullInternal
     {
-        /// <summary>
-        /// This is used by the Delaunay triangulation code.
-        /// </summary>
-        /// <typeparam name="TVertex"></typeparam>
-        /// <typeparam name="TCell"></typeparam>
-        /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
-        /// <returns></returns>
-        internal static ConvexHullInternalTriangulationResult GetLiftedConvexFaces<TVertex, TCell>(IList<TVertex> data, ConvexHullComputationConfig config)
-            where TCell : ConvexFace<TVertex, TCell>, new()
-            where TVertex : IVertex
-        {
-            config = config ?? new ConvexHullComputationConfig();
-
-            var vertices = new IVertex[data.Count];
-            for (int i = 0; i < data.Count; i++) vertices[i] = data[i];
-            ConvexHullInternal ch = new ConvexHullInternal(vertices, true, config);
-            ch.FindConvexHull();
-            return new ConvexHullInternalTriangulationResult
-            {
-                Vertices = ch.Vertices,
-                Faces = ch.ConvexFaces,
-                FacePool = ch.FacePool
-            };
-        }
-
         /// <summary>
         /// Computes the Delaunay triangulation.
         /// </summary>
