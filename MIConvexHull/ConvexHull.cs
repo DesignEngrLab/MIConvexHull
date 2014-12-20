@@ -31,7 +31,7 @@ namespace MIConvexHull
         /// <typeparam name="TVertex"></typeparam>
         /// <typeparam name="TFace"></typeparam>
         /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
+        /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
         /// <returns></returns>
         public static ConvexHull<TVertex, TFace> Create<TVertex, TFace>(IList<TVertex> data, ConvexHullComputationConfig config = null)
             where TVertex : IVertex
@@ -45,7 +45,7 @@ namespace MIConvexHull
         /// </summary>
         /// <typeparam name="TVertex"></typeparam>
         /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
+        /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
         /// <returns></returns>
         public static ConvexHull<TVertex, DefaultConvexFace<TVertex>> Create<TVertex>(IList<TVertex> data, ConvexHullComputationConfig config = null)
             where TVertex : IVertex
@@ -57,7 +57,7 @@ namespace MIConvexHull
         /// Creates a convex hull of the input data.
         /// </summary>
         /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
+        /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
         /// <returns></returns>
         public static ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>> Create(IList<double[]> data, ConvexHullComputationConfig config = null)
         {
@@ -89,7 +89,7 @@ namespace MIConvexHull
         /// Creates the convex hull.
         /// </summary>
         /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
+        /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
         /// <returns></returns>
         public static ConvexHull<TVertex, TFace> Create(IList<TVertex> data, ConvexHullComputationConfig config)
         {

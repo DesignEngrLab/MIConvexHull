@@ -32,7 +32,6 @@ namespace MIConvexHull
 
         double[] ntX, ntY, ntZ;
         double[] nDNormalSolveVector;
-        double[,] nDMatrix;
         double[][] jaggedNDMatrix;
 
         /// <summary>
@@ -422,7 +421,6 @@ namespace MIConvexHull
                 nDNormalSolveVector[i] = 1.0;
                 jaggedNDMatrix[i] = new double[Dimension];
             }
-            nDMatrix = new double[Dimension, Dimension];
         }
     }
 }

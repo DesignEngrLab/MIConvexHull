@@ -44,7 +44,7 @@ namespace MIConvexHull
         /// </summary>
         /// <typeparam name="TVertex"></typeparam>
         /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
+        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns></returns>
         public static ITriangulation<TVertex, DefaultTriangulationCell<TVertex>> CreateDelaunay<TVertex>(IList<TVertex> data, TriangulationComputationConfig config = null)
             where TVertex : IVertex
@@ -56,7 +56,7 @@ namespace MIConvexHull
         /// Creates the Delaunay triangulation of the input data.
         /// </summary>
         /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
+        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns></returns>
         public static ITriangulation<DefaultVertex, DefaultTriangulationCell<DefaultVertex>> CreateDelaunay(IList<double[]> data, TriangulationComputationConfig config = null)
         {
@@ -70,7 +70,7 @@ namespace MIConvexHull
         /// <typeparam name="TVertex"></typeparam>
         /// <typeparam name="TFace"></typeparam>
         /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
+        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns></returns>
         public static ITriangulation<TVertex, TFace> CreateDelaunay<TVertex, TFace>(IList<TVertex> data, TriangulationComputationConfig config = null)
             where TVertex : IVertex
@@ -87,7 +87,7 @@ namespace MIConvexHull
         /// <typeparam name="TCell"></typeparam>
         /// <typeparam name="TEdge"></typeparam>
         /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
+        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns></returns>
         public static VoronoiMesh<TVertex, TCell, TEdge> CreateVoronoi<TVertex, TCell, TEdge>(IList<TVertex> data, TriangulationComputationConfig config = null)
             where TCell : TriangulationCell<TVertex, TCell>, new()
@@ -102,7 +102,7 @@ namespace MIConvexHull
         /// </summary>
         /// <typeparam name="TVertex"></typeparam>
         /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
+        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns></returns>
         public static VoronoiMesh<TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>> CreateVoronoi<TVertex>(IList<TVertex> data, TriangulationComputationConfig config = null)
             where TVertex : IVertex
@@ -114,7 +114,7 @@ namespace MIConvexHull
         /// Create the voronoi mesh.
         /// </summary>
         /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
+        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns></returns>
         public static VoronoiMesh<DefaultVertex, DefaultTriangulationCell<DefaultVertex>, VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>
             CreateVoronoi(IList<double[]> data, TriangulationComputationConfig config = null)
@@ -129,7 +129,7 @@ namespace MIConvexHull
         /// <typeparam name="TVertex"></typeparam>
         /// <typeparam name="TCell"></typeparam>
         /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
+        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns></returns>
         public static VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>> CreateVoronoi<TVertex, TCell>(IList<TVertex> data, TriangulationComputationConfig config = null)
             where TVertex : IVertex
