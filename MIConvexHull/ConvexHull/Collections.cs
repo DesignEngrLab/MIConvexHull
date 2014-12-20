@@ -1,6 +1,6 @@
 ﻿/******************************************************************************
  *
- *    MIConvexHull, Copyright (C) 2013 David Sehnal, Matthew Campbell
+ *    MIConvexHull, Copyright (C) 2014 David Sehnal, Matthew Campbell
  *
  *  This library is free software; you can redistribute it and/or modify it 
  *  under the terms of  the GNU Lesser General Public License as published by 
@@ -20,28 +20,28 @@ namespace MIConvexHull
     using System.Collections.Generic;
 
     /// <summary>
-    /// Used to effectively store vertices beyond.
+    /// A more lightweight alternative to List of T.
+    /// On clear, only resets the count and does not clear the references 
+    ///   => this works because of the ObjectManager.
+    /// Includes a stack functionality.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    sealed class VertexBuffer
+    class SimpleList<T>
     {
-        VertexWrap[] items;
-        int count;
+        T[] items;
         int capacity;
-
-        /// <summary>
-        /// Number of elements present in the buffer.
-        /// </summary>
-        public int Count { get { return count; } }
+        
+        public int Count;
 
         /// <summary>
         /// Get the i-th element.
         /// </summary>
         /// <param name="i"></param>
         /// <returns></returns>
-        public VertexWrap this[int i]
+        public T this[int i]
         {
             get { return items[i]; }
+            set { items[i] = value; }
         }
 
         /// <summary>
@@ -49,11 +49,17 @@ namespace MIConvexHull
         /// </summary>
         void EnsureCapacity()
         {
-            if (count + 1 > capacity)
+            if (capacity == 0)
             {
-                if (capacity == 0) capacity = 4;
-                else capacity = 2 * capacity;
-                Array.Resize(ref items, capacity);
+                capacity = 32;
+                items = new T[32];
+            }
+            else
+            {
+                var newItems = new T[capacity * 2];
+                Array.Copy(items, newItems, capacity);
+                capacity = 2 * capacity;
+                items = newItems;
             }
         }
 
@@ -61,10 +67,29 @@ namespace MIConvexHull
         /// Adds a vertex to the buffer.
         /// </summary>
         /// <param name="item"></param>
-        public void Add(VertexWrap item)
+        public void Add(T item)
         {
-            EnsureCapacity();
-            items[count++] = item;
+            if (Count + 1 > capacity) EnsureCapacity();
+            items[Count++] = item;
+        }
+
+        /// <summary>
+        /// Pushes the value to the back of the list.
+        /// </summary>
+        /// <param name="item"></param>
+        public void Push(T item)
+        {
+            if (Count + 1 > capacity) EnsureCapacity();
+            items[Count++] = item;
+        }
+
+        /// <summary>
+        /// Pops the last value from the list.
+        /// </summary>
+        /// <returns></returns>
+        public T Pop()
+        {
+            return items[--Count];
         }
 
         /// <summary>
@@ -72,17 +97,25 @@ namespace MIConvexHull
         /// </summary>
         public void Clear()
         {
-            count = 0;
+            Count = 0;
         }
     }
-        
+
+    /// <summary>
+    /// A fancy name for a list of integers.
+    /// </summary>
+    class IndexBuffer : SimpleList<int>
+    {
+
+    }
+              
     /// <summary>
     /// A priority based linked list.
     /// </summary>
     sealed class FaceList
     {
         ConvexFaceInternal first, last;
-
+        
         /// <summary>
         /// Get the first element.
         /// </summary>
@@ -108,7 +141,6 @@ namespace MIConvexHull
         {
             if (face.InList)
             {
-                //if (this.first.FurthestDistance < face.FurthestDistance)
                 if (this.first.VerticesBeyond.Count < face.VerticesBeyond.Count)
                 {
                     Remove(face);
@@ -119,7 +151,6 @@ namespace MIConvexHull
 
             face.InList = true;
 
-            //if (first != null && first.FurthestDistance < face.FurthestDistance)
             if (first != null && first.VerticesBeyond.Count < face.VerticesBeyond.Count)
             {
                 this.first.Previous = face;

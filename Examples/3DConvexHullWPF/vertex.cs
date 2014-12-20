@@ -32,21 +32,30 @@ namespace ExampleWithGraphics
         static readonly Material material = new DiffuseMaterial(Brushes.Black);
         static readonly SphereMesh mesh = new SphereMesh { Slices = 6, Stacks = 4, Radius = 0.5 };
 
+        static readonly Material hullMaterial = new DiffuseMaterial(Brushes.Yellow);
+        static readonly SphereMesh hullMesh = new SphereMesh { Slices = 6, Stacks = 4, Radius = 1.0 };
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Vertex"/> class.
         /// </summary>
         /// <param name="x">The x position.</param>
         /// <param name="y">The y position.</param>
         /// <param name="z">The z position.</param>
-        public Vertex(double x, double y, double z)
+        /// <param name="isHull"></param>
+        public Vertex(double x, double y, double z, bool isHull = false)
         {
             Content = new GeometryModel3D
             {
-                Geometry = mesh.Geometry,
-                Material = material,
+                Geometry = isHull ? hullMesh.Geometry : mesh.Geometry,
+                Material = isHull ? hullMaterial : material,
                 Transform = new TranslateTransform3D(x, y, z)
             };
             Position = new double[] { x, y, z };
+        }
+
+        public Vertex AsHullVertex()
+        {
+            return new Vertex(Position[0], Position[1], Position[2], true);
         }
 
         public Point3D Center { get { return new Point3D(Position[0], Position[1], Position[2]); } }

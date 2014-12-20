@@ -17,25 +17,25 @@
 namespace MIConvexHull
 {
     /// <summary>
-    /// Representation of the triangulation cell. Pretty much the same as ConvexFace,
-    /// just wanted to distinguish the two.
-    /// To declare your own face type, use class Face : DelaunayFace(of Vertex, of Face)
+    /// An interface for a structure with nD position.
     /// </summary>
-    /// <typeparam name="TVertex"></typeparam>
-    /// <typeparam name="TCell"></typeparam>
-    public abstract class TriangulationCell<TVertex, TCell> : ConvexFace<TVertex, TCell>
-        where TVertex : IVertex
-        where TCell : ConvexFace<TVertex, TCell>
+    public interface IVertex
     {
-
+        /// <summary>
+        /// Position of the vertex.
+        /// </summary>
+        double[] Position { get; }
     }
 
     /// <summary>
-    /// Default triangulation cell.
+    /// "Default" vertex.
     /// </summary>
-    /// <typeparam name="TVertex"></typeparam>
-    public class DefaultTriangulationCell<TVertex> : TriangulationCell<TVertex, DefaultTriangulationCell<TVertex>>
-        where TVertex : IVertex
+    public class DefaultVertex : IVertex
     {
+        /// <summary>
+        /// Position of the vertex.
+        /// </summary>
+        public double[] Position { get; set; }
     }
+
 }

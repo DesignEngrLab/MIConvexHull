@@ -17,11 +17,17 @@
                 <ColumnDefinition Width="25*"/>
                 <ColumnDefinition Width="25*"/>
                 <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Name="btnMakePoints" Click="btnMakePoints_Click"  Content="New Points" IsDefault="True"/>
-            <Button Grid.Column="1" Name="btnFindDelaunay" Click="btnFindDelaunay_Click"  Content="Show Delaunay" />
-            <Button Grid.Column="2" Name="btnFindVoronoi" Click="btnFindVoronoi_Click"  Content="Show Voronoi" />
-            <TextBlock Grid.Column="3" Name="txtBlkTimer" Text="0.000s" 
+            <Button Grid.Column="0" Name="btnMakePoints" Click="btnMakePoints_Click"  Content="Random" IsDefault="True"/>
+            <Button Grid.Column="1" Click="btnMakeGrid_Click"  Content="Grid" IsDefault="True"/>
+            <Button Grid.Column="2" Click="btnMakeCircle_Click"  Content="Circle" IsDefault="True"/>
+            <Button Grid.Column="3" Click="btnMakeFancy_Click"  Content="Fancy" IsDefault="True" Margin="0 0 5 0"/>
+            <Button Grid.Column="4" Name="btnFindDelaunay" Click="btnFindDelaunay_Click"  Content="Delaunay" />
+            <Button Grid.Column="5" Name="btnFindVoronoi" Click="btnFindVoronoi_Click"  Content="Voronoi" />
+            <TextBlock Grid.Column="6" Name="txtBlkTimer" Text="0.000s" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
     </Grid>
