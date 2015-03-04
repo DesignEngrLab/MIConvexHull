@@ -1,6 +1,6 @@
 ﻿/******************************************************************************
  *
- *    MIConvexHull, Copyright (C) 2014 David Sehnal, Matthew Campbell
+ *    MIConvexHull, Copyright (C) 2015 David Sehnal, Matthew Campbell
  *
  *  This library is free software; you can redistribute it and/or modify it 
  *  under the terms of  the GNU Lesser General Public License as published by 
@@ -31,79 +31,114 @@ namespace MIConvexHull
         double[] PositionData;
 
         double[] ntX, ntY, ntZ;
-        double[] nDNormalSolveVector;
-        double[][] jaggedNDMatrix;
+        double[] nDNormalHelperVector;
+        double[] nDMatrix;
+        int[] matrixPivots;
 
-        /// <summary>
-        /// does gaussian elimination.
-        /// </summary>
-        /// <param name="nDim"></param>
-        /// <param name="pfMatr"></param>
-        /// <param name="pfVect"></param>
-        /// <param name="pfSolution"></param>
-        static void GaussElimination(int nDim, double[][] pfMatr, double[] pfVect, double[] pfSolution)
+        #region Normals
+        // Modified from Math.NET
+        // Copyright (c) 2009-2013 Math.NET
+        static void LUFactor(double[] data, int order, int[] ipiv, double[] vecLUcolj)
         {
-            double fMaxElem;
-            double fAcc;
-
-            int i, j, k, m;
-
-            for (k = 0; k < (nDim - 1); k++) // base row of matrix
+            // Initialize the pivot matrix to the identity permutation.
+            for (var i = 0; i < order; i++)
             {
-                var rowK = pfMatr[k];
-
-                // search of line with max element
-                fMaxElem = Math.Abs(rowK[k]);
-                m = k;
-                for (i = k + 1; i < nDim; i++)
-                {
-                    if (fMaxElem < Math.Abs(pfMatr[i][k]))
-                    {
-                        fMaxElem = pfMatr[i][k];
-                        m = i;
-                    }
-                }
-
-                // permutation of base line (index k) and max element line(index m)                
-                if (m != k)
-                {
-                    var rowM = pfMatr[m];
-                    for (i = k; i < nDim; i++)
-                    {
-                        fAcc = rowK[i];
-                        rowK[i] = rowM[i];
-                        rowM[i] = fAcc;
-                    }
-                    fAcc = pfVect[k];
-                    pfVect[k] = pfVect[m];
-                    pfVect[m] = fAcc;
-                }
-
-                //if( pfMatr[k*nDim + k] == 0.0) return 1; // needs improvement !!!
-
-                // triangulation of matrix with coefficients
-                for (j = (k + 1); j < nDim; j++) // current row of matrix
-                {
-                    var rowJ = pfMatr[j];
-                    fAcc = -rowJ[k] / rowK[k];
-                    for (i = k; i < nDim; i++)
-                    {
-                        rowJ[i] = rowJ[i] + fAcc * rowK[i];
-                    }
-                    pfVect[j] = pfVect[j] + fAcc * pfVect[k]; // free member recalculation
-                }
+                ipiv[i] = i;
             }
 
-            for (k = (nDim - 1); k >= 0; k--)
+            // Outer loop.
+            for (var j = 0; j < order; j++)
             {
-                var rowK = pfMatr[k];
-                pfSolution[k] = pfVect[k];
-                for (i = (k + 1); i < nDim; i++)
+                var indexj = j * order;
+                var indexjj = indexj + j;
+
+                // Make a copy of the j-th column to localize references.
+                for (var i = 0; i < order; i++)
                 {
-                    pfSolution[k] -= (rowK[i] * pfSolution[i]);
+                    vecLUcolj[i] = data[indexj + i];
                 }
-                pfSolution[k] = pfSolution[k] / rowK[k];
+
+                // Apply previous transformations.
+                for (var i = 0; i < order; i++)
+                {
+                    // Most of the time is spent in the following dot product.
+                    var kmax = Math.Min(i, j);
+                    var s = 0.0;
+                    for (var k = 0; k < kmax; k++)
+                    {
+                        s += data[(k * order) + i] * vecLUcolj[k];
+                    }
+
+                    data[indexj + i] = vecLUcolj[i] -= s;
+                }
+
+                // Find pivot and exchange if necessary.
+                var p = j;
+                for (var i = j + 1; i < order; i++)
+                {
+                    if (Math.Abs(vecLUcolj[i]) > Math.Abs(vecLUcolj[p]))
+                    {
+                        p = i;
+                    }
+                }
+
+                if (p != j)
+                {
+                    for (var k = 0; k < order; k++)
+                    {
+                        var indexk = k * order;
+                        var indexkp = indexk + p;
+                        var indexkj = indexk + j;
+                        var temp = data[indexkp];
+                        data[indexkp] = data[indexkj];
+                        data[indexkj] = temp;
+                    }
+
+                    ipiv[j] = p;
+                }
+
+                // Compute multipliers.
+                if (j < order & data[indexjj] != 0.0)
+                {
+                    for (var i = j + 1; i < order; i++)
+                    {
+                        data[indexj + i] /= data[indexjj];
+                    }
+                }
             }
+        }
+
+        void FindNormal(int[] vertices, double[] normal)
+        {
+            var iPiv = matrixPivots;
+            var data = nDMatrix;
+
+            double norm = 0.0;
+            // Solve determinants by replacing x-th column by all 1.
+            for (int x = 0; x < Dimension; x++)
+            {
+                for (int i = 0; i < Dimension; i++)
+                {
+                    var offset = vertices[i] * Dimension;
+                    for (int j = 0; j < Dimension; j++)
+                    {
+                        data[Dimension * j + i] = j == x ? 1.0 : PositionData[offset + j];
+                    }
+                }
+                LUFactor(data, Dimension, iPiv, nDNormalHelperVector);
+                var coord = 1.0;
+                for (int i = 0; i < Dimension; i++)
+                {                    
+                    if (iPiv[i] != i) coord *= -data[Dimension * i + i];
+                    else coord *= data[Dimension * i + i];
+                }
+                normal[x] = coord;
+                norm += coord * coord;
+            }
+
+            // Normalize the result
+            double f = 1.0 / Math.Sqrt(norm);
+            for (int i = 0; i < normal.Length; i++) normal[i] *= f;
         }
 
         /// <summary>
@@ -121,7 +156,7 @@ namespace MIConvexHull
             }
             return norm;
         }
-        
+
         /// <summary>
         /// Subtracts vectors x and y and stores the result to target.
         /// </summary>
@@ -136,7 +171,7 @@ namespace MIConvexHull
                 target[i] = PositionData[u + i] - PositionData[v + i];
             }
         }
-        
+
         /// <summary>
         /// Finds 4D normal vector.
         /// </summary>
@@ -220,32 +255,55 @@ namespace MIConvexHull
             normal[0] = f * nx;
             normal[1] = f * ny;
         }
-        
-        void Normalize(double[] x)
+
+        void FindNormalVectorND(int[] vertices, double[] normal)
         {
-            double norm = 0;
-            for (int i = 0; i < x.Length; i++)
+            /*
+             * We need to solve the matrix A n = B where
+             *  - A contains coordinates of vertices as columns
+             *  - B is vector with all 1
+             *   
+             * To do this, we apply "modified" Cramer's rule: n_i = Det(A_i) / Det(A) where
+             * A_i is created from A by replacing i-th column by B. The modification comes
+             * from ignoring the factor 1/Det(A). Because:
+             *  - It would get "lost" during the final normalization step anyway.
+             *  - More importantly, allows us to compute normals for singlular A matrices
+             *    (i.e. matrices with zero determinat).
+             */
+
+            var iPiv = matrixPivots;
+            var data = nDMatrix;
+            double norm = 0.0;
+
+            // Solve determinants by replacing x-th column by all 1.
+            for (int x = 0; x < Dimension; x++)
             {
-                var t = x[i];
-                norm += t * t;
+                for (int i = 0; i < Dimension; i++)
+                {
+                    var offset = vertices[i] * Dimension;
+                    for (int j = 0; j < Dimension; j++)
+                    {
+                        // maybe I got the i/j mixed up here regarding the representation Math.net uses...
+                        // ...but it does not matter since Det(A) = Det(Transpose(A)).
+                        data[Dimension * i + j] = j == x ? 1.0 : PositionData[offset + j];
+                    }
+                }
+                LUFactor(data, Dimension, iPiv, nDNormalHelperVector);
+                var coord = 1.0;
+                for (int i = 0; i < Dimension; i++)
+                {
+                    if (iPiv[i] != i) coord *= -data[Dimension * i + i]; // the determinant sign changes on row swap.
+                    else coord *= data[Dimension * i + i];
+                }
+                normal[x] = coord;
+                norm += coord * coord;
             }
+
+            // Normalize the result
             double f = 1.0 / Math.Sqrt(norm);
-            for (int i = 0; i < x.Length; i++) x[i] *= f;
+            for (int i = 0; i < normal.Length; i++) normal[i] *= f;
         }
 
-        void FindNormalVectorND(int[] vertices, double[] normalData)
-        {
-            for (var i = 0; i < nDNormalSolveVector.Length; i++) nDNormalSolveVector[i] = 1.0;
-            for (var i = 0; i < vertices.Length; i++)
-            {
-                var row = jaggedNDMatrix[i];
-                var offset = vertices[i] * Dimension;
-                for (int j = 0; j < row.Length; j++) row[j] = PositionData[offset + j];
-            }
-            GaussElimination(Dimension, jaggedNDMatrix, nDNormalSolveVector, normalData);
-            Normalize(normalData);
-        }
-        
         /// <summary>
         /// Finds normal vector of a hyper-plane given by vertices.
         /// Stores the results to normalData.
@@ -262,7 +320,7 @@ namespace MIConvexHull
                 default: FindNormalVectorND(vertices, normalData); break;
             }
         }
-
+        #endregion
 
         /// <summary>
         /// Calculates the normal and offset of the hyper-plane given by the face's vertices.
@@ -283,7 +341,7 @@ namespace MIConvexHull
 
             double offset = 0.0;
             double centerDistance = 0.0;
-            var fi = vertices[0] * Dimension; 
+            var fi = vertices[0] * Dimension;
             for (int i = 0; i < Dimension; i++)
             {
                 double n = normal[i];
@@ -320,86 +378,74 @@ namespace MIConvexHull
             return distance;
         }
 
+        #region Simplex Volume
+        /// <summary>
+        /// Helper class with "buffers" for computing simplex volume.
+        /// </summary>
+        public class SimplexVolumeBuffer
+        {
+            public int Dimension;
+            public double[] Data;
+            public double[] Helper;
+            public int[] Pivots;
+
+            public SimplexVolumeBuffer(int dimension)
+            {
+                Dimension = dimension;
+                Data = new double[dimension * dimension];
+                Helper = new double[dimension];
+                Pivots = new int[dimension];
+            }
+        }
+
         /// <summary>
         /// Computes the volume of an n-dimensional simplex.
         /// Buffer needs to be array of shape Dimension x Dimension.
         /// </summary>
         /// <param name="cell"></param>
         /// <param name="vertices"></param>
-        /// <param name="buffer">Needs to be array of shape Dimension x Dimension</param>
+        /// <param name="buffer">Helper for the calculation to avoid unnecessary allocations.</param>
         /// <returns></returns>
-        public static double GetSimplexVolume(ConvexFaceInternal cell, IList<IVertex> vertices, double[][] buffer)
+        public static double GetSimplexVolume(ConvexFaceInternal cell, IList<IVertex> vertices, SimplexVolumeBuffer buffer)
         {
             var xs = cell.Vertices;
             var pivot = vertices[xs[0]].Position;
+            var data = buffer.Data;
+            var dim = buffer.Dimension;
             double f = 1.0;
             for (int i = 1; i < xs.Length; i++)
             {
                 f *= i + 1;
                 var point = vertices[xs[i]].Position;
-                for (int j = 0; j < point.Length; j++) buffer[i - 1][j] = point[j] - pivot[j];
+                for (int j = 0; j < point.Length; j++) data[j * dim + i - 1] = point[j] - pivot[j];
             }
 
             return Math.Abs(DeterminantDestructive(buffer)) / f;
         }
 
-        #region Determinants
-        /// <summary>
-        /// Modifies the matrix during the computation if the dimension > 3.
-        /// </summary>
-        /// <param name="A"></param>
-        /// <returns></returns>
-        public static double DeterminantDestructive(double[][] A)
+        static double DeterminantDestructive(SimplexVolumeBuffer buff)
         {
-            switch (A.Length)
+            var A = buff.Data;
+            switch (buff.Dimension)
             {
                 case 0: return 0.0;
-                case 1: return A[0][0];
-                case 2: return (A[0][0] * A[1][1]) - (A[0][1] * A[1][0]);
-                case 3: return (A[0][0] * A[1][1] * A[2][2])
-                       + (A[0][1] * A[1][2] * A[2][0])
-                       + (A[0][2] * A[1][0] * A[2][1])
-                       - (A[0][0] * A[1][2] * A[2][1])
-                       - (A[0][1] * A[1][0] * A[2][2])
-                       - (A[0][2] * A[1][1] * A[2][0]);
-                default: return DeterminantBigDestructive(A);
-            }
-        }
-
-        static double DeterminantBigDestructive(double[][] A)
-        {
-            LUDecompositionInPlace(A);
-            var result = 1.0;
-            for (var i = 0; i < A.Length; i++)
-                if (double.IsNaN(A[i][i]))
-                    return 0;
-                else result *= A[i][i];
-            return result;
-        }
-        static void LUDecompositionInPlace(double[][] A)
-        {
-            int length = A.Length;
-            // normalize row 0
-            for (var i = 1; i < A.Length; i++) A[0][i] /= A[0][0];
-
-            for (var i = 1; i < A.Length; i++)
-            {
-                for (var j = i; j < A.Length; j++)
-                {
-                    // do a column of L
-                    var sum = 0.0;
-                    for (var k = 0; k < i; k++)
-                        sum += A[j][k] * A[k][i];
-                    A[j][i] -= sum;
-                }
-                if (i == length - 1) continue;
-                for (var j = i + 1; j < A.Length; j++)
-                {
-                    // do a row of U
-                    var sum = 0.0;
-                    for (var k = 0; k < i; k++) sum += A[i][k] * A[k][j];
-                    A[i][j] = (A[i][j] - sum) / A[i][i];
-                }
+                case 1: return A[0];
+                case 2: return (A[0] * A[3]) - (A[1] * A[2]);
+                case 3: return (A[0] * A[4] * A[8]) + (A[1] * A[5] * A[6]) + (A[2] * A[3] * A[7])
+                             - (A[0] * A[5] * A[7]) - (A[1] * A[3] * A[8]) - (A[2] * A[4] * A[6]);
+                default:
+                    {
+                        var iPiv = buff.Pivots;
+                        var dim = buff.Dimension;
+                        LUFactor(A, dim, iPiv, buff.Helper);
+                        var det = 1.0;
+                        for (int i = 0; i < iPiv.Length; i++)
+                        {
+                            det *= A[dim * i + i];
+                            if (iPiv[i] != i) det *= -1; // the determinant sign changes on row swap.
+                        }
+                        return det;
+                    }
             }
         }
 
@@ -413,14 +459,10 @@ namespace MIConvexHull
             ntX = new double[Dimension];
             ntY = new double[Dimension];
             ntZ = new double[Dimension];
-            
-            nDNormalSolveVector = new double[Dimension];
-            jaggedNDMatrix = new double[Dimension][];
-            for (var i = 0; i < Dimension; i++)
-            {
-                nDNormalSolveVector[i] = 1.0;
-                jaggedNDMatrix[i] = new double[Dimension];
-            }
+
+            nDNormalHelperVector = new double[Dimension];
+            nDMatrix = new double[Dimension * Dimension];
+            matrixPivots = new int[Dimension];
         }
     }
 }
