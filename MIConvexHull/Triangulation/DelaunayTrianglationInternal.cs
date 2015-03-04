@@ -126,13 +126,14 @@ namespace MIConvexHull
             double[][] buffer = new double[dimension][];
             for (int i = 0; i < dimension; i++) buffer[i] = new double[dimension];
 
+            var simplexVolumeBuffer = new MathHelper.SimplexVolumeBuffer(dimension);
             while (toTest.Count > 0)
             {
                 var top = toTest.Pop();
                 var face = pool[top];
                 visited[top] = true;
 
-                if (MathHelper.GetSimplexVolume(face, Vertices, buffer) < tolerance)
+                if (MathHelper.GetSimplexVolume(face, Vertices, simplexVolumeBuffer) < tolerance)
                 {
                     remove[top] = true;
 
