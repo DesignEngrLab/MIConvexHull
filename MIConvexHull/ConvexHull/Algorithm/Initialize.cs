@@ -419,18 +419,17 @@ namespace MIConvexHull
                 else extremes.Add(minInd);
             }
 
+            // Do we have enough unique extreme points?
             var set = new HashSet<int>(extremes);
             if (set.Count <= Dimension)
             {
-                while (set.Count <= Dimension)
+                // If not, just add the "first" non-included ones.
+                int i = 0;
+                while (i < vCount && set.Count <= Dimension)
                 {
-                    for (int j = 0; j < vCount; j++)
-                    {
-                        if (!set.Add(j)) break;
-                    }
+                    set.Add(i);
+                    i++;
                 }
-
-                //throw new InvalidOperationException("Could not identify enough initial points. Possible reasons: 1) duplicate points, 2) points all lie on a (n-1)D simplex, 3) unknown.");
             }
 
             return set.ToList();
