@@ -233,10 +233,7 @@ namespace MIConvexHull
         /// Commits a cone and adds a vertex to the convex hull.
         /// </summary>
         void CommitCone()
-        {
-            // Add the current vertex.
-            AddConvexVertex(CurrentVertex);
-            
+        {            
             // Fill the adjacency.
             for (int i = 0; i < ConeFaceBuffer.Count; i++)
             {
@@ -397,9 +394,9 @@ namespace MIConvexHull
         /// </summary>
         void UpdateCenter()
         {
-            var count = ConvexHull.Count + 1;
-            for (int i = 0; i < Dimension; i++) Center[i] *= (count - 1);
-            double f = 1.0 / count;
+            for (int i = 0; i < Dimension; i++) Center[i] *= ConvexHullSize;
+            ConvexHullSize += 1;
+            double f = 1.0 / ConvexHullSize;
             var co = CurrentVertex * Dimension;
             for (int i = 0; i < Dimension; i++) Center[i] = f * (Center[i] + Positions[co + i]);
         }
@@ -409,9 +406,9 @@ namespace MIConvexHull
         /// </summary>
         void RollbackCenter()
         {
-            var count = ConvexHull.Count + 1;
-            for (int i = 0; i < Dimension; i++) Center[i] *= count;
-            double f = 1.0 / (count - 1);
+            for (int i = 0; i < Dimension; i++) Center[i] *= ConvexHullSize;
+            ConvexHullSize -= 1;
+            double f = ConvexHullSize > 0 ? 1.0 / ConvexHullSize : 0.0;
             var co = CurrentVertex * Dimension;
             for (int i = 0; i < Dimension; i++) Center[i] = f * (Center[i] - Positions[co + i]);
         }

@@ -52,15 +52,42 @@ namespace MIConvexHull
             ConvexHullInternal ch = new ConvexHullInternal(vertices, false, config);
             ch.FindConvexHull();
 
-            var hull = new TVertex[ch.ConvexHull.Count];
-            for (int i = 0; i < hull.Length; i++)
-            {
-                hull[i] = (TVertex)ch.Vertices[ch.ConvexHull[i]];
-            }
+            var hull = ch.GetHullVertices(data);
 
             return new ConvexHull<TVertex, TFace> { Points = hull, Faces = ch.GetConvexFaces<TVertex, TFace>() };
         }
         
+        TVertex[] GetHullVertices<TVertex>(IList<TVertex> data)
+        {
+            int cellCount = ConvexFaces.Count;
+            int hullVertexCount = 0;
+            int vertexCount = Vertices.Length;
+
+            for (int i = 0; i < vertexCount; i++) VertexMarks[i] = false;
+            
+            for (int i = 0; i < cellCount; i++)
+            {
+                var vs = FacePool[ConvexFaces[i]].Vertices;
+                for (int j = 0; j < vs.Length; j++)
+                {
+                    var v = vs[j];
+                    if (!VertexMarks[v])
+                    {
+                        VertexMarks[v] = true;
+                        hullVertexCount++;
+                    }
+                }
+            }
+
+            var result = new TVertex[hullVertexCount];
+            for (int i = 0; i < vertexCount; i++)
+            {
+                if (VertexMarks[i]) result[--hullVertexCount] = data[i];
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Finds the convex hull and creates the TFace objects.
         /// </summary>

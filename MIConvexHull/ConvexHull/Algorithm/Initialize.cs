@@ -82,7 +82,7 @@ namespace MIConvexHull
         /// Create the first faces from (dimension + 1) vertices.
         /// </summary>
         /// <returns></returns>
-        int[] CreateInitialHull()
+        int[] CreateInitialHull(List<int> initialPoints)
         {
             var faces = new int[Dimension + 1];
 
@@ -91,7 +91,7 @@ namespace MIConvexHull
                 var vertices = new int[Dimension];
                 for (int j = 0, k = 0; j <= Dimension; j++)
                 {
-                    if (i != j) vertices[k++] = ConvexHull[j];
+                    if (i != j) vertices[k++] = initialPoints[j];
                 }
                 var newFace = FacePool[ObjectManager.GetFace()];
                 newFace.Vertices = vertices;
@@ -147,15 +147,7 @@ namespace MIConvexHull
             }
             r.AdjacentFaces[i] = l.Index;
         }
-
-        void InitSmall()
-        {
-            for (int i = 0; i < Vertices.Length; i++)
-            {
-                ConvexHull.Add(i);			 
-            }
-        }
-
+        
         /// <summary>
         /// Init the hull if Vertices.Length == Dimension.
         /// </summary>
@@ -165,7 +157,6 @@ namespace MIConvexHull
             for (int i = 0; i < Vertices.Length; i++)
             {
                 vertices[i] = i;
-                ConvexHull.Add(i);
             }
 
             var newFace = FacePool[ObjectManager.GetFace()];
@@ -213,14 +204,13 @@ namespace MIConvexHull
                 CurrentVertex = vertex;
                 // update center must be called before adding the vertex.
                 UpdateCenter();
-                AddConvexVertex(vertex);
 
                 // Mark the vertex so that it's not included in any beyond set.
                 VertexMarks[vertex] = true;
             }
 
             // Create the initial simplexes.
-            var faces = CreateInitialHull();
+            var faces = CreateInitialHull(initialPoints);
             
             // Init the vertex beyond buffers.
             foreach (var faceIndex in faces)
