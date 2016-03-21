@@ -59,12 +59,10 @@ namespace MIConvexHull
          *   are stored at indices <i * Dimension, (i + 1) * Dimension)
          * - VertexMarks are used by the algorithm to help identify a set of vertices that is "above" (or "beyond") 
          *   a specific face.
-         * - VertexAdded helps with handling of degenerate data to prevent duplicate addition of the same vertex to the hull.
          */
         IVertex[] Vertices;
         double[] Positions;
         bool[] VertexMarks;
-        bool[] VertexAdded;
 
         /*
          * The triangulation faces are represented in a single pool for objects that are being reused.
@@ -73,11 +71,11 @@ namespace MIConvexHull
          */
         internal ConvexFaceInternal[] FacePool;
         internal bool[] AffectedFaceFlags;
-
+        
         /// <summary>
-        /// A list of vertices that form the convex hull.
+        /// Used to track the size of the current hull in the Update/RollbackCenter functions.
         /// </summary>
-        IndexBuffer ConvexHull;
+        int ConvexHullSize;
 
         /// <summary>
         /// A list of faces that that are not a part of the final convex hull and still need to be processed.
@@ -171,7 +169,6 @@ namespace MIConvexHull
         /// <param name="config"></param>
         void InitializeData(ConvexHullComputationConfig config)
         {
-            ConvexHull = new IndexBuffer();
             UnprocessedFaces = new FaceList();
             ConvexFaces = new IndexBuffer();
             
@@ -193,7 +190,6 @@ namespace MIConvexHull
             for (int i = 0; i < ConnectorTableSize; i++) ConnectorTable[i] = new ConnectorList();
             
             VertexMarks = new bool[Vertices.Length];
-            VertexAdded = new bool[Vertices.Length];
             InitializePositions(config);
 
             MathHelper = new MIConvexHull.MathHelper(Dimension, Positions);
@@ -272,19 +268,6 @@ namespace MIConvexHull
         double GetCoordinate(int v, int i)
         {
             return Positions[v * Dimension + i];
-        }
-
-        /// <summary>
-        /// Check if the vertex was already added and if not, add it.
-        /// </summary>
-        /// <param name="i"></param>
-        void AddConvexVertex(int i)
-        {
-            if (!VertexAdded[i])
-            {
-                ConvexHull.Add(i);
-                VertexAdded[i] = true;
-            }
-        }
+        }        
     }
 }
