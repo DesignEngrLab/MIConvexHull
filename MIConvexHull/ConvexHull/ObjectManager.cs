@@ -27,7 +27,6 @@
 namespace MIConvexHull
 {
     using System;
-    using System.Collections.Generic;
 
     /// <summary>
     /// A helper class for object allocation/storage. 

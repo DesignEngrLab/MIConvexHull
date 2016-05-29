@@ -26,8 +26,6 @@
 
 namespace MIConvexHull
 {
-    using System.Collections.Generic;
-    
     /// <summary>
     /// For deferred face addition.
     /// </summary>
@@ -130,8 +128,7 @@ namespace MIConvexHull
         public static bool AreConnectable(FaceConnector a, FaceConnector b, int dim)
         {
             if (a.HashCode != b.HashCode) return false;
-
-            var n = dim - 1;
+            
             var av = a.Vertices;
             var bv = b.Vertices;
             for (int i = 0; i < av.Length; i++)
