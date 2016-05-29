@@ -174,13 +174,11 @@ namespace MIConvexHull
 
                     var forbidden = UpdateIndices[i]; // Index of the face that corresponds to this adjacent face
 
-                    ConvexFaceInternal newFace;
-
                     int oldVertexIndex;
                     int[] vertices;
 
                     var newFaceIndex = ObjectManager.GetFace();
-                    newFace = FacePool[newFaceIndex];
+                    var newFace = FacePool[newFaceIndex];
                     vertices = newFace.Vertices;
                     for (int j = 0; j < Dimension; j++) vertices[j] = oldFace.Vertices[j];
                     oldVertexIndex = vertices[forbidden];

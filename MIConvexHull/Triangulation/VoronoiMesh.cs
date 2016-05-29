@@ -142,7 +142,7 @@ namespace MIConvexHull
             if (data == null) throw new ArgumentNullException("data");
             
             var t = DelaunayTriangulation<TVertex, TCell>.Create(data, config);
-            var vertices = t.Cells;
+            var vertices = t.Cells.ToList();
             var edges = new HashSet<TEdge>(new EdgeComparer());
 
             foreach (var f in vertices)
