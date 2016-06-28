@@ -379,7 +379,7 @@ namespace MIConvexHull
                         // if the extreme is a possibly the planar position, we take the lex. bigger one.
                         if (diff < PlaneDistanceTolerance)
                         {
-                            if (LexCompare(j, minInd) > 0)
+                            if (LexCompare(j, minInd) < 0)
                             {
                                 min = v;
                                 minInd = j;
