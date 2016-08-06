@@ -147,7 +147,7 @@ namespace MIConvexHull
             }
             r.AdjacentFaces[i] = l.Index;
         }
-        
+
         /// <summary>
         /// Init the hull if Vertices.Length == Dimension.
         /// </summary>
@@ -211,7 +211,7 @@ namespace MIConvexHull
 
             // Create the initial simplexes.
             var faces = CreateInitialHull(initialPoints);
-            
+
             // Init the vertex beyond buffers.
             foreach (var faceIndex in faces)
             {
@@ -246,7 +246,7 @@ namespace MIConvexHull
 
             face.FurthestVertex = FurthestVertex;
         }
-        
+
         /// <summary>
         /// Finds (dimension + 1) initial points.
         /// </summary>
@@ -344,7 +344,7 @@ namespace MIConvexHull
 
             return sum;
         }
-                
+
         private int LexCompare(int u, int v)
         {
             int uOffset = u * Dimension, vOffset = v * Dimension;
@@ -363,7 +363,7 @@ namespace MIConvexHull
         /// <returns></returns>
         private List<int> FindExtremes()
         {
-            var extremes = new List<int>(2 * Dimension);
+            var extremes = new HashSet<int>();
 
             int vCount = Vertices.Length;
             for (int i = 0; i < Dimension; i++)
@@ -374,65 +374,37 @@ namespace MIConvexHull
                 {
                     var v = GetCoordinate(j, i);
                     var diff = min - v;
-                    if (diff >= 0.0)
+                    if (diff >= PlaneDistanceTolerance)
                     {
-                        // if the extreme is a possibly the planar position, we take the lex. bigger one.
-                        if (diff < PlaneDistanceTolerance)
-                        {
-                            if (LexCompare(j, minInd) < 0)
-                            {
-                                min = v;
-                                minInd = j;
-                            }
-                        }
-                        else
-                        {
-                            min = v;
-                            minInd = j;
-                        }
+                        min = v;
+                        minInd = j;
                     }
 
                     diff = v - max;
-                    if (diff >= 0.0)
+                    if (diff >= PlaneDistanceTolerance)
                     {
-                        if (diff < PlaneDistanceTolerance)
-                        {
-                            if (LexCompare(j, maxInd) > 0)
-                            {
-                                max = v;
-                                maxInd = j;
-                            }
-                        }
-                        else
-                        {
-                            max = v;
-                            maxInd = j;
-                        }
+                        max = v;
+                        maxInd = j;
                     }
                 }
 
-                if (minInd != maxInd)
-                {
-                    extremes.Add(minInd);
-                    extremes.Add(maxInd);
-                }
-                else extremes.Add(minInd);
+                extremes.Add(minInd);
+                extremes.Add(maxInd);
             }
 
             // Do we have enough unique extreme points?
-            var set = new HashSet<int>(extremes);
-            if (set.Count <= Dimension)
+            if (extremes.Count <= Dimension)
             {
                 // If not, just add the "first" non-included ones.
                 int i = 0;
-                while (i < vCount && set.Count <= Dimension)
+                while (i < vCount && extremes.Count <= Dimension)
                 {
-                    set.Add(i);
+                    extremes.Add(i);
                     i++;
                 }
             }
 
-            return set.ToList();
+            return extremes.ToList();
         }
 
         /// <summary>
