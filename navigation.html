@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="MIConvexHull : A .Net fast convex hull library for 2, 3, and higher dimensions">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>MIConvexHull</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/DesignEngrLab/MIConvexHull">View on GitHub</a>
+
+          <h1 id="project_title">MIConvexHull</h1>
+          <h2 id="project_tagline">A .Net fast convex hull library for 2, 3, and higher dimensions</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/DesignEngrLab/MIConvexHull/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/DesignEngrLab/MIConvexHull/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+      <p>There are a total of seven projects within the downloadable solution: six are example applications to show you how MIConvexHull is used, and the final one is the MIConvexHull project (which compiles as MIConvexHullPlugin.dll).</p>
+<p>As you can see there are three items here, the MIConvexHull.sln file will open in Visual Studio 2010 or later, and the main C# files for this are located in the MIConvexHull folder. Resources simply uses 2 binaries: one is the <a href="http://starmath.codeplex.com/" target="_blank">StarMath</a> matrix library, and the other is the <a href="http://helixtoolkit.codeplex.com/" target="_blank">HelixToolkit</a>. The latter is only needed by one of the example applications, so the only dependence for the plugin is the StarMath file (StarMath.dll). The Examples directory contains six illustrative examples for using MIConvexHull.</p>
+<p><a href="images/folder.png">
+<img style="; padding-left: 0px; padding-right: 0px; display: inline; padding-top: 0px; border-width: 0px; left: 0px; top: 0px;" title="image" src="images/folder_thumb.png" width="609" height="443" border="0" />
+</a></p>
+<p>&nbsp;</p>
+<p>If you open the solution in Visual Studio, you will likely see the Solution Explorer like this:</p>
+<p><a href="images/solexpl.png"><img style="; padding-left: 0px; padding-right: 0px; display: inline; padding-top: 0px; border-width: 0px;" title="image" src="images/solexpl_thumb.png" alt="image" width="447" height="436" border="0" /></a></p>
+<p>The first six projects compile into .exe&rsquo;s while the final one is the main library (MIConvexHullPlugin.dll). Each of these six will not be explained.</p>
+<p>1TextEXE for MIConvexHull-2D: This is a simple console application that makes a large number of uniformly placed random vertices. A specific class for a 2D vertex is shown.</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font color="#0000ff"><font style="font-size: 9.5pt;">using</font></font><font style="font-size: 9.5pt;"> MIConvexHull;</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font color="#808080"><font style="font-size: 9.5pt;">///</font></font> <font style="font-size: 9.5pt;" color="#808080">&lt;summary&gt;</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font color="#808080"><font style="font-size: 9.5pt;">///</font></font><font style="font-size: 9.5pt;" color="#008000"> A vertex is a simple class that stores the position of a point, node or vertex.</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font color="#808080"><font style="font-size: 9.5pt;">///</font></font> <font style="font-size: 9.5pt;" color="#808080">&lt;/summary&gt;</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font color="#0000ff"><font style="font-size: 9.5pt;">public</font></font><font style="font-size: 9.5pt;"> <font color="#0000ff">class</font>  <font color="#2b91af">vertex</font> : </font><font style="font-size: 9.5pt;" color="#2b91af">IVertexConvHull</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">{</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">&hellip;..</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">Note how it must inherit from the MIConvexHull interface, IVertexConvHull. This simple interface is the main is the basis for performing the convex hull routines.</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">&nbsp;</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">2TestEXE for MIConvexHull-No Interfaces: If you find that you are unable to include this interface in your application, MIConvexHull can still function with an array of double arrays</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">which represent the vertices of your problem. If there is a large number of these vertices, there is a small lag in the computational time, as MIConvexHull will convert these to an internal vertex representation (based on IVertexConvHull).</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">&nbsp;</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">3DConvexHullWPF: Using Petzold&rsquo;s 3D library, this example tests the ability of MIConvexHull on 3D problems. One can choose random uniformly distributed points or points on a sphere. All point on a sphere are in the convex hull, so this choice typically takes longer to run. A simple face class is created in this example as well as a vertex class (like that from the 1st example).</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;"><font color="#0000ff">using</font> MIConvexHull;</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;"><font color="#808080">///</font> </font><font style="font-size: 9.5pt;" color="#808080">&lt;summary&gt;</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;"><font color="#808080">///</font></font><font style="font-size: 9.5pt;" color="#008000"> A vertex is a simple class that stores the position of a point, node or vertex.</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;"><font color="#808080">///</font> </font><font style="font-size: 9.5pt;" color="#808080">&lt;/summary&gt;</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;"><font color="#0000ff">public</font> <font color="#0000ff">class</font>  <font color="#2b91af">face</font> : </font><font style="font-size: 9.5pt;" color="#2b91af">IFaceConvHull</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;">{</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;"><font color="#0000ff">public</font> face()</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;">{</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;">vertices = <font color="#0000ff">new</font> <font color="#2b91af">IVertexConvHull</font>[3];</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;">}</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;"><font color="#0000ff">public</font> <font color="#2b91af">IVertexConvHull</font>[] vertices { <font color="#0000ff">get</font>;  <font color="#0000ff">set</font>; }</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;"><font color="#0000ff">public</font> <font color="#0000ff">double</font>[] normal {  <font color="#0000ff">get</font>; <font color="#0000ff">set</font>; }</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;">}</font></font></p>
+<p style="line-height: 13pt; margin: 0in 0in 10pt;">This very simple class (shown here in its entirety simple implements the vertices array and normal vector of IFaceConvHull. When the FindConvexHull routine is invoked in this project, the faces are returned as a result of the optional <font color="#0000ff"><strong>out</strong></font> argument.</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;">convexHullVertices =  <font color="#2b91af">ConvexHull</font>.FindConvexHull(<font color="#0000ff">out</font> faces, <font color="#0000ff">typeof</font>(<font color="#2b91af">face</font>), 3);</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">&nbsp;</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">4 DelauanayAndVoronoi: The Delaunay triangulation and the Voronoi diagrams for 2D can be found by projecting the points into three-dimensional space, and taking the convex hull. This example shows how the FindDelaunayTriangulation and FindVoronoiDiagrams functions are used. For Delaunay triangulation:</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;">faces = <font color="#000000">convexHull</font>.FindDelaunayTriangulation(<font color="#0000ff">typeof</font>(<font color="#2b91af">face</font>));</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">Here the only thing returned is the faces. For native face types (like in this example and the 3rd example above), we can pass in the type as an optional argument so that MIConvexHull creates a list of faces in our preferred format. If no argument is provided, then the faces are of the type MIConvexHull-&gt;FaceData. For Voronoi:</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;"><font color="#2b91af">List</font>&lt;<font color="#2b91af">IVertexConvHull</font>&gt; nodes;</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;"><font color="#2b91af">List</font>&lt;<font color="#2b91af">Tuple</font>&lt;<font color="#2b91af">IVertexConvHull</font>, <font color="#2b91af">IVertexConvHull</font>&gt;&gt; edges;</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;"><font color="#000000">convexHull</font>.FindVoronoiGraph(<font color="#0000ff">out</font> nodes, <font color="#0000ff">out</font> edges);</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">the function is &ldquo;void&rdquo; (nothing is returned) and so it is necessary to provide both <font color="#0000ff"><strong>out</strong></font> arguments for the Voronoi nodes and Voronoi edges. The nodes must be a List of IVertexConvHull objects while the edges takes advantages of the new Tuple class in .Net 4.0. The edges are pairs of the nodes returned in the first argument.</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">&nbsp;</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">5TestEXE for MIConvexHull-6D Voronoi: This time-consuming example perhaps points out the weakness of MIConvexHull. The goal is to determine the Voronoi graph for a 6 dimensional problem of 500 vertices. The idea is that for a rigid body (perhaps a robot in C-space) in three-dimensional space, there are really 6 dimensions: x, y, z, theta-x, theta-y, and theta-z. This takes a very long time to run &ndash; on the order of one hour. But the results may be very useful in some applications.</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">&nbsp;</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">6Using Helix To Open Models: I recently learned of the wonderful <a href="http://helixtoolkit.codeplex.com/" target="_blank">HelixToolkit</a> and wanted to test MIConvexHull with any arbitrary models. Most of the pictures from the home page are created with the test. I attempted to include Delaunay and Voronoi calculations as well. These do work, but the display is not &ndash; or at least is not tractable with my graphics card. One thing learned from this test example is the need to avoid repeat vertices. If there are any duplicates, MIConvexHull will likely crash. It may be possible to include this check within MIConvexHull, but I want to keep it fast over being robust. If you are having trouble consider including a line of code to remove the duplicates as has been done here in line.</p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;"><font face="Consolas"><font style="font-size: 9.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font style="font-size: 9.5pt;">verts = verts.Distinct(<font color="#0000ff">new</font> <font color="#2b91af">samePoint</font>()).ToList();</font></font></p>
+<p style="line-height: normal; margin: 0in 0in 0pt;">That is it. I never got around to comparing to QHull, so my claims on the homepage are unfounded. I leave the bravado in tact to better motivate someone else to make the comparison.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">MIConvexHull maintained by <a href="https://github.com/DesignEngrLab">DesignEngrLab</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>

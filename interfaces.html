@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="MIConvexHull : A .Net fast convex hull library for 2, 3, and higher dimensions">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>MIConvexHull</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/DesignEngrLab/MIConvexHull">View on GitHub</a>
+
+          <h1 id="project_title">MIConvexHull</h1>
+          <h2 id="project_tagline">A .Net fast convex hull library for 2, 3, and higher dimensions</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/DesignEngrLab/MIConvexHull/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/DesignEngrLab/MIConvexHull/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+      <p>There are two interfaces within MIConvexHull that also should be understood to best utilize the results. I suppose &ldquo;should&rdquo; is a little strong here &ndash; as you can get results without using these (see the example project entitled &ldquo;TestEXE for MIConvexHull-No Interfaces.&rdquo;</p>
+<p><strong><a href="http://msdn.microsoft.com/en-us/library/87d83y5b.aspx">Interfaces </a></strong>are not complicated in their own right, but if you're like me, you've wondered why the added complication is needed. In completing this research effort, the answer became very clear to me. I want to make a plugin or library that will work with your code, but I don't know what your classes look like. By including the inheritance in your class description to my IVertexConvHull, and/or IFaceConvHull - I'm able to both read what in your native vertex and face classes as well as make new objects in your native types.</p>
+<p>For example, in one of the small example applications in the source code, there is a <a href="http://miconvexhull.codeplex.com/SourceControl/changeset/view/cc64d389eb48#TestEXE for MIConvexHull-3D/face.cs"> face-class</a> which is unknown to MIConvexHull.dll. But you see that this class inherits from the MIConvexHull interface, IFaceConvHull. As such, it is required to include full descriptions of the two properties that MIConvexHull expects a face to have (snippet from the <a href="http://miconvexhull.codeplex.com/SourceControl/changeset/view/cc64d389eb48#MIConvexHull/Auxiliary Classes/InterfacesVertexEdgeAndFace.cs"> IFaceConvHull</a> description):</p>
+<pre class="csharpcode">        <span style="color: #4bacc6;">IVertexConvHull</span>[] vertices { <span style="color: #0000ff;">get</span>; <span style="color: #0000ff;">set</span>; }
+        <span class="kwrd"><span style="color: #0000ff;">double</span></span>[] normal { <span style="color: #0000ff;">get</span>; <span style="color: #0000ff;">set</span>; }</pre>
+<p>This may be a point of frustration since your face class may have defined with different terms. Your choice is either to provide these or modify my source code. It may be easy to simple include these properties in your class even if they simply point to (are aliases for) other properties within your class.</p>
+<p>The <a href="http://miconvexhull.codeplex.com/SourceControl/changeset/view/cc64d389eb48#MIConvexHull/Auxiliary Classes/InterfacesVertexEdgeAndFace.cs"> IVertexConvHull</a> interface only includes one item:</p>
+<pre class="csharpcode">        <span class="kwrd">double</span>[] coordinates { <span style="color: #0000ff;">get</span>; <span style="color: #0000ff;">set</span>; }</pre>
+<p>which needs to be provided by your native vertex class. You may have named this node, point, vertex? <a href="http://miconvexhull.codeplex.com/SourceControl/changeset/view/cc64d389eb48#3DConvexHullWPF/vertex.cs"> Here it is used in an example</a> from the <a href="http://miconvexhull.codeplex.com/SourceControl/changeset/view/cc64d389eb48#3DConvexHullWPF/3DConvexHullWPF.csproj"> 3DConvexHullWPF example project</a>. Note how the vertex inherits from Sphere class as well as this interface. This is the nice thing about interfaces &ndash; you can inherit from multiple things. Therefore, if you already are building a vertex class on top of something else (as in the example of the Sphere class here), you don&rsquo;t need to make many modifications.</p>
+<p>Okay? Well, that&rsquo;s the easy part. How does this impact invoking the functions discussed <a href="http://miconvexhull.codeplex.com/documentation">before</a>? The quickest results are obtained when you use create the ConvexHull object using the constructor that receives a List&lt;IVertexConvHull&gt; vertices, that is, you declare your vertices as a List of type IVertexConvHull. This will eliminate the need to translate your points into the format used here. But how important is speed to you? It will likely only take about 1 nanosecond per vertex to translate your array or list in the MIConvexHull format. Chances are if you&rsquo;re not using this in a game or you have fewer than a million vertices, you will be fine to wait that split second.</p>
+<p>So, the input can handle a variety of types of classes and arrays. What&rsquo;s more important though, is for you to make sense of what MIConvexHull returns. For the FindConvexHull function, it simply returns a subset of the input. If you are using the double-arrays, you can invoke the FindConvexHull_AsDoubleArray function which return the vertices as an array of double arrays (<span style="color: #0000ff;">double</span>[][]). If you want the faces of the convex hull, you have to use the following:</p>
+<blockquote>
+<pre class="csharpcode"><span style="color: #4bacc6;">List<span style="color: #000000;">&lt;</span>IVertexConvHull<span style="color: #000000;">&gt;</span> ConvexHull</span>.FindConvexHull(<span class="kwrd">out</span> <span style="color: #4bacc6;">List<span style="color: #000000;">&lt;</span>IFaceConvHull</span>&gt; faces, <span style="color: #4bacc6;">Type</span> face_Type, <span style="color: #a5b592;">optional</span> <span class="kwrd">int</span> dimensions)</pre>
+</blockquote>
+<p>which will create the faces as objects of your request type (what you put into to face_Type). *** You will crash MIConvexHull, though if you do not have a default constructor that takes zero arguments. *** Please ensure this is in place.</p>
+<p>The Delaunay triangulation routine returns the created faces as its main output. And, as you can see, the face_Type is optional.</p>
+<pre class="csharpcode">      <span style="color: #4bacc6;">List<span style="color: #000000;">&lt;</span>IFaceConvHull</span>&gt; <span style="color: #4bacc6;">ConvexHull</span>.FindDelaunayTriangulation(<span style="color: #a5b592;">optional</span> <span style="color: #4bacc6;">Type</span> face_Type, <span style="color: #a5b592;">optional</span> <span class="kwrd">int</span> dimensions)</pre>
+<p>If no face type is provided, faces are returned as objects of a default face class, <a href="http://miconvexhull.codeplex.com/SourceControl/changeset/view/cc64d389eb48#MIConvexHull/Auxiliary Classes/FaceData.cs"> MIConvexHull.FaceData</a>. Finally, the Voronoi function creates a graph of vertices and edges, but it is a void function. You must explicitly define two lists prior to invoking this function: a list of nodes, and a list of edges &ndash; each edge represented as a duple of two vertices.</p>
+<blockquote>
+<pre class="csharpcode"><span class="kwrd">void</span> <span style="color: #4bacc6;">ConvexHull</span>.FindVoronoiGraph(<span class="kwrd">out</span> <span style="color: #4bacc6;">List<span style="color: #000000;">&lt;</span>IVertexConvHull<span style="color: #000000;">&gt;</span></span> nodes, <span class="kwrd">out</span> <span style="color: #4bacc6;">List<span style="color: #000000;">&lt;</span>Tuple<span style="color: #000000;">&lt;</span>IVertexConvHull, IVertexConvHull</span>&gt;&gt; edges, <br />                                 <span style="color: #4bacc6;">Type</span> node_Type, <span style="color: #a5b592;">optional</span> <span style="color: #0000ff;">int </span>dimensions)</pre>
+</blockquote>
+<p>Here, the node type is used to define to replace the IVertexConvHull in both lists that are returned. Make sure that this node type inherits from IVertexConvHull. Also, you will notice, the Tuple object. This is a fairly new aspect of C#, but it&rsquo;s handy in limiting the number of new classes that need to be defined.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">MIConvexHull maintained by <a href="https://github.com/DesignEngrLab">DesignEngrLab</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
