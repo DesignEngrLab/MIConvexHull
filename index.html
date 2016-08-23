@@ -31,29 +31,38 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <p>!! Update Dec 2014</p>
-
-<ul>
-<li>Improved handling of "degenerate" data (regular grids, etc.). See examples 4DelaunayAndVoronoiWPF and 7DelaunayWPF for basic usage of the new features. It is still not perfect but seems to  be a step forward.</li>
-<li>Performance is improved by up to ~40% mostly due to changing internal representation of data (for example Delaunay tri. of 50k random 3D points down from ~3.2s to ~1.9s on my machine). </li>
-</ul>
-
-<p>!! Project Description</p>
-
-<p>This project is a convex hull algorithm and library for 2D,  3D, and higher dimensions. The code can also be used to compute Delaunay triangulations and Voronoi meshes of the input data. </p>
-
-<p>The code is written in C# and provides a template based API that allows extensive customization of the underlying types that represent vertices and faces of the convex hull. The algorithm itself is technically an implementation of the QuickHull algorithm. Nevertheless, it's not just a simple port of QHull as a different approach and data structures are used by the MIConvexHull algorithm.</p>
-
-<p>!! Examples</p>
-
-<p>The timings are illustrative and were obtained on Core i7-5930 using the version from Dec 20 2014 and the Helix Studio example.</p>
-
-<p>| 26328 vertices: Convex hull in 0.009s. Triangulation in 0.743s. | 34835 vertices: Convex hull in 0.018s. Triangulation in 1.225s. |
-| [image:ferrari_thumb.png] [image:ferrariwrap_thumb.png] | [image:bunny_thumb.png] [image:bunnywarp_thumb.png] |
-|26332 vertices: Convex hull in 0.003s. Triangulation in 0.761s.|500 2D vertices - Delaunay Triangulation and Voronoi Mesh.|
-|[image:eiffel_thumb.png] [image:eiffel-wrap_thumb.png] |[image:2dDelau.png] [image:2dVoronoi.png]|
-| Voronoi mesh of regular grid with an ellipse inside. | Delaunay triangulation of regular grid |
-| [image:miregularvoronoi.png] | [image:miregulartri.jpg] |</p>
+<h2>Project Description</h2>
+<p>This project is a convex hull algorithm and library for 2D, 3D, and higher dimensions. The code can also be used to compute Delaunay triangulations and Voronoi meshes of the input data. <br /><br />The code is written in C# and provides a template based API that allows extensive customization of the underlying types that represent vertices and faces of the convex hull. The algorithm itself is technically an implementation of the QuickHull algorithm. Nevertheless, it's not just a simple port of QHull as a different approach and data structures are used by the MIConvexHull algorithm.</p>
+<h2>Examples</h2>
+<p>The timings are illustrative and were obtained on Core i7-5930 using the version from Dec 20 2014 and the Helix Studio example.<br /><br /></p>
+<table>
+<tbody>
+<tr>
+<td>26328 vertices: Convex hull in 0.009s. Triangulation in 0.743s.</td>
+<td>34835 vertices: Convex hull in 0.018s. Triangulation in 1.225s.</td>
+</tr>
+<tr>
+<td><img title="ferrari_thumb.png" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=miconvexhull&amp;DownloadId=159716" alt="ferrari_thumb.png" /> <img title="ferrariwrap_thumb.png" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=miconvexhull&amp;DownloadId=159718" alt="ferrariwrap_thumb.png" /></td>
+<td><img title="bunny_thumb.png" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=miconvexhull&amp;DownloadId=159726" alt="bunny_thumb.png" /> <img title="bunnywarp_thumb.png" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=miconvexhull&amp;DownloadId=159728" alt="bunnywarp_thumb.png" /></td>
+</tr>
+<tr>
+<td>26332 vertices: Convex hull in 0.003s. Triangulation in 0.761s.</td>
+<td>500 2D vertices - Delaunay Triangulation and Voronoi Mesh.</td>
+</tr>
+<tr>
+<td><img title="eiffel_thumb.png" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=miconvexhull&amp;DownloadId=159730" alt="eiffel_thumb.png" /> <img title="eiffel-wrap_thumb.png" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=miconvexhull&amp;DownloadId=159732" alt="eiffel-wrap_thumb.png" /></td>
+<td><img title="2dDelau.png" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=miconvexhull&amp;DownloadId=295635" alt="2dDelau.png" /> <img title="2dVoronoi.png" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=miconvexhull&amp;DownloadId=295636" alt="2dVoronoi.png" /></td>
+</tr>
+<tr>
+<td>Voronoi mesh of regular grid with an ellipse inside.</td>
+<td>Delaunay triangulation of regular grid</td>
+</tr>
+<tr>
+<td><img title="miregularvoronoi.png" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=miconvexhull&amp;DownloadId=1018030" alt="miregularvoronoi.png" /></td>
+<td><img title="miregulartri.jpg" src="http://download-codeplex.sec.s-msft.com/Download?ProjectName=miconvexhull&amp;DownloadId=1018031" alt="miregulartri.jpg" /></td>
+</tr>
+</tbody>
+</table>
       </section>
     </div>
 
