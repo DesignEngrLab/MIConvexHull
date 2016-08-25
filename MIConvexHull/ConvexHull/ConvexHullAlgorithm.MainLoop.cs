@@ -54,7 +54,7 @@ namespace MIConvexHull
         void FindConvexHull()
         {
             // Find the (dimension+1) initial points and create the simplexes.
-            InitConvexHull();
+            CreateInitialSimplex();
             
             // Expand the convex hull and faces.
             while (UnprocessedFaces.First != null)

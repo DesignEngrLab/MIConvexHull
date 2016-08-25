@@ -332,38 +332,6 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        /// Create the first faces from (dimension + 1) vertices.
-        /// </summary>
-        /// <returns></returns>
-        int[] CreateInitialHull(List<int> initialPoints)
-        {
-            var faces = new int[Dimension + 1];
-
-            for (var i = 0; i < Dimension + 1; i++)
-            {
-                var vertices = new int[Dimension];
-                for (int j = 0, k = 0; j <= Dimension; j++)
-                {
-                    if (i != j) vertices[k++] = initialPoints[j];
-                }
-                var newFace = FacePool[ObjectManager.GetFace()];
-                newFace.Vertices = vertices;
-                Array.Sort(vertices);
-                MathHelper.CalculateFacePlane(newFace, Center);
-                faces[i] = newFace.Index;
-            }
-
-            // update the adjacency (check all pairs of faces)
-            for (var i = 0; i < Dimension; i++)
-            {
-                for (var j = i + 1; j < Dimension + 1; j++) UpdateAdjacency(FacePool[faces[i]], FacePool[faces[j]]);
-            }
-
-            return faces;
-        }
-
-
-        /// <summary>
         /// Check if 2 faces are adjacent and if so, update their AdjacentFaces array.
         /// </summary>
         /// <param name="l"></param>
@@ -400,14 +368,55 @@ namespace MIConvexHull
             }
             r.AdjacentFaces[i] = l.Index;
         }
-        
+
         /// <summary>
         /// Find the (dimension+1) initial points and create the simplexes.
+        /// Creates the initial simplex of n+1 vertices by using points from the bounding box.
+        /// Special care is taken to ensure that the vertices chosen do not result in a degenerate shape
+        /// where vertices are collinear (co-planar, etc). This would technically be resolved when additional
+        /// vertices are checked in the main loop, but: 1) a degenerate simplex would not eliminate any other 
+        /// vertices (thus no savings there), 2) the creation of the face normal is prone to error.
         /// </summary>
-        void InitConvexHull()
+        void CreateInitialSimplex()
         {
-            List<int> initialPoints = CreateInitialSimplex();
-
+            #region Get the best points
+            var boundingBoxPoints = FindBoundingBoxPoints(Vertices);
+            var vertex0 = boundingBoxPoints[0].First(); // these are min and max vertices along
+            var vertex1 = boundingBoxPoints[0].Last(); // the dimension that had the fewest points
+            boundingBoxPoints[0].RemoveAt(0);
+            boundingBoxPoints[0].RemoveAt(boundingBoxPoints[0].Count - 1);
+            var initialPoints = new List<int> { vertex0, vertex1 };
+            var edgeUnitVectors = new List<double[]> { makeUnitVector(vertex0, vertex1) };
+            var dimensionIndex = 0;
+            while (initialPoints.Count < Dimension + 1)
+            {
+                dimensionIndex++;
+                if (dimensionIndex == Dimension) dimensionIndex = 0;
+                var bestNewIndex = -1;
+                var lowestDotProduct = 1.0;
+                double[] bestUnitVector = { };
+                for (int i = boundingBoxPoints[dimensionIndex].Count - 1; i >= 0; i--)
+                {
+                    var vIndex = boundingBoxPoints[dimensionIndex][i];
+                    if (initialPoints.Contains(vIndex)) boundingBoxPoints[dimensionIndex].RemoveAt(i);
+                    else
+                    {
+                        var newUnitVector = makeUnitVector(vertex0, vIndex);
+                        double maxDotProduct = calcMaxDotProduct(edgeUnitVectors, newUnitVector);
+                        if (lowestDotProduct > maxDotProduct)
+                        {
+                            lowestDotProduct = maxDotProduct;
+                            bestNewIndex = vIndex;
+                            bestUnitVector = newUnitVector;
+                        }
+                    }
+                }
+                if (lowestDotProduct >= 1.0) continue;
+                boundingBoxPoints[dimensionIndex].Remove(bestNewIndex);
+                edgeUnitVectors.Add(bestUnitVector);
+                initialPoints.Add(bestNewIndex);
+            }
+            #endregion
             // Add the initial points to the convex hull.
             foreach (var vertex in initialPoints)
             {
@@ -419,10 +428,27 @@ namespace MIConvexHull
                 VertexMarks[vertex] = true;
             }
 
-            // Create the initial simplexes.
-            var faces = CreateInitialHull(initialPoints);
+            #region Create the first faces from (dimension + 1) vertices.
+            var faces = new int[Dimension + 1];
 
-            // Init the vertex beyond buffers.
+            for (var i = 0; i < Dimension + 1; i++)
+            {
+                var vertices = new int[Dimension];
+                for (int j = 0, k = 0; j <= Dimension; j++)
+                {
+                    if (i != j) vertices[k++] = initialPoints[j];
+                }
+                var newFace = FacePool[ObjectManager.GetFace()];
+                newFace.Vertices = vertices;
+                Array.Sort(vertices);
+                MathHelper.CalculateFacePlane(newFace, Center);
+                faces[i] = newFace.Index;
+            }
+            // update the adjacency (check all pairs of faces)
+            for (var i = 0; i < Dimension; i++)
+                for (var j = i + 1; j < Dimension + 1; j++) UpdateAdjacency(FacePool[faces[i]], FacePool[faces[j]]);
+            #endregion
+            #region Init the vertex beyond buffers.
             foreach (var faceIndex in faces)
             {
                 var face = FacePool[faceIndex];
@@ -430,7 +456,7 @@ namespace MIConvexHull
                 if (face.VerticesBeyond.Count == 0) ConvexFaces.Add(face.Index); // The face is on the hull
                 else UnprocessedFaces.Add(face);
             }
-
+            #endregion
             // Unmark the vertices
             foreach (var vertex in initialPoints) VertexMarks[vertex] = false;
 
@@ -469,54 +495,6 @@ namespace MIConvexHull
                 if (comp != 0) return comp;
             }
             return 0;
-        }
-
-        /// <summary>
-        /// Creates the initial simplex of n+1 vertices by using points from the bounding box.
-        /// Special care is taken to ensure that the vertices chosen do not result in a degenerate shape
-        /// where vertices are collinear (co-planar, etc). This would technically be resolved when additional
-        /// vertices are checked in the main loop, but: 1) a degenerate simplex would not eliminate any other 
-        /// vertices (thus no savings there), 2) the creation of the face normal is prone to error.
-        /// </summary>
-        internal List<int> CreateInitialSimplex()
-        {
-            var boundingBoxPoints = FindBoundingBoxPoints(Vertices);
-            var vertex0 = boundingBoxPoints[0].First(); // these are min and max vertices along
-            var vertex1 = boundingBoxPoints[0].Last(); // the dimension that had the fewest points
-            boundingBoxPoints[0].RemoveAt(0);
-            boundingBoxPoints[0].RemoveAt(boundingBoxPoints[0].Count - 1);
-            var initVertices = new List<int> { vertex0, vertex1 };
-            var edgeUnitVectors = new List<double[]> { makeUnitVector(vertex0, vertex1) };
-            var dimensionIndex = 0;
-            while (initVertices.Count < Dimension + 1)
-            {
-                dimensionIndex++;
-                if (dimensionIndex == Dimension) dimensionIndex = 0;
-                var bestNewIndex = -1;
-                var lowestDotProduct = 1.0;
-                double[] bestUnitVector = { };
-                for (int i = boundingBoxPoints[dimensionIndex].Count - 1; i >= 0; i--)
-                {
-                    var vIndex = boundingBoxPoints[dimensionIndex][i];
-                    if (initVertices.Contains(vIndex)) boundingBoxPoints[dimensionIndex].RemoveAt(i);
-                    else
-                    {
-                        var newUnitVector = makeUnitVector(vertex0, vIndex);
-                        double maxDotProduct = calcMaxDotProduct(edgeUnitVectors, newUnitVector);
-                        if (lowestDotProduct > maxDotProduct)
-                        {
-                            lowestDotProduct = maxDotProduct;
-                            bestNewIndex = vIndex;
-                            bestUnitVector = newUnitVector;
-                        }
-                    }
-                }
-                if (lowestDotProduct >= 1.0) continue;
-                boundingBoxPoints[dimensionIndex].Remove(bestNewIndex);
-                edgeUnitVectors.Add(bestUnitVector);
-                initVertices.Add(bestNewIndex);
-            }
-            return initVertices;
         }
 
         private double calcMaxDotProduct(List<double[]> edgeUnitVectors, double[] newUnitVector)
