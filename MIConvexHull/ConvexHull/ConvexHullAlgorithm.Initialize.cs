@@ -400,44 +400,12 @@ namespace MIConvexHull
             }
             r.AdjacentFaces[i] = l.Index;
         }
-
-        /// <summary>
-        /// Init the hull if Vertices.Length == Dimension.
-        /// </summary>
-        void InitSingle()
-        {
-            var vertices = new int[Dimension];
-            for (int i = 0; i < Vertices.Length; i++)
-            {
-                vertices[i] = i;
-            }
-
-            var newFace = FacePool[ObjectManager.GetFace()];
-            newFace.Vertices = vertices;
-            Array.Sort(vertices);
-            MathHelper.CalculateFacePlane(newFace, Center);
-
-            // Make sure the normal point downwards in case this is used for triangulation
-            if (newFace.Normal[Dimension - 1] >= 0.0)
-            {
-                for (int i = 0; i < Dimension; i++)
-                {
-                    newFace.Normal[i] *= -1.0;
-                }
-                newFace.Offset = -newFace.Offset;
-                newFace.IsNormalFlipped = !newFace.IsNormalFlipped;
-            }
-
-            ConvexFaces.Add(newFace.Index);
-        }
-
+        
         /// <summary>
         /// Find the (dimension+1) initial points and create the simplexes.
         /// </summary>
         void InitConvexHull()
         {
-            //var extremes = FindExtremes();
-            //var initialPoints = FindInitialPoints(extremes);
             List<int> initialPoints = CreateInitialSimplex();
 
             // Add the initial points to the convex hull.
@@ -533,7 +501,7 @@ namespace MIConvexHull
                     if (initVertices.Contains(vIndex)) boundingBoxPoints[dimensionIndex].RemoveAt(i);
                     else
                     {
-                        var newUnitVector = makeUnitVector(initVertices.Last(), vIndex);
+                        var newUnitVector = makeUnitVector(vertex0, vIndex);
                         double maxDotProduct = calcMaxDotProduct(edgeUnitVectors, newUnitVector);
                         if (lowestDotProduct > maxDotProduct)
                         {
