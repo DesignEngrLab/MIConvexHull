@@ -58,9 +58,11 @@ namespace MIConvexHull
             ConvexHullAlgorithm ch = new ConvexHullAlgorithm(vertices, false, config);
             ch.FindConvexHull();
 
-            var hull = ch.GetHullVertices(data);
-
-            return new ConvexHull<TVertex, TFace> { Points = hull, Faces = ch.GetConvexFaces<TVertex, TFace>() };
+            return new ConvexHull<TVertex, TFace>
+            {
+                Points = ch.GetHullVertices(data),
+                Faces = ch.GetConvexFaces<TVertex, TFace>()
+            };
         }
 
         #region Constructor
@@ -83,10 +85,37 @@ namespace MIConvexHull
 
             Dimension = DetermineDimension();
             if (Dimension < 2) throw new InvalidOperationException("Dimension of the input must be 2 or greater.");
-
+            if (Vertices.Length <= Dimension)
+                throw new ArgumentException("There are too few vertices (m) for the n-dimensional space. (m must be greater " +
+                                            "than the n, but m is " + Vertices.Length + " and n is " + Dimension);
             if (lift) Dimension++;
-            InitializeData(config);
+
+            UnprocessedFaces = new FaceList();
+            ConvexFaces = new IndexBuffer();
+
+            FacePool = new ConvexFaceInternal[(Dimension + 1) * 10]; // must be initialized before object manager
+            AffectedFaceFlags = new bool[(Dimension + 1) * 10];
+            ObjectManager = new MIConvexHull.ObjectManager(this);
+
+            Center = new double[Dimension];
+            TraverseStack = new IndexBuffer();
+            UpdateBuffer = new int[Dimension];
+            UpdateIndices = new int[Dimension];
+            EmptyBuffer = new IndexBuffer();
+            AffectedFaceBuffer = new IndexBuffer();
+            ConeFaceBuffer = new SimpleList<DeferredFace>();
+            SingularVertices = new HashSet<int>();
+            BeyondBuffer = new IndexBuffer();
+
+            ConnectorTable = new ConnectorList[ConnectorTableSize];
+            for (int i = 0; i < ConnectorTableSize; i++) ConnectorTable[i] = new ConnectorList();
+
+            VertexMarks = new bool[Vertices.Length];
+            InitializePositions(config);
+
+            MathHelper = new MIConvexHull.MathHelper(Dimension, Positions);
         }
+
         #endregion
 
         #region Fields
@@ -220,37 +249,6 @@ namespace MIConvexHull
         /// </summary>
         MathHelper MathHelper;
         #endregion
-        /// <summary>
-        /// Initialize buffers and lists.
-        /// </summary>
-        /// <param name="config"></param>
-        void InitializeData(ConvexHullComputationConfig config)
-        {
-            UnprocessedFaces = new FaceList();
-            ConvexFaces = new IndexBuffer();
-
-            FacePool = new ConvexFaceInternal[(Dimension + 1) * 10]; // must be initialized before object manager
-            AffectedFaceFlags = new bool[(Dimension + 1) * 10];
-            ObjectManager = new MIConvexHull.ObjectManager(this);
-
-            Center = new double[Dimension];
-            TraverseStack = new IndexBuffer();
-            UpdateBuffer = new int[Dimension];
-            UpdateIndices = new int[Dimension];
-            EmptyBuffer = new IndexBuffer();
-            AffectedFaceBuffer = new IndexBuffer();
-            ConeFaceBuffer = new SimpleList<DeferredFace>();
-            SingularVertices = new HashSet<int>();
-            BeyondBuffer = new IndexBuffer();
-
-            ConnectorTable = new ConnectorList[ConnectorTableSize];
-            for (int i = 0; i < ConnectorTableSize; i++) ConnectorTable[i] = new ConnectorList();
-
-            VertexMarks = new bool[Vertices.Length];
-            InitializePositions(config);
-
-            MathHelper = new MIConvexHull.MathHelper(Dimension, Positions);
-        }
 
         /// <summary>
         /// Initialize the vertex positions based on the translation type from config.
@@ -438,18 +436,6 @@ namespace MIConvexHull
         /// </summary>
         void InitConvexHull()
         {
-            if (Vertices.Length < Dimension)
-            {
-                // In this case, there cannot be a single convex face, so we return an empty result.                
-                return;
-            }
-            else if (Vertices.Length == Dimension)
-            {
-                // The vertices are all on the hull and form a single simplex.
-                InitSingle();
-                return;
-            }
-
             //var extremes = FindExtremes();
             //var initialPoints = FindInitialPoints(extremes);
             List<int> initialPoints = CreateInitialSimplex();
@@ -483,7 +469,7 @@ namespace MIConvexHull
         }
 
 
-        
+
         /// <summary>
         /// Used in the "initialization" code.
         /// </summary>
@@ -503,8 +489,8 @@ namespace MIConvexHull
 
             face.FurthestVertex = FurthestVertex;
         }
-        
-        
+
+
         private int LexCompare(int u, int v)
         {
             int uOffset = u * Dimension, vOffset = v * Dimension;
@@ -516,7 +502,7 @@ namespace MIConvexHull
             }
             return 0;
         }
-        
+
         /// <summary>
         /// Creates the initial simplex of n+1 vertices by using points from the bounding box.
         /// Special care is taken to ensure that the vertices chosen do not result in a degenerate shape

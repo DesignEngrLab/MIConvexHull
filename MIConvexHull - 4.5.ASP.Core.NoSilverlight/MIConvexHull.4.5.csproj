@@ -46,23 +46,17 @@
     <Compile Include="..\MIConvexHull\ConvexHull.cs">
       <Link>ConvexHull.cs</Link>
     </Compile>
-    <Compile Include="..\MIConvexHull\ConvexHull\Algorithm\Core.cs">
-      <Link>ConvexHull\Algorithm\Core.cs</Link>
-    </Compile>
-    <Compile Include="..\MIConvexHull\ConvexHull\Algorithm\Data.cs">
-      <Link>ConvexHull\Algorithm\Data.cs</Link>
-    </Compile>
-    <Compile Include="..\MIConvexHull\ConvexHull\Algorithm\Initialize.cs">
-      <Link>ConvexHull\Algorithm\Initialize.cs</Link>
-    </Compile>
-    <Compile Include="..\MIConvexHull\ConvexHull\Algorithm\Result.cs">
-      <Link>ConvexHull\Algorithm\Result.cs</Link>
-    </Compile>
     <Compile Include="..\MIConvexHull\ConvexHull\Collections.cs">
       <Link>ConvexHull\Collections.cs</Link>
     </Compile>
     <Compile Include="..\MIConvexHull\ConvexHull\ConvexFace.cs">
       <Link>ConvexHull\ConvexFace.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\ConvexHull\ConvexHullAlgorithm.Initialize.cs">
+      <Link>ConvexHull\ConvexHullAlgorithm.Initialize.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\ConvexHull\ConvexHullAlgorithm.MainLoop.cs">
+      <Link>ConvexHull\ConvexHullAlgorithm.MainLoop.cs</Link>
     </Compile>
     <Compile Include="..\MIConvexHull\ConvexHull\DataModel.cs">
       <Link>ConvexHull\DataModel.cs</Link>
