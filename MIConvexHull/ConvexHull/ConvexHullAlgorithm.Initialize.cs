@@ -527,7 +527,7 @@ namespace MIConvexHull
                 var bestNewIndex = -1;
                 var lowestDotProduct = 1.0;
                 double[] bestUnitVector = { };
-                for (int i = 0; i < boundingBoxPoints[dimensionIndex].Count; i++)
+                for (int i = boundingBoxPoints[dimensionIndex].Count - 1; i >= 0; i--)
                 {
                     var vIndex = boundingBoxPoints[dimensionIndex][i];
                     if (initVertices.Contains(vIndex)) boundingBoxPoints[dimensionIndex].RemoveAt(i);
