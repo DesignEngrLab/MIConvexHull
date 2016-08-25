@@ -195,8 +195,9 @@ namespace MIConvexHull
                 return;
             }
 
-            var extremes = FindExtremes();
-            var initialPoints = FindInitialPoints(extremes);
+            //var extremes = FindExtremes();
+            //var initialPoints = FindInitialPoints(extremes);
+            List<int> initialPoints = CreateInitialSimplex();
 
             // Add the initial points to the convex hull.
             foreach (var vertex in initialPoints)
@@ -227,6 +228,7 @@ namespace MIConvexHull
         }
 
 
+        
         /// <summary>
         /// Used in the "initialization" code.
         /// </summary>
@@ -246,105 +248,8 @@ namespace MIConvexHull
 
             face.FurthestVertex = FurthestVertex;
         }
-
-        /// <summary>
-        /// Finds (dimension + 1) initial points.
-        /// </summary>
-        /// <param name="extremes"></param>
-        /// <returns></returns>
-        private List<int> FindInitialPoints(List<int> extremes)
-        {
-            List<int> initialPoints = new List<int>();
-
-            int first = -1, second = -1;
-            double maxDist = 0;
-            double[] temp = new double[Dimension];
-            for (int i = 0; i < extremes.Count - 1; i++)
-            {
-                var a = extremes[i];
-                for (int j = i + 1; j < extremes.Count; j++)
-                {
-                    var b = extremes[j];
-                    MathHelper.SubtractFast(a, b, temp);
-                    var dist = MathHelper.LengthSquared(temp);
-                    if (dist > maxDist)
-                    {
-                        first = a;
-                        second = b;
-                        maxDist = dist;
-                    }
-                }
-            }
-
-            initialPoints.Add(first);
-            initialPoints.Add(second);
-
-            for (int i = 2; i <= Dimension; i++)
-            {
-                double maximum = double.NegativeInfinity;
-                int maxPoint = -1;
-                for (int j = 0; j < extremes.Count; j++)
-                {
-                    var extreme = extremes[j];
-                    if (initialPoints.Contains(extreme)) continue;
-
-                    var val = GetSquaredDistanceSum(extreme, initialPoints);
-
-                    if (val > maximum)
-                    {
-                        maximum = val;
-                        maxPoint = extreme;
-                    }
-                }
-
-                if (maxPoint >= 0) initialPoints.Add(maxPoint);
-                else
-                {
-                    int vCount = Vertices.Length;
-                    for (int j = 0; j < vCount; j++)
-                    {
-                        if (initialPoints.Contains(j)) continue;
-
-                        var val = GetSquaredDistanceSum(j, initialPoints);
-
-                        if (val > maximum)
-                        {
-                            maximum = val;
-                            maxPoint = j;
-                        }
-                    }
-
-                    if (maxPoint >= 0) initialPoints.Add(maxPoint);
-                    else ThrowSingular();
-                }
-            }
-            return initialPoints;
-        }
-
-        /// <summary>
-        /// Computes the sum of square distances to the initial points.
-        /// </summary>
-        /// <param name="pivot"></param>
-        /// <param name="initialPoints"></param>
-        /// <returns></returns>
-        double GetSquaredDistanceSum(int pivot, List<int> initialPoints)
-        {
-            var initPtsNum = initialPoints.Count;
-            var sum = 0.0;
-
-            for (int i = 0; i < initPtsNum; i++)
-            {
-                var initPt = initialPoints[i];
-                for (int j = 0; j < Dimension; j++)
-                {
-                    double t = GetCoordinate(initPt, j) - GetCoordinate(pivot, j);
-                    sum += t * t;
-                }
-            }
-
-            return sum;
-        }
-
+        
+        
         private int LexCompare(int u, int v)
         {
             int uOffset = u * Dimension, vOffset = v * Dimension;
@@ -356,65 +261,144 @@ namespace MIConvexHull
             }
             return 0;
         }
-
+        
         /// <summary>
-        /// Finds the extremes in all dimensions.
+        /// Creates the initial simplex of n+1 vertices by using points from the bounding box.
+        /// Special care is taken to ensure that the vertices chosen do not result in a degenerate shape
+        /// where vertices are collinear (co-planar, etc). This would technically be resolved when additional
+        /// vertices are checked in the main loop, but: 1) a degenerate simplex would not eliminate any other 
+        /// vertices (thus no savings there), 2) the creation of the face normal is prone to error.
         /// </summary>
-        /// <returns></returns>
-        private List<int> FindExtremes()
+        internal List<int> CreateInitialSimplex()
         {
-            var extremes = new HashSet<int>();
+            var boundingBoxPoints = FindBoundingBoxPoints(Vertices);
+            var vertex0 = boundingBoxPoints[0].First(); // these are min and max vertices along
+            var vertex1 = boundingBoxPoints[0].Last(); // the dimension that had the fewest points
+            boundingBoxPoints[0].RemoveAt(0);
+            boundingBoxPoints[0].RemoveAt(boundingBoxPoints[0].Count - 1);
+            var initVertices = new List<int> { vertex0, vertex1 };
+            var edgeUnitVectors = new List<double[]> { makeUnitVector(vertex0, vertex1) };
+            var dimensionIndex = 0;
+            while (initVertices.Count < Dimension + 1)
+            {
+                dimensionIndex++;
+                if (dimensionIndex == Dimension) dimensionIndex = 0;
+                var bestNewIndex = -1;
+                var lowestDotProduct = 1.0;
+                double[] bestUnitVector = { };
+                for (int i = 0; i < boundingBoxPoints[dimensionIndex].Count; i++)
+                {
+                    var vIndex = boundingBoxPoints[dimensionIndex][i];
+                    if (initVertices.Contains(vIndex)) boundingBoxPoints[dimensionIndex].RemoveAt(i);
+                    else
+                    {
+                        var newUnitVector = makeUnitVector(initVertices.Last(), vIndex);
+                        double maxDotProduct = calcMaxDotProduct(edgeUnitVectors, newUnitVector);
+                        if (lowestDotProduct > maxDotProduct)
+                        {
+                            lowestDotProduct = maxDotProduct;
+                            bestNewIndex = vIndex;
+                            bestUnitVector = newUnitVector;
+                        }
+                    }
+                }
+                if (lowestDotProduct >= 1.0) continue;
+                boundingBoxPoints[dimensionIndex].Remove(bestNewIndex);
+                edgeUnitVectors.Add(bestUnitVector);
+                initVertices.Add(bestNewIndex);
+            }
+            return initVertices;
+        }
 
+        private double calcMaxDotProduct(List<double[]> edgeUnitVectors, double[] newUnitVector)
+        {
+            var maxDotProduct = 0.0;
+            for (int i = 0; i < edgeUnitVectors.Count; i++)
+            {
+                var dot = 0.0;
+                for (int dimIndex = 0; dimIndex < Dimension; dimIndex++)
+                    dot += edgeUnitVectors[i][dimIndex] * newUnitVector[dimIndex];
+                dot = Math.Abs(dot);
+                if (maxDotProduct < dot) maxDotProduct = dot;
+            }
+            return maxDotProduct;
+        }
+
+        private double[] makeUnitVector(int v1, int v2)
+        {
+            var vector = new double[Dimension];
+            for (int i = 0; i < Dimension; i++)
+                vector[i] = GetCoordinate(v1, i) - GetCoordinate(v2, i);
+            var magnitude = 0.0;
+            for (int i = 0; i < Dimension; i++)
+                magnitude += vector[i] * vector[i];
+            magnitude = Math.Sqrt(magnitude);
+            for (int i = 0; i < Dimension; i++)
+                vector[i] /= magnitude;
+            return vector;
+        }
+
+        private List<List<int>> FindBoundingBoxPoints(IVertex[] vertices)
+        {
+            var extremes = new List<List<int>>();
+            var fewestExtremes = int.MaxValue;
             int vCount = Vertices.Length;
             for (int i = 0; i < Dimension; i++)
             {
+                var minIndices = new List<int>();
+                var maxIndices = new List<int>();
                 double min = double.MaxValue, max = double.MinValue;
-                int minInd = 0, maxInd = 0;
                 for (int j = 0; j < vCount; j++)
                 {
                     var v = GetCoordinate(j, i);
                     var diff = min - v;
                     if (diff >= PlaneDistanceTolerance)
-                    {
+                    { // you found a better solution than before, clear out the list and store new value
                         min = v;
-                        minInd = j;
+                        minIndices.Clear();
+                        minIndices.Add(j);
                     }
-
+                    else if (diff > 0)
+                    { // you found a solution slightly better than before, clear out tosee that are no longer on the list and store new value
+                        min = v;
+                        minIndices.RemoveAll(index => min - GetCoordinate(index, i) > PlaneDistanceTolerance);
+                        minIndices.Add(j);
+                    }
+                    else if (diff > -PlaneDistanceTolerance)
+                    { //same or almost as good as current limit, so store it
+                        minIndices.Add(j);
+                    }
                     diff = v - max;
                     if (diff >= PlaneDistanceTolerance)
-                    {
+                    { // you found a better solution than before, clear out the list and store new value
                         max = v;
-                        maxInd = j;
+                        maxIndices.Clear();
+                        maxIndices.Add(j);
+                    }
+                    else if (diff > 0)
+                    { // you found a solution slightly better than before, clear out tosee that are no longer on the list and store new value
+                        max = v;
+                        maxIndices.RemoveAll(index => min - GetCoordinate(index, i) > PlaneDistanceTolerance);
+                        maxIndices.Add(j);
+                    }
+                    else if (diff > -PlaneDistanceTolerance)
+                    { //same or almost as good as current limit, so store it
+                        maxIndices.Add(j);
                     }
                 }
-
-                extremes.Add(minInd);
-                extremes.Add(maxInd);
-            }
-
-            // Do we have enough unique extreme points?
-            if (extremes.Count <= Dimension)
-            {
-                // If not, just add the "first" non-included ones.
-                int i = 0;
-                while (i < vCount && extremes.Count <= Dimension)
+                // in the Init method that calls this we want the most restrictive bounds first, so we do a
+                // simple sorting - in a way - we put the dimensions with the fewest points first.
+                // this is why the following if-else takes care of.
+                minIndices.AddRange(maxIndices);
+                if (minIndices.Count <= fewestExtremes)
                 {
-                    extremes.Add(i);
-                    i++;
+                    extremes.Insert(0, minIndices);
+                    fewestExtremes = minIndices.Count;
                 }
+                else extremes.Add(minIndices);
             }
-
-            return extremes.ToList();
+            return extremes;
         }
 
-        /// <summary>
-        /// The exception thrown if singular input data detected.
-        /// </summary>
-        void ThrowSingular()
-        {
-            throw new InvalidOperationException(
-                    "Singular input data (i.e. trying to triangulate a data that contain a regular lattice of points) detected. "
-                    + "Introducing some noise to the data might resolve the issue.");
-        }
     }
 }
