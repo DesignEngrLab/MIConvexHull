@@ -104,7 +104,7 @@ namespace MIConvexHull
         public static ConvexHull<TVertex, TFace> Create(IList<TVertex> data, ConvexHullComputationConfig config)
         {
             if (data == null) throw new ArgumentNullException("data");
-            return ConvexHullInternal.GetConvexHull<TVertex, TFace>(data, config);
+            return ConvexHullAlgorithm.GetConvexHull<TVertex, TFace>(data, config);
         }
 
         /// <summary>

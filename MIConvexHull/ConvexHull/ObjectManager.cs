@@ -39,7 +39,7 @@ namespace MIConvexHull
     {
         readonly int Dimension;
 
-        ConvexHullInternal Hull;
+        ConvexHullAlgorithm Hull;
         int FacePoolSize, FacePoolCapacity;
         ConvexFaceInternal[] FacePool;
         IndexBuffer FreeFaceIndices;
@@ -174,7 +174,7 @@ namespace MIConvexHull
         /// Create the manager.
         /// </summary>
         /// <param name="hull"></param>
-        public ObjectManager(ConvexHullInternal hull)
+        public ObjectManager(ConvexHullAlgorithm hull)
         {
             this.Dimension = hull.Dimension;
             this.Hull = hull;

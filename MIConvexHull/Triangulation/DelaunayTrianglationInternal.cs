@@ -31,7 +31,7 @@ namespace MIConvexHull
     /*
      * Code here handles triangulation related stuff.
      */
-    internal partial class ConvexHullInternal
+    internal partial class ConvexHullAlgorithm
     {
         /// <summary>
         /// Computes the Delaunay triangulation.
@@ -49,7 +49,7 @@ namespace MIConvexHull
 
             var vertices = new IVertex[data.Count];
             for (int i = 0; i < data.Count; i++) vertices[i] = data[i];
-            ConvexHullInternal ch = new ConvexHullInternal(vertices, true, config);
+            ConvexHullAlgorithm ch = new ConvexHullAlgorithm(vertices, true, config);
             ch.FindConvexHull();
             ch.PostProcessTriangulation(config);
             

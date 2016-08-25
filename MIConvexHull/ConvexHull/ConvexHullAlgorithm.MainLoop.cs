@@ -24,6 +24,8 @@
  *  
  *****************************************************************************/
 
+using System.Collections.Generic;
+
 namespace MIConvexHull
 {
     /*
@@ -44,8 +46,37 @@ namespace MIConvexHull
      * 
      * + Implement it in way that is fast, but hard to understand and maintain.
      */
-    internal partial class ConvexHullInternal
-    {                
+    internal partial class ConvexHullAlgorithm
+    {
+        /// <summary>
+        /// Finds the convex hull.
+        /// </summary>
+        void FindConvexHull()
+        {
+            // Find the (dimension+1) initial points and create the simplexes.
+            InitConvexHull();
+
+            // Expand the convex hull and faces.
+            while (UnprocessedFaces.First != null)
+            {
+                var currentFace = UnprocessedFaces.First;
+                CurrentVertex = currentFace.FurthestVertex;
+
+                UpdateCenter();
+
+                // The affected faces get tagged
+                TagAffectedFaces(currentFace);
+
+                // Create the cone from the currentVertex and the affected faces horizon.
+                if (!SingularVertices.Contains(CurrentVertex) && CreateCone()) CommitCone();
+                else HandleSingular();
+
+                // Need to reset the tags
+                int count = AffectedFaceBuffer.Count;
+                for (int i = 0; i < count; i++) AffectedFaceFlags[AffectedFaceBuffer[i]] = false;
+            }
+        }
+
         /// <summary>
         /// Tags all faces seen from the current vertex with 1.
         /// </summary>
@@ -437,32 +468,105 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        /// Fins the convex hull.
+        /// Get a vertex coordinate. Only used in the initialize functions,
+        /// in other places it part v * Dimension + i is inlined.
         /// </summary>
-        void FindConvexHull()
+        /// <param name="v"></param>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        double GetCoordinate(int v, int i)
         {
-            // Find the (dimension+1) initial points and create the simplexes.
-            InitConvexHull();
-
-            // Expand the convex hull and faces.
-            while (UnprocessedFaces.First != null)
-            {
-                var currentFace = UnprocessedFaces.First;
-                CurrentVertex = currentFace.FurthestVertex;
-                                                
-                UpdateCenter();
-
-                // The affected faces get tagged
-                TagAffectedFaces(currentFace);
-
-                // Create the cone from the currentVertex and the affected faces horizon.
-                if (!SingularVertices.Contains(CurrentVertex) && CreateCone()) CommitCone();
-                else HandleSingular();
-
-                // Need to reset the tags
-                int count = AffectedFaceBuffer.Count;
-                for (int i = 0; i < count; i++) AffectedFaceFlags[AffectedFaceBuffer[i]] = false;
-            }
+            return Positions[v * Dimension + i];
         }
+        #region Returning the Results in the proper format
+        TVertex[] GetHullVertices<TVertex>(IList<TVertex> data)
+        {
+            int cellCount = ConvexFaces.Count;
+            int hullVertexCount = 0;
+            int vertexCount = Vertices.Length;
+
+            for (int i = 0; i < vertexCount; i++) VertexMarks[i] = false;
+
+            for (int i = 0; i < cellCount; i++)
+            {
+                var vs = FacePool[ConvexFaces[i]].Vertices;
+                for (int j = 0; j < vs.Length; j++)
+                {
+                    var v = vs[j];
+                    if (!VertexMarks[v])
+                    {
+                        VertexMarks[v] = true;
+                        hullVertexCount++;
+                    }
+                }
+            }
+
+            var result = new TVertex[hullVertexCount];
+            for (int i = 0; i < vertexCount; i++)
+            {
+                if (VertexMarks[i]) result[--hullVertexCount] = data[i];
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Finds the convex hull and creates the TFace objects.
+        /// </summary>
+        /// <typeparam name="TVertex"></typeparam>
+        /// <typeparam name="TFace"></typeparam>
+        /// <returns></returns>
+        TFace[] GetConvexFaces<TVertex, TFace>()
+            where TFace : ConvexFace<TVertex, TFace>, new()
+            where TVertex : IVertex
+        {
+            var faces = ConvexFaces;
+            int cellCount = faces.Count;
+            var cells = new TFace[cellCount];
+
+            for (int i = 0; i < cellCount; i++)
+            {
+                var face = FacePool[faces[i]];
+                var vertices = new TVertex[Dimension];
+                for (int j = 0; j < Dimension; j++)
+                {
+                    vertices[j] = (TVertex)this.Vertices[face.Vertices[j]];
+                }
+
+                cells[i] = new TFace
+                {
+                    Vertices = vertices,
+                    Adjacency = new TFace[Dimension],
+                    Normal = IsLifted ? null : face.Normal
+                };
+                face.Tag = i;
+            }
+
+            for (int i = 0; i < cellCount; i++)
+            {
+                var face = FacePool[faces[i]];
+                var cell = cells[i];
+                for (int j = 0; j < Dimension; j++)
+                {
+                    if (face.AdjacentFaces[j] < 0) continue;
+                    cell.Adjacency[j] = cells[FacePool[face.AdjacentFaces[j]].Tag];
+                }
+
+                // Fix the vertex orientation.
+                if (face.IsNormalFlipped)
+                {
+                    var tempVert = cell.Vertices[0];
+                    cell.Vertices[0] = cell.Vertices[Dimension - 1];
+                    cell.Vertices[Dimension - 1] = tempVert;
+
+                    var tempAdj = cell.Adjacency[0];
+                    cell.Adjacency[0] = cell.Adjacency[Dimension - 1];
+                    cell.Adjacency[Dimension - 1] = tempAdj;
+                }
+            }
+
+            return cells;
+        }
+        #endregion
     }
 }

@@ -55,7 +55,7 @@ namespace MIConvexHull
             if (data.Count == 0) return new DelaunayTriangulation<TVertex, TCell> { Cells = new TCell[0] };
 
             config = config ?? new TriangulationComputationConfig();       
-            var cells = ConvexHullInternal.GetDelaunayTriangulation<TVertex, TCell>(data, config);
+            var cells = ConvexHullAlgorithm.GetDelaunayTriangulation<TVertex, TCell>(data, config);
 
             return new DelaunayTriangulation<TVertex, TCell> { Cells = cells };
         }

@@ -45,10 +45,8 @@
     <Compile Include="ConvexHull\ConvexFace.cs" />
     <Compile Include="ConvexHull\DataModel.cs" />
     <Compile Include="ConvexHull.cs" />
-    <Compile Include="ConvexHull\Algorithm\Core.cs" />
-    <Compile Include="ConvexHull\Algorithm\Result.cs" />
-    <Compile Include="ConvexHull\Algorithm\Initialize.cs" />
-    <Compile Include="ConvexHull\Algorithm\Data.cs" />
+    <Compile Include="ConvexHull\ConvexHullAlgorithm.MainLoop.cs" />
+    <Compile Include="ConvexHull\ConvexHullAlgorithm.Initialize.cs" />
     <Compile Include="IVertex.cs" />
     <Compile Include="ConvexHull\MathHelper.cs" />
     <Compile Include="ConvexHull\ObjectManager.cs" />
