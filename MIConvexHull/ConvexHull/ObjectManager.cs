@@ -24,38 +24,83 @@
  *  
  *****************************************************************************/
 
+using System;
+
 namespace MIConvexHull
 {
-    using System;
-
     /// <summary>
-    /// A helper class for object allocation/storage. 
-    /// This helps the GC a lot as it prevents the creation of about 75% of 
+    /// A helper class for object allocation/storage.
+    /// This helps the GC a lot as it prevents the creation of about 75% of
     /// new face objects (in the case of ConvexFaceInternal). In the case of
     /// FaceConnectors and DefferedFaces, the difference is even higher (in most
-    /// cases O(1) vs O(number of created faces)). 
+    /// cases O(1) vs O(number of created faces)).
     /// </summary>
-    class ObjectManager
+    internal class ObjectManager
     {
-        readonly int Dimension;
+        /// <summary>
+        /// The dimension
+        /// </summary>
+        private readonly int Dimension;
+        /// <summary>
+        /// The connector stack
+        /// </summary>
+        private FaceConnector ConnectorStack;
+        /// <summary>
+        /// The deferred face stack
+        /// </summary>
+        private readonly SimpleList<DeferredFace> DeferredFaceStack;
+        /// <summary>
+        /// The empty buffer stack
+        /// </summary>
+        private readonly SimpleList<IndexBuffer> EmptyBufferStack;
+        /// <summary>
+        /// The face pool
+        /// </summary>
+        private ConvexFaceInternal[] FacePool;
+        /// <summary>
+        /// The face pool size
+        /// </summary>
+        private int FacePoolSize;
+        /// <summary>
+        /// The face pool capacity
+        /// </summary>
+        private int FacePoolCapacity;
+        /// <summary>
+        /// The free face indices
+        /// </summary>
+        private readonly IndexBuffer FreeFaceIndices;
 
-        ConvexHullAlgorithm Hull;
-        int FacePoolSize, FacePoolCapacity;
-        ConvexFaceInternal[] FacePool;
-        IndexBuffer FreeFaceIndices;
-        FaceConnector ConnectorStack;
-        SimpleList<IndexBuffer> EmptyBufferStack;
-        SimpleList<DeferredFace> DeferredFaceStack;
+        /// <summary>
+        /// The hull
+        /// </summary>
+        private readonly ConvexHullAlgorithm Hull;
+
+        /// <summary>
+        /// Create the manager.
+        /// </summary>
+        /// <param name="hull">The hull.</param>
+        public ObjectManager(ConvexHullAlgorithm hull)
+        {
+            Dimension = hull.Dimension;
+            Hull = hull;
+            FacePool = hull.FacePool;
+            FacePoolSize = 0;
+            FacePoolCapacity = hull.FacePool.Length;
+            FreeFaceIndices = new IndexBuffer();
+
+            EmptyBufferStack = new SimpleList<IndexBuffer>();
+            DeferredFaceStack = new SimpleList<DeferredFace>();
+        }
 
         /// <summary>
         /// Return the face to the pool for later use.
         /// </summary>
-        /// <param name="faceIndex"></param>
+        /// <param name="faceIndex">Index of the face.</param>
         public void DepositFace(int faceIndex)
         {
             var face = FacePool[faceIndex];
             var af = face.AdjacentFaces;
-            for (int i = 0; i < af.Length; i++)
+            for (var i = 0; i < af.Length; i++)
             {
                 af[i] = -1;
             }
@@ -65,23 +110,23 @@ namespace MIConvexHull
         /// <summary>
         /// Reallocate the face pool, including the AffectedFaceFlags
         /// </summary>
-        void ReallocateFacePool()
+        private void ReallocateFacePool()
         {
-            var newPool = new ConvexFaceInternal[2 * FacePoolCapacity];
-            var newTags = new bool[2 * FacePoolCapacity];
+            var newPool = new ConvexFaceInternal[2*FacePoolCapacity];
+            var newTags = new bool[2*FacePoolCapacity];
             Array.Copy(FacePool, newPool, FacePoolCapacity);
-            Buffer.BlockCopy(Hull.AffectedFaceFlags, 0, newTags, 0, FacePoolCapacity * sizeof(bool));
-            FacePoolCapacity = 2 * FacePoolCapacity;
+            Buffer.BlockCopy(Hull.AffectedFaceFlags, 0, newTags, 0, FacePoolCapacity*sizeof (bool));
+            FacePoolCapacity = 2*FacePoolCapacity;
             Hull.FacePool = newPool;
-            this.FacePool = newPool;
+            FacePool = newPool;
             Hull.AffectedFaceFlags = newTags;
         }
 
         /// <summary>
         /// Create a new face and put it in the pool.
         /// </summary>
-        /// <returns></returns>
-        int CreateFace()
+        /// <returns>System.Int32.</returns>
+        private int CreateFace()
         {
             var index = FacePoolSize;
             var face = new ConvexFaceInternal(Dimension, index, GetVertexBuffer());
@@ -94,7 +139,7 @@ namespace MIConvexHull
         /// <summary>
         /// Return index of an unused face or creates a new one.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>System.Int32.</returns>
         public int GetFace()
         {
             if (FreeFaceIndices.Count > 0) return FreeFaceIndices.Pop();
@@ -104,7 +149,7 @@ namespace MIConvexHull
         /// <summary>
         /// Store a face connector in the "embedded" linked list.
         /// </summary>
-        /// <param name="connector"></param>
+        /// <param name="connector">The connector.</param>
         public void DepositConnector(FaceConnector connector)
         {
             if (ConnectorStack == null)
@@ -122,7 +167,7 @@ namespace MIConvexHull
         /// <summary>
         /// Get an unused face connector. If none is available, create it.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>FaceConnector.</returns>
         public FaceConnector GetConnector()
         {
             if (ConnectorStack == null) return new FaceConnector(Dimension);
@@ -136,7 +181,7 @@ namespace MIConvexHull
         /// <summary>
         /// Deposit the index buffer.
         /// </summary>
-        /// <param name="buffer"></param>
+        /// <param name="buffer">The buffer.</param>
         public void DepositVertexBuffer(IndexBuffer buffer)
         {
             buffer.Clear();
@@ -146,7 +191,7 @@ namespace MIConvexHull
         /// <summary>
         /// Get a store index buffer or create a new instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>IndexBuffer.</returns>
         public IndexBuffer GetVertexBuffer()
         {
             return EmptyBufferStack.Count != 0 ? EmptyBufferStack.Pop() : new IndexBuffer();
@@ -155,7 +200,7 @@ namespace MIConvexHull
         /// <summary>
         /// Deposit the deferred face.
         /// </summary>
-        /// <param name="face"></param>
+        /// <param name="face">The face.</param>
         public void DepositDeferredFace(DeferredFace face)
         {
             DeferredFaceStack.Push(face);
@@ -164,27 +209,10 @@ namespace MIConvexHull
         /// <summary>
         /// Get the deferred face.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>DeferredFace.</returns>
         public DeferredFace GetDeferredFace()
         {
             return DeferredFaceStack.Count != 0 ? DeferredFaceStack.Pop() : new DeferredFace();
-        }
-
-        /// <summary>
-        /// Create the manager.
-        /// </summary>
-        /// <param name="hull"></param>
-        public ObjectManager(ConvexHullAlgorithm hull)
-        {
-            this.Dimension = hull.Dimension;
-            this.Hull = hull;
-            this.FacePool = hull.FacePool;
-            this.FacePoolSize = 0;
-            this.FacePoolCapacity = hull.FacePool.Length;
-            this.FreeFaceIndices = new IndexBuffer();
-
-            this.EmptyBufferStack = new SimpleList<IndexBuffer>();
-            this.DeferredFaceStack = new SimpleList<DeferredFace>();
         }
     }
 }

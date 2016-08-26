@@ -24,13 +24,12 @@
  *  
  *****************************************************************************/
 
+using System;
+
 namespace MIConvexHull
 {
-    using System;
-
     /// <summary>
     /// Determines the type of the point translation to use.
-    /// 
     /// This is useful for handling "degenerate" data (i.e. uniform grids of points).
     /// </summary>
     public enum PointTranslationType
@@ -41,7 +40,7 @@ namespace MIConvexHull
         None,
 
         /// <summary>
-        /// The points are only translated internally, the vertexes in the result 
+        /// The points are only translated internally, the vertexes in the result
         /// retain their original coordinates.
         /// </summary>
         TranslateInternal
@@ -53,55 +52,6 @@ namespace MIConvexHull
     public class ConvexHullComputationConfig
     {
         /// <summary>
-        /// This value is used to determine which vertexes are eligible 
-        /// to be part of the convex hull.
-        /// 
-        /// As an example, imagine a line with 3 points:
-        /// 
-        ///              A ---- C ---- B
-        /// 
-        /// Points A and B were already determined to be on the hull.
-        /// Now, the point C would need to be at least 'PlaneDistanceTolerance'
-        /// away from the line determined by A and B to be also considered
-        /// a hull point.
-        /// 
-        /// Default = 0.00001
-        /// </summary>
-        public double PlaneDistanceTolerance { get; set; } 
-
-        /// <summary>
-        /// Determines what method to use for point translation.
-        /// This helps with handling "degenerate" data such as uniform grids.
-        /// 
-        /// Default = None
-        /// </summary>
-        public PointTranslationType PointTranslationType { get; set; }
-
-        /// <summary>
-        /// A function used to generate translation direction.
-        /// 
-        /// This function is called for each coordinate of each point as
-        /// Position[i] -> Position[i] + PointTranslationGenerator()
-        /// 
-        /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        /// From my testing the function should be set up so that the 
-        /// translation magnitude is lower than the PlaneDistanceTolerance. 
-        /// Otherwise, flat faces in triangulation could be created as a result.
-        /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        /// 
-        /// An example of the translation function that would shift each coordinate 
-        /// in 0.0000005 in either direction is:
-        /// var rnd = new Random(0); // use the same seed for each computation
-        /// f = () => 0.000001 * rnd.NextDouble() - 0.0000005;
-        /// 
-        /// This is implemented by the 
-        /// ConvexHullComputationConfig.RandomShiftByRadius function.
-        /// 
-        /// Default = null
-        /// </summary>
-        public Func<double> PointTranslationGenerator { get; set; }
-        
-        /// <summary>
         /// Create the config with default values set.
         /// </summary>
         public ConvexHullComputationConfig()
@@ -111,17 +61,65 @@ namespace MIConvexHull
             PointTranslationGenerator = null;
         }
 
-        static Func<double> Closure(double radius, Random rnd)
+        /// <summary>
+        /// This value is used to determine which vertexes are eligible
+        /// to be part of the convex hull.
+        /// As an example, imagine a line with 3 points:
+        /// A ---- C ---- B
+        /// Points A and B were already determined to be on the hull.
+        /// Now, the point C would need to be at least 'PlaneDistanceTolerance'
+        /// away from the line determined by A and B to be also considered
+        /// a hull point.
+        /// Default = 0.00001
+        /// </summary>
+        /// <value>The plane distance tolerance.</value>
+        public double PlaneDistanceTolerance { get; set; }
+
+        /// <summary>
+        /// Determines what method to use for point translation.
+        /// This helps with handling "degenerate" data such as uniform grids.
+        /// Default = None
+        /// </summary>
+        /// <value>The type of the point translation.</value>
+        public PointTranslationType PointTranslationType { get; set; }
+
+        /// <summary>
+        /// A function used to generate translation direction.
+        /// This function is called for each coordinate of each point as
+        /// Position[i] -&gt; Position[i] + PointTranslationGenerator()
+        /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        /// From my testing the function should be set up so that the
+        /// translation magnitude is lower than the PlaneDistanceTolerance.
+        /// Otherwise, flat faces in triangulation could be created as a result.
+        /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        /// An example of the translation function that would shift each coordinate
+        /// in 0.0000005 in either direction is:
+        /// var rnd = new Random(0); // use the same seed for each computation
+        /// f = () =&gt; 0.000001 * rnd.NextDouble() - 0.0000005;
+        /// This is implemented by the
+        /// ConvexHullComputationConfig.RandomShiftByRadius function.
+        /// Default = null
+        /// </summary>
+        /// <value>The point translation generator.</value>
+        public Func<double> PointTranslationGenerator { get; set; }
+
+        /// <summary>
+        /// Closures the specified radius.
+        /// </summary>
+        /// <param name="radius">The radius.</param>
+        /// <param name="rnd">The random.</param>
+        /// <returns>Func&lt;System.Double&gt;.</returns>
+        private static Func<double> Closure(double radius, Random rnd)
         {
-            return () => radius * (rnd.NextDouble() - 0.5);
+            return () => radius*(rnd.NextDouble() - 0.5);
         }
 
         /// <summary>
         /// Creates values in range (-radius / 2, radius / 2)
         /// </summary>
-        /// <param name="radius"></param>
+        /// <param name="radius">The radius.</param>
         /// <param name="randomSeed">If null, initialized to random default System.Random value</param>
-        /// <returns></returns>
+        /// <returns>Func&lt;System.Double&gt;.</returns>
         public static Func<double> RandomShiftByRadius(double radius = 0.000001, int? randomSeed = 0)
         {
             Random rnd;
@@ -134,24 +132,24 @@ namespace MIConvexHull
     /// <summary>
     /// Configuration of the triangulation computation.
     /// </summary>
+    /// <seealso cref="MIConvexHull.ConvexHullComputationConfig" />
     public class TriangulationComputationConfig : ConvexHullComputationConfig
     {
-        /// <summary>
-        /// If using PointTranslationType.TranslateInternal, this value is
-        /// used to determine which boundary cells have zero volume after the
-        /// points get "translated back".
-        /// 
-        /// Default value is 0.00001.
-        /// </summary>
-        public double ZeroCellVolumeTolerance { get; set; }
-
         /// <summary>
         /// Create the config with default values set.
         /// </summary>
         public TriangulationComputationConfig()
-            : base()
         {
             ZeroCellVolumeTolerance = 0.00001;
         }
+
+        /// <summary>
+        /// If using PointTranslationType.TranslateInternal, this value is
+        /// used to determine which boundary cells have zero volume after the
+        /// points get "translated back".
+        /// Default value is 0.00001.
+        /// </summary>
+        /// <value>The zero cell volume tolerance.</value>
+        public double ZeroCellVolumeTolerance { get; set; }
     }
 }

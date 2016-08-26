@@ -24,12 +24,12 @@
  *  
  *****************************************************************************/
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace MIConvexHull
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
     /// <summary>
     /// Factory class for computing convex hulls.
     /// </summary>
@@ -38,12 +38,13 @@ namespace MIConvexHull
         /// <summary>
         /// Creates a convex hull of the input data.
         /// </summary>
-        /// <typeparam name="TVertex"></typeparam>
-        /// <typeparam name="TFace"></typeparam>
-        /// <param name="data"></param>
+        /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+        /// <typeparam name="TFace">The type of the t face.</typeparam>
+        /// <param name="data">The data.</param>
         /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
-        /// <returns></returns>
-        public static ConvexHull<TVertex, TFace> Create<TVertex, TFace>(IList<TVertex> data, ConvexHullComputationConfig config = null)
+        /// <returns>ConvexHull&lt;TVertex, TFace&gt;.</returns>
+        public static ConvexHull<TVertex, TFace> Create<TVertex, TFace>(IList<TVertex> data,
+            ConvexHullComputationConfig config = null)
             where TVertex : IVertex
             where TFace : ConvexFace<TVertex, TFace>, new()
         {
@@ -53,11 +54,12 @@ namespace MIConvexHull
         /// <summary>
         /// Creates a convex hull of the input data.
         /// </summary>
-        /// <typeparam name="TVertex"></typeparam>
-        /// <param name="data"></param>
+        /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+        /// <param name="data">The data.</param>
         /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
-        /// <returns></returns>
-        public static ConvexHull<TVertex, DefaultConvexFace<TVertex>> Create<TVertex>(IList<TVertex> data, ConvexHullComputationConfig config = null)
+        /// <returns>ConvexHull&lt;TVertex, DefaultConvexFace&lt;TVertex&gt;&gt;.</returns>
+        public static ConvexHull<TVertex, DefaultConvexFace<TVertex>> Create<TVertex>(IList<TVertex> data,
+            ConvexHullComputationConfig config = null)
             where TVertex : IVertex
         {
             return ConvexHull<TVertex, DefaultConvexFace<TVertex>>.Create(data, config);
@@ -66,12 +68,13 @@ namespace MIConvexHull
         /// <summary>
         /// Creates a convex hull of the input data.
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">The data.</param>
         /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
-        /// <returns></returns>
-        public static ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>> Create(IList<double[]> data, ConvexHullComputationConfig config = null)
+        /// <returns>ConvexHull&lt;DefaultVertex, DefaultConvexFace&lt;DefaultVertex&gt;&gt;.</returns>
+        public static ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>> Create(IList<double[]> data,
+            ConvexHullComputationConfig config = null)
         {
-            var points = data.Select(p => new DefaultVertex { Position = p.ToArray() }).ToList();
+            var points = data.Select(p => new DefaultVertex {Position = p.ToArray()}).ToList();
             return ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>>.Create(points, config);
         }
     }
@@ -79,40 +82,42 @@ namespace MIConvexHull
     /// <summary>
     /// Representation of a convex hull.
     /// </summary>
-    /// <typeparam name="TVertex"></typeparam>
-    /// <typeparam name="TFace"></typeparam>
+    /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+    /// <typeparam name="TFace">The type of the t face.</typeparam>
     public class ConvexHull<TVertex, TFace>
         where TVertex : IVertex
         where TFace : ConvexFace<TVertex, TFace>, new()
     {
         /// <summary>
+        /// Can only be created using a factory method.
+        /// </summary>
+        internal ConvexHull()
+        {
+        }
+
+        /// <summary>
         /// Points of the convex hull.
         /// </summary>
+        /// <value>The points.</value>
         public IEnumerable<TVertex> Points { get; internal set; }
 
         /// <summary>
         /// Faces of the convex hull.
         /// </summary>
+        /// <value>The faces.</value>
         public IEnumerable<TFace> Faces { get; internal set; }
 
         /// <summary>
         /// Creates the convex hull.
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">The data.</param>
         /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
-        /// <returns></returns>
+        /// <returns>ConvexHull&lt;TVertex, TFace&gt;.</returns>
+        /// <exception cref="ArgumentNullException">data</exception>
         public static ConvexHull<TVertex, TFace> Create(IList<TVertex> data, ConvexHullComputationConfig config)
         {
             if (data == null) throw new ArgumentNullException("data");
             return ConvexHullAlgorithm.GetConvexHull<TVertex, TFace>(data, config);
-        }
-
-        /// <summary>
-        /// Can only be created using a factory method.
-        /// </summary>
-        internal ConvexHull()
-        {
-
         }
     }
 }

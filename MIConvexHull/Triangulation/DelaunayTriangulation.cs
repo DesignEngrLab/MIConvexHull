@@ -24,48 +24,51 @@
  *  
  *****************************************************************************/
 
+using System;
+using System.Collections.Generic;
+
 namespace MIConvexHull
 {
-    using System.Collections.Generic;
-    using System;
-
     /// <summary>
     /// Calculation and representation of Delaunay triangulation.
     /// </summary>
-    /// <typeparam name="TVertex"></typeparam>
-    /// <typeparam name="TCell"></typeparam>
+    /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+    /// <typeparam name="TCell">The type of the t cell.</typeparam>
+    /// <seealso cref="MIConvexHull.ITriangulation{TVertex, TCell}" />
     public class DelaunayTriangulation<TVertex, TCell> : ITriangulation<TVertex, TCell>
         where TCell : TriangulationCell<TVertex, TCell>, new()
         where TVertex : IVertex
     {
         /// <summary>
-        /// Cells of the triangulation.
-        /// </summary>
-        public IEnumerable<TCell> Cells { get; private set; }
-        
-        /// <summary>
-        /// Creates the Delaunay triangulation of the input data.
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
-        /// <returns></returns>
-        public static DelaunayTriangulation<TVertex, TCell> Create(IList<TVertex> data, TriangulationComputationConfig config)
-        {
-            if (data == null) throw new ArgumentNullException("data");
-            if (data.Count == 0) return new DelaunayTriangulation<TVertex, TCell> { Cells = new TCell[0] };
-
-            config = config ?? new TriangulationComputationConfig();       
-            var cells = ConvexHullAlgorithm.GetDelaunayTriangulation<TVertex, TCell>(data, config);
-
-            return new DelaunayTriangulation<TVertex, TCell> { Cells = cells };
-        }
-
-        /// <summary>
         /// Can only be created using a factory method.
         /// </summary>
         private DelaunayTriangulation()
         {
+        }
 
+        /// <summary>
+        /// Cells of the triangulation.
+        /// </summary>
+        /// <value>The cells.</value>
+        public IEnumerable<TCell> Cells { get; private set; }
+
+        /// <summary>
+        /// Creates the Delaunay triangulation of the input data.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
+        /// <returns>DelaunayTriangulation&lt;TVertex, TCell&gt;.</returns>
+        /// <exception cref="ArgumentNullException">data</exception>
+        public static DelaunayTriangulation<TVertex, TCell> Create(IList<TVertex> data,
+            TriangulationComputationConfig config)
+        {
+            if (data == null) throw new ArgumentNullException("data");
+            if (data.Count == 0) return new DelaunayTriangulation<TVertex, TCell> {Cells = new TCell[0]};
+
+            config = config ?? new TriangulationComputationConfig();
+            var cells = ConvexHullAlgorithm.GetDelaunayTriangulation<TVertex, TCell>(data, config);
+
+            return new DelaunayTriangulation<TVertex, TCell> {Cells = cells};
         }
     }
 }

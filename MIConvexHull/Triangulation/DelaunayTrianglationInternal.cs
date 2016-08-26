@@ -24,35 +24,40 @@
  *  
  *****************************************************************************/
 
+using System.Collections.Generic;
+
 namespace MIConvexHull
 {
-    using System.Collections.Generic;
-
     /*
      * Code here handles triangulation related stuff.
      */
+
+    /// <summary>
+    /// Class ConvexHullAlgorithm.
+    /// </summary>
     internal partial class ConvexHullAlgorithm
     {
         /// <summary>
         /// Computes the Delaunay triangulation.
         /// </summary>
-        /// <typeparam name="TVertex"></typeparam>
-        /// <typeparam name="TCell"></typeparam>
-        /// <param name="data"></param>
-        /// <param name="config"></param>
-        /// <returns></returns>
-        internal static TCell[] GetDelaunayTriangulation<TVertex, TCell>(IList<TVertex> data, TriangulationComputationConfig config)
+        /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+        /// <typeparam name="TCell">The type of the t cell.</typeparam>
+        /// <param name="data">The data.</param>
+        /// <param name="config">The configuration.</param>
+        /// <returns>TCell[].</returns>
+        internal static TCell[] GetDelaunayTriangulation<TVertex, TCell>(IList<TVertex> data,
+            TriangulationComputationConfig config)
             where TCell : TriangulationCell<TVertex, TCell>, new()
             where TVertex : IVertex
         {
             config = config ?? new TriangulationComputationConfig();
 
             var vertices = new IVertex[data.Count];
-            for (int i = 0; i < data.Count; i++) vertices[i] = data[i];
-            ConvexHullAlgorithm ch = new ConvexHullAlgorithm(vertices, true, config);
+            for (var i = 0; i < data.Count; i++) vertices[i] = data[i];
+            var ch = new ConvexHullAlgorithm(vertices, true, config);
             ch.FindConvexHull();
             ch.PostProcessTriangulation(config);
-            
+
             return ch.GetConvexFaces<TVertex, TCell>();
         }
 
@@ -60,8 +65,8 @@ namespace MIConvexHull
         /// Remove the upper faces from the hull.
         /// Remove empty boundary cells if shifting was used.
         /// </summary>
-        /// <param name="config"></param>
-        void PostProcessTriangulation(TriangulationComputationConfig config)
+        /// <param name="config">The configuration.</param>
+        private void PostProcessTriangulation(TriangulationComputationConfig config)
         {
             RemoveUpperFaces();
             if (config.PointTranslationType == PointTranslationType.TranslateInternal)
@@ -73,7 +78,7 @@ namespace MIConvexHull
         /// <summary>
         /// Removes up facing Tetrahedrons from the triangulation.
         /// </summary>
-        void RemoveUpperFaces()
+        private void RemoveUpperFaces()
         {
             var delaunayFaces = ConvexFaces;
             var dimension = Dimension - 1;
@@ -85,13 +90,13 @@ namespace MIConvexHull
                 var candidate = FacePool[candidateIndex];
                 if (candidate.Normal[dimension] >= 0.0)
                 {
-                    for (int fi = 0; fi < candidate.AdjacentFaces.Length; fi++)
+                    for (var fi = 0; fi < candidate.AdjacentFaces.Length; fi++)
                     {
                         var af = candidate.AdjacentFaces[fi];
                         if (af >= 0)
                         {
                             var face = FacePool[af];
-                            for (int j = 0; j < face.AdjacentFaces.Length; j++)
+                            for (var j = 0; j < face.AdjacentFaces.Length; j++)
                             {
                                 if (face.AdjacentFaces[j] == candidateIndex)
                                 {
@@ -109,21 +114,21 @@ namespace MIConvexHull
         /// <summary>
         /// Removes the empty boundary cells that might have been created using PointTranslationType.TranslateInternal.
         /// </summary>
-        /// <param name="tolerance"></param>
-        void RemoveEmptyBoundaryCells(double tolerance)
+        /// <param name="tolerance">The tolerance.</param>
+        private void RemoveEmptyBoundaryCells(double tolerance)
         {
             var faces = ConvexFaces;
             var pool = FacePool;
             var dimension = Dimension - 1;
 
-            bool[] visited = new bool[pool.Length];
-            bool[] remove = new bool[pool.Length];
-            IndexBuffer toTest = new IndexBuffer();
+            var visited = new bool[pool.Length];
+            var remove = new bool[pool.Length];
+            var toTest = new IndexBuffer();
 
             for (var i = faces.Count - 1; i >= 0; i--)
             {
                 var adj = pool[faces[i]].AdjacentFaces;
-                for (int j = 0; j < adj.Length; j++)
+                for (var j = 0; j < adj.Length; j++)
                 {
                     if (adj[j] < 0)
                     {
@@ -133,8 +138,8 @@ namespace MIConvexHull
                 }
             }
 
-            double[][] buffer = new double[dimension][];
-            for (int i = 0; i < dimension; i++) buffer[i] = new double[dimension];
+            var buffer = new double[dimension][];
+            for (var i = 0; i < dimension; i++) buffer[i] = new double[dimension];
 
             var simplexVolumeBuffer = new MathHelper.SimplexVolumeBuffer(dimension);
             while (toTest.Count > 0)
@@ -148,7 +153,7 @@ namespace MIConvexHull
                     remove[top] = true;
 
                     var adj = face.AdjacentFaces;
-                    for (int j = 0; j < adj.Length; j++)
+                    for (var j = 0; j < adj.Length; j++)
                     {
                         var n = adj[j];
                         if (n >= 0 && !visited[n]) toTest.Push(n);
@@ -156,19 +161,19 @@ namespace MIConvexHull
                 }
             }
 
-            for (int i = faces.Count - 1; i >= 0; i--)
+            for (var i = faces.Count - 1; i >= 0; i--)
             {
                 if (remove[faces[i]])
                 {
                     var candidateIndex = faces[i];
                     var candidate = pool[candidateIndex];
-                    for (int fi = 0; fi < candidate.AdjacentFaces.Length; fi++)
+                    for (var fi = 0; fi < candidate.AdjacentFaces.Length; fi++)
                     {
                         var af = candidate.AdjacentFaces[fi];
                         if (af >= 0)
                         {
                             var face = pool[af];
-                            for (int j = 0; j < face.AdjacentFaces.Length; j++)
+                            for (var j = 0; j < face.AdjacentFaces.Length; j++)
                             {
                                 if (face.AdjacentFaces[j] == candidateIndex)
                                 {

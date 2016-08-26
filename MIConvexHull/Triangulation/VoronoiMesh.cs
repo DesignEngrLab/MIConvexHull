@@ -24,12 +24,12 @@
  *  
  *****************************************************************************/
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace MIConvexHull
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
     /// <summary>
     /// A factory class for creating a Voronoi mesh.
     /// </summary>
@@ -38,13 +38,14 @@ namespace MIConvexHull
         /// <summary>
         /// Create the voronoi mesh.
         /// </summary>
-        /// <typeparam name="TVertex"></typeparam>
-        /// <typeparam name="TCell"></typeparam>
-        /// <typeparam name="TEdge"></typeparam>
-        /// <param name="data"></param>
+        /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+        /// <typeparam name="TCell">The type of the t cell.</typeparam>
+        /// <typeparam name="TEdge">The type of the t edge.</typeparam>
+        /// <param name="data">The data.</param>
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
-        /// <returns></returns>
-        public static VoronoiMesh<TVertex, TCell, TEdge> Create<TVertex, TCell, TEdge>(IList<TVertex> data, TriangulationComputationConfig config = null)
+        /// <returns>VoronoiMesh&lt;TVertex, TCell, TEdge&gt;.</returns>
+        public static VoronoiMesh<TVertex, TCell, TEdge> Create<TVertex, TCell, TEdge>(IList<TVertex> data,
+            TriangulationComputationConfig config = null)
             where TCell : TriangulationCell<TVertex, TCell>, new()
             where TVertex : IVertex
             where TEdge : VoronoiEdge<TVertex, TCell>, new()
@@ -55,38 +56,51 @@ namespace MIConvexHull
         /// <summary>
         /// Create the voronoi mesh.
         /// </summary>
-        /// <typeparam name="TVertex"></typeparam>
-        /// <param name="data"></param>
+        /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+        /// <param name="data">The data.</param>
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
-        /// <returns></returns>
-        public static VoronoiMesh<TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>> Create<TVertex>(IList<TVertex> data, TriangulationComputationConfig config = null)
+        /// <returns>VoronoiMesh&lt;TVertex, DefaultTriangulationCell&lt;TVertex&gt;, VoronoiEdge&lt;TVertex, DefaultTriangulationCell&lt;TVertex&gt;&gt;&gt;.</returns>
+        public static
+            VoronoiMesh
+                <TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>>
+            Create<TVertex>(IList<TVertex> data, TriangulationComputationConfig config = null)
             where TVertex : IVertex
         {
-            return VoronoiMesh<TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>>.Create(data, config);
+            return
+                VoronoiMesh
+                    <TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>
+                        >.Create(data, config);
         }
 
         /// <summary>
         /// Create the voronoi mesh.
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">The data.</param>
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
-        /// <returns></returns>
-        public static VoronoiMesh<DefaultVertex, DefaultTriangulationCell<DefaultVertex>, VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>
+        /// <returns>VoronoiMesh&lt;DefaultVertex, DefaultTriangulationCell&lt;DefaultVertex&gt;, VoronoiEdge&lt;DefaultVertex, DefaultTriangulationCell&lt;DefaultVertex&gt;&gt;&gt;.</returns>
+        public static
+            VoronoiMesh
+                <DefaultVertex, DefaultTriangulationCell<DefaultVertex>,
+                    VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>
             Create(IList<double[]> data, TriangulationComputationConfig config = null)
         {
-            var points = data.Select(p => new DefaultVertex { Position = p.ToArray() }).ToList();
-            return VoronoiMesh<DefaultVertex, DefaultTriangulationCell<DefaultVertex>, VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>.Create(points, config);
+            var points = data.Select(p => new DefaultVertex {Position = p.ToArray()}).ToList();
+            return
+                VoronoiMesh
+                    <DefaultVertex, DefaultTriangulationCell<DefaultVertex>,
+                        VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>.Create(points, config);
         }
 
         /// <summary>
         /// Create the voronoi mesh.
         /// </summary>
-        /// <typeparam name="TVertex"></typeparam>
-        /// <typeparam name="TCell"></typeparam>
-        /// <param name="data"></param>
+        /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+        /// <typeparam name="TCell">The type of the t cell.</typeparam>
+        /// <param name="data">The data.</param>
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
-        /// <returns></returns>
-        public static VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>> Create<TVertex, TCell>(IList<TVertex> data, TriangulationComputationConfig config = null)
+        /// <returns>VoronoiMesh&lt;TVertex, TCell, VoronoiEdge&lt;TVertex, TCell&gt;&gt;.</returns>
+        public static VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>> Create<TVertex, TCell>(
+            IList<TVertex> data, TriangulationComputationConfig config = null)
             where TVertex : IVertex
             where TCell : TriangulationCell<TVertex, TCell>, new()
         {
@@ -97,60 +111,56 @@ namespace MIConvexHull
     /// <summary>
     /// A representation of a voronoi mesh.
     /// </summary>
-    /// <typeparam name="TVertex"></typeparam>
-    /// <typeparam name="TCell"></typeparam>
-    /// <typeparam name="TEdge"></typeparam>
+    /// <typeparam name="TEdge">The type of the t edge.</typeparam>
+    /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+    /// <typeparam name="TCell">The type of the t cell.</typeparam>
     public class VoronoiMesh<TVertex, TCell, TEdge>
         where TCell : TriangulationCell<TVertex, TCell>, new()
         where TVertex : IVertex
         where TEdge : VoronoiEdge<TVertex, TCell>, new()
     {
         /// <summary>
-        /// This is probably not needed, but might make things a tiny bit faster.
+        /// Can only be created using a factory method.
         /// </summary>
-        class EdgeComparer : IEqualityComparer<TEdge>
+        private VoronoiMesh()
         {
-            public bool Equals(TEdge x, TEdge y)
-            {
-                return (x.Source == y.Source && x.Target == y.Target) || (x.Source == y.Target && x.Target == y.Source);
-            }
-
-            public int GetHashCode(TEdge obj)
-            {
-                return obj.Source.GetHashCode() ^ obj.Target.GetHashCode();
-            }
         }
 
         /// <summary>
         /// Vertices of the diagram.
         /// </summary>
+        /// <value>The vertices.</value>
         public IEnumerable<TCell> Vertices { get; private set; }
 
         /// <summary>
-        /// Edges connecting the cells. 
+        /// Edges connecting the cells.
         /// The same information can be retrieved Cells' Adjacency.
         /// </summary>
+        /// <value>The edges.</value>
         public IEnumerable<TEdge> Edges { get; private set; }
 
         /// <summary>
         /// Create a Voronoi diagram of the input data.
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">The data.</param>
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
-        public static VoronoiMesh<TVertex, TCell, TEdge> Create(IList<TVertex> data, TriangulationComputationConfig config)
+        /// <returns>VoronoiMesh&lt;TVertex, TCell, TEdge&gt;.</returns>
+        /// <exception cref="ArgumentNullException">data</exception>
+        public static VoronoiMesh<TVertex, TCell, TEdge> Create(IList<TVertex> data,
+            TriangulationComputationConfig config)
         {
             if (data == null) throw new ArgumentNullException("data");
-            
+
             var t = DelaunayTriangulation<TVertex, TCell>.Create(data, config);
             var vertices = t.Cells.ToList();
             var edges = new HashSet<TEdge>(new EdgeComparer());
 
             foreach (var f in vertices)
             {
-                for (int i = 0; i < f.Adjacency.Length; i++)
+                for (var i = 0; i < f.Adjacency.Length; i++)
                 {
                     var af = f.Adjacency[i];
-                    if (af != null) edges.Add(new TEdge { Source = f, Target = af });
+                    if (af != null) edges.Add(new TEdge {Source = f, Target = af});
                 }
             }
 
@@ -162,11 +172,31 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        /// Can only be created using a factory method.
+        /// This is probably not needed, but might make things a tiny bit faster.
         /// </summary>
-        private VoronoiMesh()
+        /// <seealso cref="System.Collections.Generic.IEqualityComparer{TEdge}" />
+        private class EdgeComparer : IEqualityComparer<TEdge>
         {
+            /// <summary>
+            /// Determines whether the specified objects are equal.
+            /// </summary>
+            /// <param name="x">The first object of type <paramref name="T" /> to compare.</param>
+            /// <param name="y">The second object of type <paramref name="T" /> to compare.</param>
+            /// <returns>true if the specified objects are equal; otherwise, false.</returns>
+            public bool Equals(TEdge x, TEdge y)
+            {
+                return (x.Source == y.Source && x.Target == y.Target) || (x.Source == y.Target && x.Target == y.Source);
+            }
 
+            /// <summary>
+            /// Returns a hash code for this instance.
+            /// </summary>
+            /// <param name="obj">The <see cref="T:System.Object" /> for which a hash code is to be returned.</param>
+            /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.</returns>
+            public int GetHashCode(TEdge obj)
+            {
+                return obj.Source.GetHashCode() ^ obj.Target.GetHashCode();
+            }
         }
     }
 }

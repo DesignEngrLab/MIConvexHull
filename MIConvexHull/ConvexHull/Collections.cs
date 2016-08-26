@@ -24,29 +24,38 @@
  *  
  *****************************************************************************/
 
+using System;
+
 namespace MIConvexHull
 {
-    using System;
-
     /// <summary>
     /// A more lightweight alternative to List of T.
-    /// On clear, only resets the count and does not clear the references 
-    ///   => this works because of the ObjectManager.
+    /// On clear, only resets the count and does not clear the references
+    /// =&gt; this works because of the ObjectManager.
     /// Includes a stack functionality.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    class SimpleList<T>
+    internal class SimpleList<T>
     {
-        T[] items;
-        int capacity;
-        
+        /// <summary>
+        /// The capacity
+        /// </summary>
+        private int capacity;
+
+        /// <summary>
+        /// The count
+        /// </summary>
         public int Count;
+        /// <summary>
+        /// The items
+        /// </summary>
+        private T[] items;
 
         /// <summary>
         /// Get the i-th element.
         /// </summary>
-        /// <param name="i"></param>
-        /// <returns></returns>
+        /// <param name="i">The i.</param>
+        /// <returns>T.</returns>
         public T this[int i]
         {
             get { return items[i]; }
@@ -56,7 +65,7 @@ namespace MIConvexHull
         /// <summary>
         /// Size matters.
         /// </summary>
-        void EnsureCapacity()
+        private void EnsureCapacity()
         {
             if (capacity == 0)
             {
@@ -65,9 +74,9 @@ namespace MIConvexHull
             }
             else
             {
-                var newItems = new T[capacity * 2];
+                var newItems = new T[capacity*2];
                 Array.Copy(items, newItems, capacity);
-                capacity = 2 * capacity;
+                capacity = 2*capacity;
                 items = newItems;
             }
         }
@@ -75,7 +84,7 @@ namespace MIConvexHull
         /// <summary>
         /// Adds a vertex to the buffer.
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="item">The item.</param>
         public void Add(T item)
         {
             if (Count + 1 > capacity) EnsureCapacity();
@@ -85,7 +94,7 @@ namespace MIConvexHull
         /// <summary>
         /// Pushes the value to the back of the list.
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="item">The item.</param>
         public void Push(T item)
         {
             if (Count + 1 > capacity) EnsureCapacity();
@@ -95,7 +104,7 @@ namespace MIConvexHull
         /// <summary>
         /// Pops the last value from the list.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>T.</returns>
         public T Pop()
         {
             return items[--Count];
@@ -113,44 +122,48 @@ namespace MIConvexHull
     /// <summary>
     /// A fancy name for a list of integers.
     /// </summary>
-    class IndexBuffer : SimpleList<int>
+    /// <seealso cref="MIConvexHull.SimpleList{System.Int32}" />
+    internal class IndexBuffer : SimpleList<int>
     {
-
     }
-              
+
     /// <summary>
     /// A priority based linked list.
     /// </summary>
-    sealed class FaceList
+    internal sealed class FaceList
     {
-        ConvexFaceInternal first, last;
-        
+        /// <summary>
+        /// The last
+        /// </summary>
+        private ConvexFaceInternal last;
+
         /// <summary>
         /// Get the first element.
         /// </summary>
-        public ConvexFaceInternal First { get { return first; } }
+        /// <value>The first.</value>
+        public ConvexFaceInternal First { get; private set; }
 
         /// <summary>
         /// Adds the element to the beginning.
         /// </summary>
-        /// <param name="face"></param>
-        void AddFirst(ConvexFaceInternal face)
+        /// <param name="face">The face.</param>
+        private void AddFirst(ConvexFaceInternal face)
         {
             face.InList = true;
-            this.first.Previous = face;
-            face.Next = this.first;
-            this.first = face;
+            First.Previous = face;
+            face.Next = First;
+            First = face;
         }
 
         /// <summary>
         /// Adds a face to the list.
         /// </summary>
-        /// <param name="face"></param>
+        /// <param name="face">The face.</param>
         public void Add(ConvexFaceInternal face)
         {
             if (face.InList)
             {
-                if (this.first.VerticesBeyond.Count < face.VerticesBeyond.Count)
+                if (First.VerticesBeyond.Count < face.VerticesBeyond.Count)
                 {
                     Remove(face);
                     AddFirst(face);
@@ -160,23 +173,23 @@ namespace MIConvexHull
 
             face.InList = true;
 
-            if (first != null && first.VerticesBeyond.Count < face.VerticesBeyond.Count)
+            if (First != null && First.VerticesBeyond.Count < face.VerticesBeyond.Count)
             {
-                this.first.Previous = face;
-                face.Next = this.first;
-                this.first = face;
+                First.Previous = face;
+                face.Next = First;
+                First = face;
             }
             else
             {
-                if (this.last != null)
+                if (last != null)
                 {
-                    this.last.Next = face;
+                    last.Next = face;
                 }
-                face.Previous = this.last;
-                this.last = face;
-                if (this.first == null)
+                face.Previous = last;
+                last = face;
+                if (First == null)
                 {
-                    this.first = face;
+                    First = face;
                 }
             }
         }
@@ -184,7 +197,7 @@ namespace MIConvexHull
         /// <summary>
         /// Removes the element from the list.
         /// </summary>
-        /// <param name="face"></param>
+        /// <param name="face">The face.</param>
         public void Remove(ConvexFaceInternal face)
         {
             if (!face.InList) return;
@@ -195,18 +208,18 @@ namespace MIConvexHull
             {
                 face.Previous.Next = face.Next;
             }
-            else if (/*first == face*/ face.Previous == null)
+            else if ( /*first == face*/ face.Previous == null)
             {
-                this.first = face.Next;
+                First = face.Next;
             }
 
             if (face.Next != null)
             {
                 face.Next.Previous = face.Previous;
             }
-            else if (/*last == face*/ face.Next == null)
+            else if ( /*last == face*/ face.Next == null)
             {
-                this.last = face.Previous;
+                last = face.Previous;
             }
 
             face.Next = null;
@@ -217,66 +230,70 @@ namespace MIConvexHull
     /// <summary>
     /// Connector list.
     /// </summary>
-    sealed class ConnectorList
+    internal sealed class ConnectorList
     {
-        FaceConnector first, last;
+        /// <summary>
+        /// The last
+        /// </summary>
+        private FaceConnector last;
 
         /// <summary>
         /// Get the first element.
         /// </summary>
-        public FaceConnector First { get { return first; } }
+        /// <value>The first.</value>
+        public FaceConnector First { get; private set; }
 
         /// <summary>
         /// Adds the element to the beginning.
         /// </summary>
-        /// <param name="connector"></param>
-        void AddFirst(FaceConnector connector)
+        /// <param name="connector">The connector.</param>
+        private void AddFirst(FaceConnector connector)
         {
-            this.first.Previous = connector;
-            connector.Next = this.first;
-            this.first = connector;
+            First.Previous = connector;
+            connector.Next = First;
+            First = connector;
         }
 
         /// <summary>
         /// Adds a face to the list.
         /// </summary>
-        /// <param name="element"></param>
+        /// <param name="element">The element.</param>
         public void Add(FaceConnector element)
         {
-            if (this.last != null)
+            if (last != null)
             {
-                this.last.Next = element;
+                last.Next = element;
             }
-            element.Previous = this.last;
-            this.last = element;
-            if (this.first == null)
+            element.Previous = last;
+            last = element;
+            if (First == null)
             {
-                this.first = element;
+                First = element;
             }
         }
 
         /// <summary>
         /// Removes the element from the list.
         /// </summary>
-        /// <param name="connector"></param>
+        /// <param name="connector">The connector.</param>
         public void Remove(FaceConnector connector)
         {
             if (connector.Previous != null)
             {
                 connector.Previous.Next = connector.Next;
             }
-            else if (/*first == face*/ connector.Previous == null)
+            else if ( /*first == face*/ connector.Previous == null)
             {
-                this.first = connector.Next;
+                First = connector.Next;
             }
 
             if (connector.Next != null)
             {
                 connector.Next.Previous = connector.Previous;
             }
-            else if (/*last == face*/ connector.Next == null)
+            else if ( /*last == face*/ connector.Next == null)
             {
-                this.last = connector.Previous;
+                last = connector.Previous;
             }
 
             connector.Next = null;

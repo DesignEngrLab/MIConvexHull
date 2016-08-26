@@ -34,18 +34,20 @@ namespace MIConvexHull
         /// <summary>
         /// Position of the vertex.
         /// </summary>
+        /// <value>The position.</value>
         double[] Position { get; }
     }
 
     /// <summary>
     /// "Default" vertex.
     /// </summary>
+    /// <seealso cref="MIConvexHull.IVertex" />
     public class DefaultVertex : IVertex
     {
         /// <summary>
         /// Position of the vertex.
         /// </summary>
+        /// <value>The position.</value>
         public double[] Position { get; set; }
     }
-
 }

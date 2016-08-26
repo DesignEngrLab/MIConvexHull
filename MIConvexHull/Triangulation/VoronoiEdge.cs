@@ -29,70 +29,65 @@ namespace MIConvexHull
     /// <summary>
     /// A class representing an (undirected) edge of the Voronoi graph.
     /// </summary>
-    /// <typeparam name="TVertex"></typeparam>
-    /// <typeparam name="TCell"></typeparam>
+    /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+    /// <typeparam name="TCell">The type of the t cell.</typeparam>
     public class VoronoiEdge<TVertex, TCell>
         where TVertex : IVertex
         where TCell : TriangulationCell<TVertex, TCell>
     {
         /// <summary>
-        /// Source of the edge.
-        /// </summary>
-        public TCell Source
-        {
-            get;
-            internal set;
-        }
-
-        /// <summary>
-        /// Target of the edge.
-        /// </summary>
-        public TCell Target
-        {
-            get;
-            internal set;
-        }
-
-        /// <summary>
-        /// ...
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public override bool Equals(object obj)
-        {
-            var other = obj as VoronoiEdge<TVertex, TCell>;
-            if (other == null) return false;
-            if (object.ReferenceEquals(this, other)) return true;
-            return (Source == other.Source && Target == other.Target)
-                || (Source == other.Target && Target == other.Source);
-        }
-
-        /// <summary>
-        /// ...
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            int hash = 23;
-            hash = hash * 31 + Source.GetHashCode();
-            return hash * 31 + Target.GetHashCode();
-        }
-
-        /// <summary>
         /// Create an instance of the edge.
         /// </summary>
         public VoronoiEdge()
         {
-
         }
 
         /// <summary>
         /// Create an instance of the edge.
         /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="target">The target.</param>
         public VoronoiEdge(TCell source, TCell target)
         {
-            this.Source = source;
-            this.Target = target;
+            Source = source;
+            Target = target;
+        }
+
+        /// <summary>
+        /// Source of the edge.
+        /// </summary>
+        /// <value>The source.</value>
+        public TCell Source { get; internal set; }
+
+        /// <summary>
+        /// Target of the edge.
+        /// </summary>
+        /// <value>The target.</value>
+        public TCell Target { get; internal set; }
+
+        /// <summary>
+        /// ...
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns><c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
+        public override bool Equals(object obj)
+        {
+            var other = obj as VoronoiEdge<TVertex, TCell>;
+            if (other == null) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return (Source == other.Source && Target == other.Target)
+                   || (Source == other.Target && Target == other.Source);
+        }
+
+        /// <summary>
+        /// ...
+        /// </summary>
+        /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.</returns>
+        public override int GetHashCode()
+        {
+            var hash = 23;
+            hash = hash*31 + Source.GetHashCode();
+            return hash*31 + Target.GetHashCode();
         }
     }
 }
