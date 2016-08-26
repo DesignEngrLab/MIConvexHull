@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIConvexHull", "MIConvexHull\MIConvexHull.csproj", "{2337776D-7D0C-40AA-A439-C26C3CE24FAB}"
 EndProject
@@ -18,11 +18,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "6Using Helix To Open Models", "Examples\6UsingHelixStudio\6Using Helix To Open Models.csproj", "{AB6A4302-6B39-4606-874C-53CE263BB2A2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "7DelaunayWPF", "Examples\7DelaunayWPF\7DelaunayWPF.csproj", "{95E93B44-5470-43D4-8630-D1AC1AC4AB75}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{688AF78A-0087-444A-BC07-4C8AA9D18F91}"
-	ProjectSection(SolutionItems) = preProject
-		Resources\HelixToolkit.dll = Resources\HelixToolkit.dll
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "8PerformanceTests", "Examples\8PerformanceTests\8PerformanceTests.csproj", "{455D80B5-5288-4DC9-839E-02C3EE9000B2}"
 EndProject

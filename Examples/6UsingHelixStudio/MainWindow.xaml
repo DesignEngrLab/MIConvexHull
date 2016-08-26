@@ -1,9 +1,10 @@
 ﻿<Window x:Class="ExampleWithGraphics.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
-    xmlns:helix="clr-namespace:HelixToolkit;assembly=HelixToolkit"       
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:h="http://helix-toolkit.org/wpf"
+          xmlns:pt="clr-namespace:PropertyTools.Wpf;assembly=PropertyTools.Wpf"
         Title="Helix Studio Example" Height="800" Width="800">
-<!--xmlns:cp="http://schemas.charlespetzold.com/2007/xaml"-->
+    <!--xmlns:cp="http://schemas.charlespetzold.com/2007/xaml"-->
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_Open..." Click="OpenClick"/>
@@ -14,14 +15,86 @@
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <Button Grid.Column="4" Name="btnDisplay" Content="Display" IsEnabled="False" Click="btnDisplay_Click"/>
         </Menu>
-            <helix:HelixView3D x:Name="viewport" CameraRotationMode="VirtualTrackball">
-               <!--<helix:CubeVisual3D Fill="Red"/>--> 
-                <helix:DefaultLightsVisual3D/>
-                <!--<helix:StudioVisual3D Source="{Binding CurrentModelPath, Mode=TwoWay}"/>
-                <helix:Expander3D Expansion="{Binding Expansion}" Content="{Binding CurrentModel}"/>
-                 <helix:HelixView3D.Triggers>
-                <EventTrigger 
-            </helix:HelixView3D.Triggers>-->
-            </helix:HelixView3D>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="View">
+                <MenuItem Name="ShowGridLinesMenuItem" IsCheckable="True" Header="Show Grid Lines" Unchecked="GridLines_OnUnChecked" Checked="GridLines_OnChecked"/>
+                <MenuItem IsCheckable="True" Header="ShowCoordinateSystem" IsChecked="{Binding ShowCoordinateSystem, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="ShowViewCube" IsChecked="{Binding ShowViewCube, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="ShowCameraInfo" IsChecked="{Binding ShowCameraInfo, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="ShowTriangleCountInfo" IsChecked="{Binding ShowTriangleCountInfo, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="ShowFieldOfView" IsChecked="{Binding ShowFieldOfView, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="ShowFrameRate" IsChecked="{Binding ShowFrameRate, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="ShowCameraTarget" IsChecked="{Binding ShowCameraTarget, ElementName=view1}"/>
+                <MenuItem Header="Title">
+                    <TextBox Text="{Binding Title, ElementName=view1}" Width="200"/>
+                </MenuItem>
+                <MenuItem Header="SubTitle">
+                    <TextBox Text="{Binding SubTitle, ElementName=view1}" Width="200"/>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="Camera">
+                <MenuItem IsCheckable="True" Header="Orthographic" IsChecked="{Binding Orthographic, ElementName=view1}"/>
+                <MenuItem Header="NearPlaneDistance">
+                    <TextBox Text="{Binding Camera.NearPlaneDistance, ElementName=view1}"></TextBox>
+                </MenuItem>
+                <MenuItem Header="FarPlaneDistance">
+                    <TextBox Text="{Binding Camera.FarPlaneDistance, ElementName=view1}"></TextBox>
+                </MenuItem>
+                <MenuItem IsCheckable="True" Header="RotateAroundMouseDownPoint" IsChecked="{Binding RotateAroundMouseDownPoint, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="ZoomAroundMouseDownPoint" IsChecked="{Binding ZoomAroundMouseDownPoint, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="InfiniteSpin" IsChecked="{Binding InfiniteSpin, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="IsInertiaEnabled" IsChecked="{Binding IsInertiaEnabled, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="IsPanEnabled" IsChecked="{Binding IsPanEnabled, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="IsMoveEnabled" IsChecked="{Binding IsMoveEnabled, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="IsRotationEnabled" IsChecked="{Binding IsRotationEnabled, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="IsZoomEnabled" IsChecked="{Binding IsZoomEnabled, ElementName=view1}"/>
+                <MenuItem IsCheckable="True" Header="IsChangeFovEnabled" IsChecked="{Binding IsChangeFieldOfViewEnabled, ElementName=view1}"/>
+                <MenuItem Header="RotationSensitivity">
+                    <StackPanel Orientation="Horizontal">
+                        <Slider Value="{Binding RotationSensitivity, ElementName=view1}" Minimum="0.1" Maximum="5" Width="200"/>
+                        <TextBlock Text="{Binding RotationSensitivity, StringFormat='{}{0:0.0}', ElementName=view1}"/>
+                    </StackPanel>
+                </MenuItem>
+                <MenuItem Header="ZoomSensitivity">
+                    <StackPanel Orientation="Horizontal">
+                        <Slider Value="{Binding ZoomSensitivity, ElementName=view1}" Minimum="0.1" Maximum="5" Width="200"/>
+                        <TextBlock Text="{Binding ZoomSensitivity, StringFormat='{}{0:0.0}', ElementName=view1}"/>
+                    </StackPanel>
+                </MenuItem>
+                <MenuItem Header="CameraInertiaFactor">
+                    <StackPanel Orientation="Horizontal">
+                        <Slider Value="{Binding CameraInertiaFactor, ElementName=view1}" Minimum="0.7" Maximum="1" Width="200"/>
+                        <TextBlock Text="{Binding CameraInertiaFactor, StringFormat='{}{0:0.000}', ElementName=view1}"/>
+                    </StackPanel>
+                </MenuItem>
+            </MenuItem>
+            <pt:EnumMenuItem SelectedValue="{Binding CameraRotationMode, ElementName=view1}" Header="CameraRotationMode"/>
+            <pt:EnumMenuItem SelectedValue="{Binding CameraMode, ElementName=view1}" Header="CameraMode"/>
+
+            <MenuItem Header="Lighting">
+                <Grid>
+                    <StackPanel HorizontalAlignment="Left" Width="400">
+                        <pt:HeaderedEntrySlider Header="Altitude (deg):" Value="{Binding Altitude, ElementName=sunLight}" Minimum="-90" Maximum="90"/>
+                        <pt:HeaderedEntrySlider Header="Azimuth (deg):" Value="{Binding Azimuth, ElementName=sunLight}" Minimum="0" Maximum="360"/>
+                        <pt:HeaderedEntrySlider Header="Brightness:" Value="{Binding Brightness, ElementName=sunLight}" Minimum="0" Maximum="1"/>
+                        <pt:HeaderedEntrySlider Header="Ambient:" Value="{Binding Ambient, ElementName=sunLight}" Minimum="0" Maximum="1"/>
+                        <pt:HeaderedEntrySlider Header="Rectangle divs:" Value="{Binding Divisions, ElementName=sunLight}" Minimum="2" Maximum="100"/>
+                    </StackPanel>
+                </Grid>
+            </MenuItem>
+        </Menu>
+        <h:HelixViewport3D x:Name="viewport" ZoomExtentsWhenLoaded="False">
+            <!--     <helix:HelixViewport3D.DefaultCamera />
+               <PerspectiveCamera Position="100,100,100" LookDirection="-100,-100,-100" UpDirection="0,0,1" FieldOfView="61" NearPlaneDistance="0.001"/>-->
+
+            <!--<helix:SunLight/>
+            <helix:DirectionalHeadLight Position="{Binding Headlight1}" Brightness="{Binding Brightness}"/>
+            <helix:DirectionalHeadLight Position="{Binding Headlight2}" Brightness="{Binding Brightness}"/>-->
+            <h:SunLight x:Name="sunLight" Altitude="{Binding Altitude}" Azimuth="{Binding Azimuth}" Brightness="{Binding Brightness}" Ambient="{Binding Ambient}"/>
+
+            <!--<helix:SphereVisual3D Radius="5"/>
+            <helix:SphereVisual3D Center="5,0,0" Radius="1" Fill="White"/>-->
+            <h:GridLinesVisual3D x:Name="GridLines" Visible="False"/>
+        </h:HelixViewport3D>
     </DockPanel>
 </Window>

@@ -1,0 +1,1265 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PropertyTools</name>
+    </assembly>
+    <members>
+        <member name="T:PropertyTools.DataAnnotations.AutoUpdateTextAttribute">
+            <summary>
+            Specifies that the text binding should be triggered at every change.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.BasePathPropertyAttribute">
+            <summary>
+            Specifies a base path property for relative path names.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.BasePathPropertyAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.BasePathPropertyAttribute" /> class.
+            </summary>
+            <param name="basePathPropertyName">Name of the base path property.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.BasePathPropertyAttribute.BasePathPropertyName">
+            <summary>
+            Gets or sets the name of the base path property.
+            </summary>
+            <value>The name of the base path property.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.BrowsableAttribute">
+            <summary>
+            Specifies whether a property or event should be displayed in a Properties window.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.BrowsableAttribute.#ctor(System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.BrowsableAttribute"/> class.
+            </summary>
+            <param name="browsable"><c>true</c> if a property or event can be modified at design time; otherwise, <c>false</c>. The default is <c>true</c>.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.BrowsableAttribute.Browsable">
+            <summary>
+            Gets a value indicating whether an object is browsable.
+            </summary>
+            <value><c>true</c> if the object is browsable; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.CategoryAttribute">
+            <summary>
+            Specifies the name of the category in which to group the property or event when displayed in a PropertyGrid control.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.CategoryAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.CategoryAttribute"/> class.
+            </summary>
+            <param name="category">The category.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.CategoryAttribute.Category">
+            <summary>
+            Gets the category.
+            </summary>
+            <value>The category.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.ColumnAttribute">
+            <summary>
+            Specifies a grid column.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ColumnAttribute.#ctor(System.Int32,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ColumnAttribute" /> class.
+            </summary>
+            <param name="columnIndex">Index of the column.</param>
+            <param name="propertyName">Name of the property.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ColumnAttribute.#ctor(System.Int32,System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ColumnAttribute" /> class.
+            </summary>
+            <param name="columnIndex">Index of the column.</param>
+            <param name="propertyName">Name of the property.</param>
+            <param name="header">The header.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ColumnAttribute.#ctor(System.Int32,System.String,System.String,System.String,System.String,System.Char,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ColumnAttribute" /> class.
+            </summary>
+            <param name="columnIndex">The column index.</param>
+            <param name="propertyName">The property name.</param>
+            <param name="header">The header.</param>
+            <param name="formatString">The format string.</param>
+            <param name="width">The width.</param>
+            <param name="alignment">The alignment.</param>
+            <param name="isReadOnly">The columns is read only if set to <c>true</c>.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ColumnAttribute.Alignment">
+            <summary>
+            Gets or sets the alignment (L, R, C or S).
+            </summary>
+            <value>The alignment.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ColumnAttribute.IsReadOnly">
+            <summary>
+            Gets or sets a value indicating whether the column values are read only (overriding default binding mode).
+            </summary>
+            <value><c>true</c> if the column is read only; otherwise, <c>false</c>.</value>
+            <remarks>If this property is set to <c>true</c>, the binding mode will be one-way also for properties with setters.</remarks>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ColumnAttribute.ColumnIndex">
+            <summary>
+            Gets or sets the index of the column.
+            </summary>
+            <value>The index of the column.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ColumnAttribute.FormatString">
+            <summary>
+            Gets or sets the format string.
+            </summary>
+            <value>The format string.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ColumnAttribute.Header">
+            <summary>
+            Gets or sets the header.
+            </summary>
+            <value>The header.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ColumnAttribute.PropertyName">
+            <summary>
+            Gets or sets the name of the property.
+            </summary>
+            <value>The name of the property.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ColumnAttribute.Width">
+            <summary>
+            Gets or sets the width ("Auto", "0.5*" etc. are ok).
+            </summary>
+            <value>The width.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.ColumnsPropertyAttribute">
+            <summary>
+            Specifies the name of a property that provides columns for a data grid.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ColumnsPropertyAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ColumnsPropertyAttribute" /> class.
+            </summary>
+            <param name="propertyName">Name of the property.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ColumnsPropertyAttribute.PropertyName">
+            <summary>
+            Gets or sets the name of the property.
+            </summary>
+            <value>The name of the property.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.CommentAttribute">
+            <summary>
+            Specifies that the value is a comment.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.ContentAttribute">
+            <summary>
+            Specifies that the value contains content that should be handled by a ContentControl.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.ConverterAttribute">
+            <summary>
+            Specifies a converter that should be used for the property.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ConverterAttribute.#ctor(System.Type)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ConverterAttribute" /> class.
+            </summary>
+            <param name="converterType">Type of the converter.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ConverterAttribute.ConverterType">
+            <summary>
+            Gets or sets the type of the converter.
+            </summary>
+            <value>The type of the converter.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.CheckableItemsAttribute">
+            <summary>
+            Specifies the name of the properties that controls the IsChecked and Content of checkable items.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.CheckableItemsAttribute.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.CheckableItemsAttribute" /> class.
+            </summary>
+            <param name="isCheckedPropertyName">Name of the IsChecked property.</param>
+            <param name="contentPropertyName">Name of the Content property.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.CheckableItemsAttribute.IsCheckedPropertyName">
+            <summary>
+            Gets or sets the name of the IsChecked property.
+            </summary>
+            <value>The name of the property.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.CheckableItemsAttribute.ContentPropertyName">
+            <summary>
+            Gets or sets the name of the content property.
+            </summary>
+            <value>The name of the content property.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.DefaultExtensionPropertyAttribute">
+            <summary>
+            Specifies that the decorated property should get its DefaultExtension from the specified property.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.DefaultExtensionPropertyAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.DefaultExtensionPropertyAttribute" /> class.
+            </summary>
+            <param name="propertyName">Name of the property that contains the default extension.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.DefaultExtensionPropertyAttribute.PropertyName">
+            <summary>
+            Gets or sets the name of the property.
+            </summary>
+            <value>The name of the property.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.DescriptionAttribute">
+            <summary>
+            Specifies a description for a property or event.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.DescriptionAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.DescriptionAttribute"/> class.
+            </summary>
+            <param name="description">The description.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.DescriptionAttribute.Description">
+            <summary>
+            Gets the description stored in this attribute.
+            </summary>
+            <value>The description.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.DirectoryPathAttribute">
+            <summary>
+            Specifies that the property is a directory path.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.DisplayNameAttribute">
+            <summary>
+            Specifies the display name for a property, event, or public void method which takes no arguments.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.DisplayNameAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.DisplayNameAttribute"/> class.
+            </summary>
+            <param name="displayName">The display name.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.DisplayNameAttribute.DisplayName">
+            <summary>
+            Gets the display name.
+            </summary>
+            <value>The display name.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.EasyInsertAttribute">
+            <summary>
+            Specifies that it should be easy to insert new items in a List property. When the DataGrid control is used, the EasyInsert property will be set.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.EasyInsertAttribute.#ctor(System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.EasyInsertAttribute" /> class.
+            </summary>
+            <param name="easyInsert">if set to <c>true</c> [easy insert].</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.EasyInsertAttribute.EasyInsert">
+            <summary>
+            Gets or sets a value indicating whether easy insert is enabled.
+            </summary>
+            <value><c>true</c> if [easy insert]; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.EnableByAttribute">
+            <summary>
+            Specifies the name of a property that controls the enabled/disabled state of the attributed property.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.EnableByAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.EnableByAttribute" /> class.
+            </summary>
+            <param name="propertyName">Name of the property.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.EnableByAttribute.#ctor(System.String,System.Object)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.EnableByAttribute" /> class.
+            </summary>
+            <param name="propertyName">Name of the property.</param>
+            <param name="propertyValue">The property value that enables the attributed property.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.EnableByAttribute.PropertyName">
+            <summary>
+            Gets or sets the name of the property.
+            </summary>
+            <value>The name of the property.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.EnableByAttribute.PropertyValue">
+            <summary>
+            Gets or sets the value that enables the attributed property.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.FillTabAttribute">
+            <summary>
+            Specifies that the control representing the property should fill the entire size of the tab page.
+            </summary>
+            <remarks>This requires only one property on the tab page.</remarks>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.FilterPropertyAttribute">
+            <summary>
+            Specifies the name of a property that contains a file path filter.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.FilterPropertyAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.FilterPropertyAttribute" /> class.
+            </summary>
+            <param name="propertyName">Name of the property that contains the filter.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.FilterPropertyAttribute.PropertyName">
+            <summary>
+            Gets or sets the name of the property.
+            </summary>
+            <value>The name of the property.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.FontAttribute">
+            <summary>
+            Specifies the font family, size and weight.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.FontAttribute.#ctor(System.String,System.Double,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.FontAttribute" /> class.
+            </summary>
+            <param name="fontFamily">The font family.</param>
+            <param name="fontSize">The size.</param>
+            <param name="fontWeight">The weight.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.FontAttribute.FontFamily">
+            <summary>
+            Gets or sets the font family.
+            </summary>
+            <value>The font family.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.FontAttribute.FontSize">
+            <summary>
+            Gets or sets the font size.
+            </summary>
+            <value>The size.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.FontAttribute.FontWeight">
+            <summary>
+            Gets or sets the font weight.
+            </summary>
+            <value>The weight.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.FontFamilySelectorAttribute">
+            <summary>
+            Specifies that a font family selector should be used.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.FontPreviewAttribute">
+            <summary>
+            Specifies the font size, weight and the name of a property that contains the font family.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.FontPreviewAttribute.#ctor(System.Double,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.FontPreviewAttribute" /> class.
+            </summary>
+            <param name="size">The size.</param>
+            <param name="weight">The weight.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.FontPreviewAttribute.#ctor(System.String,System.Double,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.FontPreviewAttribute" /> class.
+            </summary>
+            <param name="fontFamilyPropertyName">Name of the font family property.</param>
+            <param name="size">The size.</param>
+            <param name="weight">The weight.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.FontPreviewAttribute.FontFamilyPropertyName">
+            <summary>
+            Gets or sets the name of the font family property.
+            </summary>
+            <value>The name of the font family property.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.FontPreviewAttribute.Size">
+            <summary>
+            Gets or sets the size.
+            </summary>
+            <value>The size.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.FontPreviewAttribute.Weight">
+            <summary>
+            Gets or sets the weight.
+            </summary>
+            <value>The weight.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.FormatStringAttribute">
+            <summary>
+            Specifies a format string.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.FormatStringAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.FormatStringAttribute" /> class.
+            </summary>
+            <param name="fs">The format string.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.FormatStringAttribute.FormatString">
+            <summary>
+            Gets or sets the format string.
+            </summary>
+            <value>The format string.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.HeaderPlacement">
+            <summary>
+            Header placement values.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.HeaderPlacement.Left">
+            <summary>
+            Header on the left.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.HeaderPlacement.Above">
+            <summary>
+            Header above.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.HeaderPlacement.Hidden">
+            <summary>
+            Hidden header.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.HeaderPlacement.Collapsed">
+            <summary>
+            Collapsed header.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.HeaderPlacementAttribute">
+            <summary>
+            Specifies the property header placement.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.HeaderPlacementAttribute.#ctor(PropertyTools.DataAnnotations.HeaderPlacement)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.HeaderPlacementAttribute" /> class.
+            </summary>
+            <param name="placement">The placement.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.HeaderPlacementAttribute.HeaderPlacement">
+            <summary>
+            Gets or sets the header placement.
+            </summary>
+            <value>The header placement.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.HeightAttribute">
+            <summary>
+            Specifies the heights of the property control.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.HeightAttribute.#ctor(System.Double,System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.HeightAttribute" /> class.
+            </summary>
+            <param name="height">The height.</param>
+            <param name="minHeight">Height of the min.</param>
+            <param name="maxHeight">Height of the max.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.HeightAttribute.Height">
+            <summary>
+            Gets or sets the height.
+            </summary>
+            <value>The height.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.HeightAttribute.MaximumHeight">
+            <summary>
+            Gets or sets the maximum height.
+            </summary>
+            <value>The maximum height.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.HeightAttribute.MinimumHeight">
+            <summary>
+            Gets or sets the minimum height.
+            </summary>
+            <value>The minimum height.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.HorizontalAlignment">
+            <summary>
+            Specifies how an object or text in a control is horizontally aligned relative to an element of the control.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.HorizontalAlignment.Left">
+            <summary>
+            The object or text is aligned on the left of the control element.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.HorizontalAlignment.Center">
+            <summary>
+            The object or text is aligned in the center of the control element.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.HorizontalAlignment.Right">
+            <summary>
+            The object or text is aligned on the right of the control element.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.HorizontalAlignmentAttribute">
+            <summary>
+            Specifies the horizontal alignment.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.HorizontalAlignmentAttribute.#ctor(PropertyTools.DataAnnotations.HorizontalAlignment)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.HorizontalAlignmentAttribute" /> class.
+            </summary>
+            <param name="alignment">The alignment.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.HorizontalAlignmentAttribute.HorizontalAlignment">
+            <summary>
+            Gets or sets the horizontal alignment.
+            </summary>
+            <value>The horizontal alignment.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.InputDirection">
+            <summary>
+            Defines the InputDirection of a grid (the direction the current cell is moved when Enter is pressed)
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.InputDirection.Horizontal">
+            <summary>
+            Move horizontally.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.InputDirection.Vertical">
+            <summary>
+            Move vertically.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.InputDirectionAttribute">
+            <summary>
+            Specifies the input direction for the decorated property.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.InputDirectionAttribute.#ctor(PropertyTools.DataAnnotations.InputDirection)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.InputDirectionAttribute" /> class.
+            </summary>
+            <param name="inputDirection">The input direction.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.InputDirectionAttribute.InputDirection">
+            <summary>
+            Gets or sets the input direction.
+            </summary>
+            <value>The input direction.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.InputFilePathAttribute">
+            <summary>
+            Specifies that the decorated property is an input file.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.InputFilePathAttribute.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.InputFilePathAttribute" /> class.
+            </summary>
+            <param name="defaultExtension">The default extension.</param>
+            <param name="filter">The filter.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.InputFilePathAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.InputFilePathAttribute" /> class.
+            </summary>
+            <param name="defaultExtension">The default extension.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.InputFilePathAttribute.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.InputFilePathAttribute" /> class.
+            </summary>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.InputFilePathAttribute.DefaultExtension">
+            <summary>
+            Gets or sets the default extension.
+            </summary>
+            <value>The default extension.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.InputFilePathAttribute.Filter">
+            <summary>
+            Gets or sets the filter.
+            </summary>
+            <value>The filter.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.ListAttribute">
+            <summary>
+            Specifies properties for lists.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ListAttribute.#ctor(System.Boolean,System.Boolean,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ListAttribute" /> class.
+            </summary>
+            <param name="canAdd">can add items if set to <c>true</c>.</param>
+            <param name="canRemove">can remove items if set to <c>true</c>.</param>
+            <param name="maxNumberOfItems">The max number of items.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ListAttribute.CanAdd">
+            <summary>
+            Gets or sets a value indicating whether this instance can add items to the list.
+            </summary>
+            <value><c>true</c> if this instance can add; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ListAttribute.CanRemove">
+            <summary>
+            Gets or sets a value indicating whether this instance can remove items from the list.
+            </summary>
+            <value><c>true</c> if this instance can remove; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ListAttribute.MaximumNumberOfItems">
+            <summary>
+            Gets or sets the maximum number of items.
+            </summary>
+            <value>The maximum number of items.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.ListItemItemsSourcePropertyAttribute">
+            <summary>
+            Specifies the name of a property that contains values for the items in the decorated list property.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ListItemItemsSourcePropertyAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ListItemItemsSourcePropertyAttribute" /> class.
+            </summary>
+            <param name="propertyName">Name of the property.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ListItemItemsSourcePropertyAttribute.PropertyName">
+            <summary>
+            Gets or sets the name of the property.
+            </summary>
+            <value>The name of the property.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.OptionalAttribute">
+            <summary>
+            Specifies that the property is optional.
+            </summary>
+            <remarks>The name of a property that controls the state of the property can also be specified.
+            Properties marked with [Optional] will have a checkbox as the label.
+            The checkbox will enable/disable the property value editor.
+            Example usage:
+            [Optional]                    // requires a <see cref="T:System.Nullable" /> property type
+            [Optional("HasSomething")]    // relates to other property HasSomething</remarks>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.OptionalAttribute.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref = "T:PropertyTools.DataAnnotations.OptionalAttribute" /> class.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.OptionalAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.OptionalAttribute" /> class.
+            </summary>
+            <param name="propertyName">Name of the property.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.OptionalAttribute.PropertyName">
+            <summary>
+            Gets or sets the name of the property.
+            </summary>
+            <value>The name of the property.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.OutputFilePathAttribute">
+            <summary>
+            Specifies that the decorated property is an output file.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.OutputFilePathAttribute.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.OutputFilePathAttribute" /> class.
+            </summary>
+            <param name="defaultExtension">The default extension.</param>
+            <param name="filter">The filter.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.OutputFilePathAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.OutputFilePathAttribute" /> class.
+            </summary>
+            <param name="defaultExtension">The default extension.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.OutputFilePathAttribute.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.OutputFilePathAttribute" /> class.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.EnableByRadioButtonAttribute">
+            <summary>
+            Specifies the name of a property that controls the enabled/disabled state of the attributed property.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.EnableByRadioButtonAttribute.#ctor(System.String,System.Object)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.EnableByRadioButtonAttribute" /> class.
+            </summary>
+            <param name="propertyName">Name of the enumeration property.</param>
+            <param name="value">The enumeration value that enables the attributed property.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.EnableByRadioButtonAttribute.PropertyName">
+            <summary>
+            Gets the name of the property that determines if the decorated property is enabled or not.
+            </summary>
+            <value>The name of the property.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.EnableByRadioButtonAttribute.Value">
+            <summary>
+            Gets the value that enables the decorated property.
+            </summary>
+            <value>The value.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.ReadOnlyAttribute">
+            <summary>
+            Specifies whether the property this attribute is bound to is read-only or read/write.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ReadOnlyAttribute.#ctor(System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ReadOnlyAttribute" /> class.
+            </summary>
+            <param name="isReadOnly">true to show that the property this attribute is bound to is read-only; false to show that the property is read/write.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ReadOnlyAttribute.IsReadOnly">
+            <summary>
+            Gets a value indicating whether the property this attribute is bound to is read-only.
+            </summary>
+            <value>true if the property this attribute is bound to is read-only; false if the property is read/write.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.ResettableAttribute">
+            <summary>
+            Specifies that the property is resettable.
+            </summary>
+            <remarks>Properties marked with [Resettable] will have a reset button.
+            The button will reset the property to the configured reset value.
+            Example usage:
+            [Resettable]                  // Button label is "Reset"
+            [Resettable("Default")]       // Button label is "Default"</remarks>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ResettableAttribute.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref = "T:PropertyTools.DataAnnotations.ResettableAttribute" /> class.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ResettableAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ResettableAttribute" /> class.
+            </summary>
+            <param name="label">The label.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ResettableAttribute.ButtonLabel">
+            <summary>
+            Gets or sets the button label.
+            </summary>
+            <value>The button label.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.ItemHeaderPropertyAttribute">
+            <summary>
+            Specifies the item header property.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ItemHeaderPropertyAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ItemHeaderPropertyAttribute" /> class.
+            </summary>
+            <param name="itemHeaderProperty">The item header property.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ItemHeaderPropertyAttribute.ItemHeaderProperty">
+            <summary>
+            Gets or sets the item header property.
+            </summary>
+            <value>The item header property.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.SelectedValuePathAttribute">
+            <summary>
+            Specifies the path used to get the selected value of an item.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.SelectedValuePathAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.SelectedValuePathAttribute" /> class.
+            </summary>
+            <param name="path">The path used to get the selected value.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SelectedValuePathAttribute.Path">
+            <summary>
+            Gets or sets the path.
+            </summary>
+            <value>The path.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.SelectorStyle">
+            <summary>
+            Defines the style of selector controls.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.SelectorStyle.Auto">
+            <summary>
+            Automatic style.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.SelectorStyle.RadioButtons">
+            <summary>
+            Use radio buttons.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.SelectorStyle.ComboBox">
+            <summary>
+            Use combo box.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DataAnnotations.SelectorStyle.ListBox">
+            <summary>
+            Use list box.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.SelectorStyleAttribute">
+            <summary>
+            Specifies what control style a selector property should use.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.SelectorStyleAttribute.#ctor(PropertyTools.DataAnnotations.SelectorStyle)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.SelectorStyleAttribute" /> class.
+            </summary>
+            <param name="selectorStyle">The selector style.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SelectorStyleAttribute.SelectorStyle">
+            <summary>
+            Gets the selector style.
+            </summary>
+            <value>The selector style.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.SlidableAttribute">
+            <summary>
+            Specifies that the property can be edited by a slider.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.SlidableAttribute.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref = "T:PropertyTools.DataAnnotations.SlidableAttribute" /> class.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.SlidableAttribute.#ctor(System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.SlidableAttribute" /> class.
+            </summary>
+            <param name="minimum">The minimum.</param>
+            <param name="maximum">The maximum.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.SlidableAttribute.#ctor(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.SlidableAttribute" /> class.
+            </summary>
+            <param name="minimum">The minimum.</param>
+            <param name="maximum">The maximum.</param>
+            <param name="smallChange">The small change.</param>
+            <param name="largeChange">The large change.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.SlidableAttribute.#ctor(System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.SlidableAttribute" /> class.
+            </summary>
+            <param name="minimum">The minimum.</param>
+            <param name="maximum">The maximum.</param>
+            <param name="smallChange">The small change.</param>
+            <param name="largeChange">The large change.</param>
+            <param name="snapToTicks">if set to <c>true</c> [snap to ticks].</param>
+            <param name="tickFrequency">The tick frequency.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SlidableAttribute.LargeChange">
+            <summary>
+            Gets or sets the large change.
+            </summary>
+            <value>The large change.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SlidableAttribute.Maximum">
+            <summary>
+            Gets or sets the maximum.
+            </summary>
+            <value>The maximum.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SlidableAttribute.Minimum">
+            <summary>
+            Gets or sets the minimum.
+            </summary>
+            <value>The minimum.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SlidableAttribute.SmallChange">
+            <summary>
+            Gets or sets the small change.
+            </summary>
+            <value>The small change.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SlidableAttribute.SnapToTicks">
+            <summary>
+            Gets or sets a value indicating whether [snap to ticks].
+            </summary>
+            <value><c>true</c> if [snap to ticks]; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SlidableAttribute.TickFrequency">
+            <summary>
+            Gets or sets the tick frequency.
+            </summary>
+            <value>The tick frequency.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.SortIndexAttribute">
+            <summary>
+            Specifies the property sorting index number.
+            </summary>
+            <remarks>The sort index is used to sort the tabs, categories and properties.</remarks>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.SortIndexAttribute.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.SortIndexAttribute" /> class.
+            </summary>
+            <param name="sortIndex">Index of the sort.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SortIndexAttribute.SortIndex">
+            <summary>
+            Gets or sets the index of the sort.
+            </summary>
+            <value>The index of the sort.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.ItemsSourcePropertyAttribute">
+            <summary>
+            Specifies the name of a property that contains values for the attributed property.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.ItemsSourcePropertyAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.ItemsSourcePropertyAttribute" /> class.
+            </summary>
+            <param name="propertyName">Name of the property.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.ItemsSourcePropertyAttribute.PropertyName">
+            <summary>
+            Gets or sets the name of the property.
+            </summary>
+            <value>The name of the property.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.SpinnableAttribute">
+            <summary>
+            Specifies that the property can be edited by a spin control.
+            </summary>
+            <remarks>See <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/aa511491.aspx">MSDN</a>.</remarks>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.SpinnableAttribute.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.SpinnableAttribute" /> class.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.SpinnableAttribute.#ctor(System.Object)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.SpinnableAttribute" /> class.
+            </summary>
+            <param name="smallChange">The small change.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.SpinnableAttribute.#ctor(System.Object,System.Object)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.SpinnableAttribute" /> class.
+            </summary>
+            <param name="smallChange">The small change.</param>
+            <param name="largeChange">The large change.</param>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.SpinnableAttribute.#ctor(System.Object,System.Object,System.Object,System.Object)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.SpinnableAttribute" /> class.
+            </summary>
+            <param name="smallChange">The small change.</param>
+            <param name="largeChange">The large change.</param>
+            <param name="minimum">The minimum.</param>
+            <param name="maximum">The maximum.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SpinnableAttribute.SmallChange">
+            <summary>
+            Gets or sets the small change.
+            </summary>
+            <value>The small change.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SpinnableAttribute.LargeChange">
+            <summary>
+            Gets or sets the large change.
+            </summary>
+            <value>The large change.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SpinnableAttribute.Maximum">
+            <summary>
+            Gets or sets the maximum.
+            </summary>
+            <value>The maximum.</value>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.SpinnableAttribute.Minimum">
+            <summary>
+            Gets or sets the minimum.
+            </summary>
+            <value>The minimum.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.VisibleByAttribute">
+            <summary>
+            Specifies the name of property that controls the visibility state of the attributed property.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.VisibleByAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.VisibleByAttribute" /> class.
+            </summary>
+            <param name="propertyName">Name of the property.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.VisibleByAttribute.PropertyName">
+            <summary>
+            Gets or sets the name of the property.
+            </summary>
+            <value>The name of the property.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.WidePropertyAttribute">
+            <summary>
+            Specifies that the property should be edited in wide mode.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.WidePropertyAttribute.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref = "T:PropertyTools.DataAnnotations.WidePropertyAttribute" /> class.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.WidePropertyAttribute.#ctor(System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.WidePropertyAttribute" /> class.
+            </summary>
+            <param name="showHeader">if set to <c>true</c> [show header].</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.WidePropertyAttribute.ShowHeader">
+            <summary>
+            Gets or sets a value indicating whether [show header].
+            </summary>
+            <value><c>true</c> if [show header]; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="T:PropertyTools.DataAnnotations.WidthAttribute">
+            <summary>
+            Specifies the width of the editing control.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.DataAnnotations.WidthAttribute.#ctor(System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PropertyTools.DataAnnotations.WidthAttribute" /> class.
+            </summary>
+            <param name="width">The width.</param>
+        </member>
+        <member name="P:PropertyTools.DataAnnotations.WidthAttribute.Width">
+            <summary>
+            Gets or sets the width.
+            </summary>
+            <value>The width.</value>
+        </member>
+        <member name="T:PropertyTools.DropPosition">
+            <summary>
+            Indicates where an item should be dropped.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DropPosition.Add">
+            <summary>
+            Add the item to the target item.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DropPosition.InsertBefore">
+            <summary>
+            Insert the item before the target item.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DropPosition.InsertAfter">
+            <summary>
+            Insert the item after the target item.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.IDragSource">
+            <summary>
+            Allows an object to be dragged.
+            </summary>
+        </member>
+        <member name="P:PropertyTools.IDragSource.IsDraggable">
+            <summary>
+            Gets a value indicating whether this instance is possible to drag.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.IDragSource.Detach">
+            <summary>
+            Detaches this instance (for move and drop somewhere else).
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DragDropKeyStates">
+            <summary>
+            Specifies the current state of the modifier keys (SHIFT, CTRL, and ALT), as well as the state of the mouse buttons.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DragDropKeyStates.None">
+            <summary>
+            No modifier keys or mouse buttons are pressed.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DragDropKeyStates.LeftMouseButton">
+            <summary>
+            The left mouse button is pressed.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DragDropKeyStates.RightMouseButton">
+            <summary>
+            The right mouse button is pressed.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DragDropKeyStates.ShiftKey">
+            <summary>
+            The shift key is pressed.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DragDropKeyStates.ControlKey">
+            <summary>
+            The control key is pressed.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DragDropKeyStates.MiddleMouseButton">
+            <summary>
+            The middle mouse button is pressed.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DragDropKeyStates.AltKey">
+            <summary>
+            The alt key is pressed.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.DragDropEffect">
+            <summary>
+            Specifies the effects of a drag-and-drop operation.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DragDropEffect.None">
+            <summary>
+            The drop target does not accept the data.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DragDropEffect.Copy">
+            <summary>
+            The data is copied to the drop target.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DragDropEffect.Move">
+            <summary>
+            The data from the drag source is moved to the drop target.
+            </summary>
+        </member>
+        <member name="F:PropertyTools.DragDropEffect.Link">
+            <summary>
+            The data from the drag source is linked to the drop target.
+            </summary>
+        </member>
+        <member name="T:PropertyTools.IDropTarget">
+            <summary>
+            Allows an object to receive dropped items.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.IDropTarget.CanDrop(PropertyTools.IDragSource,PropertyTools.DropPosition,PropertyTools.DragDropEffect)">
+            <summary>
+            Determines whether the specified <paramref name="node" /> can be dropped here.
+            </summary>
+            <param name="node">The node.</param>
+            <param name="dropPosition">The position where the <paramref name="node" /> should be dropped.</param>
+            <param name="effect">The drag/drop effect.</param>
+            <returns><c>true</c> if this instance accepts a drop of the specified <paramref name="node" />; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:PropertyTools.IDropTarget.Drop(System.Collections.Generic.IEnumerable{PropertyTools.IDragSource},PropertyTools.DropPosition,PropertyTools.DragDropEffect,PropertyTools.DragDropKeyStates)">
+            <summary>
+            Drops the specified <paramref name="items" /> at this object.
+            </summary>
+            <param name="items">The items to drop.</param>
+            <param name="dropPosition">The position where the <paramref name="items" /> should be dropped.</param>
+            <param name="effect">The drag/drop effect.</param>
+            <param name="initialKeyStates">The initial drag/drop key states.</param>
+        </member>
+        <member name="T:PropertyTools.ExpressionUtilities">
+            <summary>
+            Provides utility methods for lambda expressions.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.ExpressionUtilities.GetName``1(System.Linq.Expressions.Expression{System.Func{``0}})">
+            <summary>
+            Gets the name of the property specified by an expression.
+            </summary>
+            <typeparam name="T">The type of the property.</typeparam>
+            <param name="memberAccessExpression">The member access expression.</param>
+            <returns>
+            The name of the property.
+            </returns>
+        </member>
+        <member name="T:PropertyTools.Observable">
+            <summary>
+            Provides a base class implementing INotifyPropertyChanged.
+            </summary>
+        </member>
+        <member name="E:PropertyTools.Observable.PropertyChanged">
+            <summary>
+            Occurs when a property value changes.
+            </summary>
+        </member>
+        <member name="M:PropertyTools.Observable.OnPropertyChanged(System.String,System.Object,System.Object)">
+            <summary>
+            Called when the specified property has been changed.
+            </summary>
+            <param name="propertyName">Name of the property.</param>
+            <param name="oldValue">The old value.</param>
+            <param name="newValue">The new value.</param>
+        </member>
+        <member name="M:PropertyTools.Observable.RaisePropertyChanged(System.String)">
+            <summary>
+            Raises the property changed event.
+            </summary>
+            <param name="propertyName">Name of the property.</param>
+        </member>
+        <member name="M:PropertyTools.Observable.RaisePropertyChanged``1(System.Linq.Expressions.Expression{System.Func{``0}})">
+            <summary>
+            Raises the property changed event for the property specified by a property expression.
+            </summary>
+            <typeparam name="TProperty">The type of the property.</typeparam>
+            <param name="propertyExpression">The property expression.</param>
+        </member>
+        <member name="M:PropertyTools.Observable.SetValue``1(``0@,``0,System.String)">
+            <summary>
+            Sets the property value.
+            </summary>
+            <typeparam name="T">The type of the property.</typeparam>
+            <param name="field">The field.</param>
+            <param name="value">The value.</param>
+            <param name="propertyName">Name of the property.</param>
+            <returns>
+            True if the property was set.
+            </returns>
+            <remarks>This method uses the CallerMemberNameAttribute to determine the property name.</remarks>
+        </member>
+        <member name="M:PropertyTools.Observable.SetValue``1(``0@,``0,System.Linq.Expressions.Expression{System.Func{``0}})">
+            <summary>
+            Sets the property value.
+            </summary>
+            <typeparam name="T">The type of the property.</typeparam>
+            <param name="field">The field.</param>
+            <param name="value">The value.</param>
+            <param name="propertyExpression">The property expression.</param>
+            <returns>
+            True if the property was set.
+            </returns>
+            <remarks>This method uses the CallerMemberNameAttribute to determine the property name.</remarks>
+        </member>
+        <member name="M:PropertyTools.Observable.VerifyProperty(System.String)">
+            <summary>
+            Verifies the property name.
+            </summary>
+            <param name="propertyName">Name of the property.</param>
+        </member>
+    </members>
+</doc>

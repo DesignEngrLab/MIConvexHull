@@ -1,4 +1,6 @@
-﻿namespace ExampleWithGraphics
+﻿using HelixToolkit.Wpf;
+
+namespace ExampleWithGraphics
 {
     using System;
     using System.Collections.Generic;
@@ -9,7 +11,7 @@
     using HelixToolkit;
     using MIConvexHull;
     using Microsoft.Win32;
-    
+
     /// <summary>
     ///   Interaction logic for MainWindow.xaml
     /// </summary>
@@ -79,7 +81,7 @@
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-        
+
         private const string OpenFileFilter = "3D model files (*.3ds;*.obj;*.lwo;*.stl)|*.3ds;*.obj;*.objz;*.lwo;*.stl";
 
         private void OpenClick(object sender, RoutedEventArgs e)
@@ -91,10 +93,11 @@
             d.DefaultExt = ".3ds";
             if (!d.ShowDialog().Value)
                 return;
-            CurrentModel = ModelImporter.Load(d.FileName);
+            var modelImporter = new ModelImporter();
+            CurrentModel = modelImporter.Load(d.FileName);
             if (viewport.Children.Count > 2) viewport.Children.RemoveAt(2);
-            viewport.Add(new ModelVisual3D { Content = CurrentModel });
-            viewport.ZoomToFit(100);
+            viewport.Children.Add(new ModelVisual3D { Content = CurrentModel });
+            viewport.ZoomExtentsWhenLoaded = true;
 
             var verts = new List<Point3D>();
             mesh = null;
@@ -118,7 +121,7 @@
         private void AddNoiseClick(object sender, RoutedEventArgs e)
         {
             Random rnd = new Random();
-            vertices = vertices.Select(v => new Vertex((Point3D)(new Vector3D(v.Position[0], v.Position[1], v.Position[2]) + 
+            vertices = vertices.Select(v => new Vertex((Point3D)(new Vector3D(v.Position[0], v.Position[1], v.Position[2]) +
                 0.001 * new Vector3D(rnd.NextDouble() - 0.005, rnd.NextDouble() - 0.005, rnd.NextDouble() - 0.005)))).ToList();
             MessageBox.Show("Noise added.", "Notification", MessageBoxButton.OK, MessageBoxImage.Information);
         }
@@ -152,8 +155,8 @@
         }
 
         public static double[] divide(IList<double> B, double a, int length)
-        { 
-            return multiply((1 / a), B, length); 
+        {
+            return multiply((1 / a), B, length);
         }
 
         public static double[] multiply(double a, IList<double> B, int length)
@@ -227,6 +230,26 @@
                                                 subtract(vertices[2].Position, vertices[1].Position, 3));
             return (dotProduct(normal, outDir, 3) >= 0);
         }
+
+        /// <summary>
+        ///     Handles the OnChecked event of the GridLines control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
+        private void GridLines_OnChecked(object sender, RoutedEventArgs e)
+        {
+            GridLines.Visible = true;
+        }
+
+        /// <summary>
+        ///     Handles the OnUnChecked event of the GridLines control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
+        private void GridLines_OnUnChecked(object sender, RoutedEventArgs e)
+        {
+            GridLines.Visible = false;
+        }
     }
 
     internal class Point3DComparer : IEqualityComparer<Point3D>
@@ -242,7 +265,7 @@
         /// <param name="x">The first object of type <paramref name="T"/> to compare.</param><param name="y">The second object of type <paramref name="T"/> to compare.</param>
         bool IEqualityComparer<Point3D>.Equals(Point3D x, Point3D y)
         {
-            return ((x - y).Length < 0.000000001) ;
+            return ((x - y).Length < 0.000000001);
         }
 
         /// <summary>
