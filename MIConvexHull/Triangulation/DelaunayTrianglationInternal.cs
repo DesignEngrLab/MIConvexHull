@@ -55,7 +55,7 @@ namespace MIConvexHull
             var vertices = new IVertex[data.Count];
             for (var i = 0; i < data.Count; i++) vertices[i] = data[i];
             var ch = new ConvexHullAlgorithm(vertices, true, config);
-            ch.FindConvexHull();
+            ch.GetConvexHull();
             ch.PostProcessTriangulation(config);
 
             return ch.GetConvexFaces<TVertex, TCell>();

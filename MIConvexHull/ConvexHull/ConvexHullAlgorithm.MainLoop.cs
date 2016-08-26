@@ -53,35 +53,6 @@ namespace MIConvexHull
     internal partial class ConvexHullAlgorithm
     {
         /// <summary>
-        /// Finds the convex hull.
-        /// </summary>
-        private void FindConvexHull()
-        {
-            // Find the (dimension+1) initial points and create the simplexes.
-            CreateInitialSimplex();
-
-            // Expand the convex hull and faces.
-            while (UnprocessedFaces.First != null)
-            {
-                var currentFace = UnprocessedFaces.First;
-                CurrentVertex = currentFace.FurthestVertex;
-
-                UpdateCenter();
-
-                // The affected faces get tagged
-                TagAffectedFaces(currentFace);
-
-                // Create the cone from the currentVertex and the affected faces horizon.
-                if (!SingularVertices.Contains(CurrentVertex) && CreateCone()) CommitCone();
-                else HandleSingular();
-
-                // Need to reset the tags
-                var count = AffectedFaceBuffer.Count;
-                for (var i = 0; i < count; i++) AffectedFaceFlags[AffectedFaceBuffer[i]] = false;
-            }
-        }
-
-        /// <summary>
         /// Tags all faces seen from the current vertex with 1.
         /// </summary>
         /// <param name="currentFace">The current face.</param>
@@ -149,7 +120,7 @@ namespace MIConvexHull
         /// <param name="connector">The connector.</param>
         private void ConnectFace(FaceConnector connector)
         {
-            var index = connector.HashCode%ConnectorTableSize;
+            var index = connector.HashCode % ConnectorTableSize;
             var list = ConnectorTable[index];
 
             for (var current = list.First; current != null; current = current.Next)
@@ -296,18 +267,12 @@ namespace MIConvexHull
 
                 // the id adjacent face on the hull? If so, we can use simple method to find beyond vertices.
                 if (adjacentFace.VerticesBeyond.Count == 0)
-                {
                     FindBeyondVertices(newFace, oldFace.VerticesBeyond);
-                }
                 // it is slightly more effective if the face with the lower number of beyond vertices comes first.
                 else if (adjacentFace.VerticesBeyond.Count < oldFace.VerticesBeyond.Count)
-                {
                     FindBeyondVertices(newFace, adjacentFace.VerticesBeyond, oldFace.VerticesBeyond);
-                }
                 else
-                {
                     FindBeyondVertices(newFace, oldFace.VerticesBeyond, adjacentFace.VerticesBeyond);
-                }
 
                 // This face will definitely lie on the hull
                 if (newFace.VerticesBeyond.Count == 0)
@@ -350,7 +315,7 @@ namespace MIConvexHull
                 {
                     // If it's within the tolerance distance, use the lex. larger point
                     if (distance - MaxDistance < PlaneDistanceTolerance)
-                    {
+                    { // todo: why is this LexCompare necessary. Would seem to favor x over y over z (etc.)?
                         if (LexCompare(v, FurthestVertex) > 0)
                         {
                             MaxDistance = distance;
@@ -367,6 +332,28 @@ namespace MIConvexHull
             }
         }
 
+
+        /// <summary>
+        /// Compares the values of two vertices. The return value (-1, 0 or +1) are found
+        /// by first checking the first coordinate and then progressing through the rest.
+        /// In this way {2, 8} will be a "-1" (less than) {3, 1}.
+        /// </summary>
+        /// <param name="u">The base vertex index, u.</param>
+        /// <param name="v">The compared vertex index, v.</param>
+        /// <returns>System.Int32.</returns>
+        private int LexCompare(int u, int v)
+        {
+            int uOffset = u * Dimension, vOffset = v * Dimension;
+            for (var i = 0; i < Dimension; i++)
+            {
+                double x = Positions[uOffset + i], y = Positions[vOffset + i];
+                var comp = x.CompareTo(y);
+                if (comp != 0) return comp;
+            }
+            return 0;
+        }
+
+
         /// <summary>
         /// Used by update faces.
         /// </summary>
@@ -381,20 +368,20 @@ namespace MIConvexHull
             FurthestVertex = 0;
             int v;
 
-            for (var i = 0; i < beyond1.Count; i++) VertexMarks[beyond1[i]] = true;
-            VertexMarks[CurrentVertex] = false;
+            for (var i = 0; i < beyond1.Count; i++) VertexVisited[beyond1[i]] = true;
+            VertexVisited[CurrentVertex] = false;
             for (var i = 0; i < beyond.Count; i++)
             {
                 v = beyond[i];
                 if (v == CurrentVertex) continue;
-                VertexMarks[v] = false;
+                VertexVisited[v] = false;
                 IsBeyond(face, beyondVertices, v);
             }
 
             for (var i = 0; i < beyond1.Count; i++)
             {
                 v = beyond1[i];
-                if (VertexMarks[v]) IsBeyond(face, beyondVertices, v);
+                if (VertexVisited[v]) IsBeyond(face, beyondVertices, v);
             }
 
             face.FurthestVertex = FurthestVertex;
@@ -442,9 +429,9 @@ namespace MIConvexHull
         {
             for (var i = 0; i < Dimension; i++) Center[i] *= ConvexHullSize;
             ConvexHullSize += 1;
-            var f = 1.0/ConvexHullSize;
-            var co = CurrentVertex*Dimension;
-            for (var i = 0; i < Dimension; i++) Center[i] = f*(Center[i] + Positions[co + i]);
+            var f = 1.0 / ConvexHullSize;
+            var co = CurrentVertex * Dimension;
+            for (var i = 0; i < Dimension; i++) Center[i] = f * (Center[i] + Positions[co + i]);
         }
 
         /// <summary>
@@ -454,9 +441,9 @@ namespace MIConvexHull
         {
             for (var i = 0; i < Dimension; i++) Center[i] *= ConvexHullSize;
             ConvexHullSize -= 1;
-            var f = ConvexHullSize > 0 ? 1.0/ConvexHullSize : 0.0;
-            var co = CurrentVertex*Dimension;
-            for (var i = 0; i < Dimension; i++) Center[i] = f*(Center[i] - Positions[co + i]);
+            var f = ConvexHullSize > 0 ? 1.0 / ConvexHullSize : 0.0;
+            var co = CurrentVertex * Dimension;
+            for (var i = 0; i < Dimension; i++) Center[i] = f * (Center[i] - Positions[co + i]);
         }
 
         /// <summary>
@@ -485,15 +472,15 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        /// Get a vertex coordinate. Only used in the initialize functions,
-        /// in other places it part v * Dimension + i is inlined.
+        /// Get a vertex coordinate. In order to reduce speed, all vertex coordinates
+        /// have been placed in a single array.
         /// </summary>
-        /// <param name="v">The v.</param>
-        /// <param name="i">The i.</param>
+        /// <param name="vIndex">The vertex index.</param>
+        /// <param name="dimension">The index of the dimension.</param>
         /// <returns>System.Double.</returns>
-        private double GetCoordinate(int v, int i)
+        private double GetCoordinate(int vIndex, int dimension)
         {
-            return Positions[v*Dimension + i];
+            return Positions[vIndex * Dimension + dimension];
         }
 
         #region Returning the Results in the proper format
@@ -510,7 +497,7 @@ namespace MIConvexHull
             var hullVertexCount = 0;
             var vertexCount = Vertices.Length;
 
-            for (var i = 0; i < vertexCount; i++) VertexMarks[i] = false;
+            for (var i = 0; i < vertexCount; i++) VertexVisited[i] = false;
 
             for (var i = 0; i < cellCount; i++)
             {
@@ -518,9 +505,9 @@ namespace MIConvexHull
                 for (var j = 0; j < vs.Length; j++)
                 {
                     var v = vs[j];
-                    if (!VertexMarks[v])
+                    if (!VertexVisited[v])
                     {
-                        VertexMarks[v] = true;
+                        VertexVisited[v] = true;
                         hullVertexCount++;
                     }
                 }
@@ -529,7 +516,7 @@ namespace MIConvexHull
             var result = new TVertex[hullVertexCount];
             for (var i = 0; i < vertexCount; i++)
             {
-                if (VertexMarks[i]) result[--hullVertexCount] = data[i];
+                if (VertexVisited[i]) result[--hullVertexCount] = data[i];
             }
 
             return result;
@@ -555,7 +542,7 @@ namespace MIConvexHull
                 var vertices = new TVertex[Dimension];
                 for (var j = 0; j < Dimension; j++)
                 {
-                    vertices[j] = (TVertex) Vertices[face.Vertices[j]];
+                    vertices[j] = (TVertex)Vertices[face.Vertices[j]];
                 }
 
                 cells[i] = new TFace
