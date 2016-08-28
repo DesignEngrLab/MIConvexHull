@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "8PerformanceTests", "Exampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIConvexHull.4.5", "MIConvexHull - 4.5.ASP.Core.NoSilverlight\MIConvexHull.4.5.csproj", "{30777DE5-D221-4118-A124-738DC56CF7A0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTesting", "Examples\UnitTesting\UnitTesting.csproj", "{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -177,6 +179,22 @@ Global
 		{30777DE5-D221-4118-A124-738DC56CF7A0}.Release|x64.Build.0 = Release|Any CPU
 		{30777DE5-D221-4118-A124-738DC56CF7A0}.Release|x86.ActiveCfg = Release|Any CPU
 		{30777DE5-D221-4118-A124-738DC56CF7A0}.Release|x86.Build.0 = Release|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Debug|x64.Build.0 = Debug|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Debug|x86.Build.0 = Debug|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Release|x64.ActiveCfg = Release|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Release|x64.Build.0 = Release|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Release|x86.ActiveCfg = Release|Any CPU
+		{2EFD65A6-A23D-4DD5-8A34-CDEA408BAEA3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
