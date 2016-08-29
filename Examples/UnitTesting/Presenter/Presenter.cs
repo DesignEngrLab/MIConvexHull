@@ -12,32 +12,27 @@
 // <summary></summary>
 // ***********************************************************************
 
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Windows.Media.Media3D;
 using HelixToolkit.Wpf;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Media.Media3D;
+using MIConvexHull;
+using System;
 
-namespace TVGL
+namespace UnitTesting
 {
-    /// <summary>
-    ///     The Class HelixPresenter is the only class within the TVGL Helix Presenter
-    ///     project (TVGL_Presenter.dll). It is a simple static class with one main
-    ///     function, "Show".
-    /// </summary>
     public static class Presenter
     {
-        public static void ShowWithConvexHull(TessellatedSolid ts)
+        static ModelImporter modelImporter = new ModelImporter();
+        internal static void ShowWithConvexHull(Visual3D v3D, ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>> convexHull)
         {
             var window = new Window3DPlot();
-            window.view1.Children.Add(MakeModelVisual3D(ts));
+            window.view1.Children.Add(v3D);
             var positions =
-         ts.ConvexHull.Faces.SelectMany(
+         convexHull.Faces.SelectMany(
              f => f.Vertices.Select(v => new Point3D(v.Position[0], v.Position[1], v.Position[2])));
             var normals =
-                ts.ConvexHull.Faces.SelectMany(f => f.Vertices.Select(v => new Vector3D(f.Normal[0], f.Normal[1], f.Normal[2])));
+                convexHull.Faces.SelectMany(f => f.Vertices.Select(v => new Vector3D(f.Normal[0], f.Normal[1], f.Normal[2])));
             window.view1.Children.Add(
             new ModelVisual3D
             {
@@ -58,19 +53,13 @@ namespace TVGL
             window.ShowDialog();
         }
 
-
-        /// <summary>
-        ///     Makes the model visual3 d.
-        /// </summary>
-        /// <param name="ts">The ts.</param>
-        /// <returns>Visual3D.</returns>
-        private static Visual3D MakeModelVisual3D(string filename)
+        internal static Visual3D MakeModelVisual3D(string filename, out List<DefaultVertex> vertices)
         {
-            var model = ModelImporter.Load(fileName);
-            return new Visual3D(model.Children[0]);
+
+            var currentModel = modelImporter.Load(filename);
             var verts = new List<Point3D>();
-            mesh = null;
-            foreach (var model in CurrentModel.Children)
+            MeshGeometry3D mesh = null;
+            foreach (var model in currentModel.Children)
             {
                 if (typeof(GeometryModel3D).IsInstanceOfType(model))
                     if (typeof(MeshGeometry3D).IsInstanceOfType(((GeometryModel3D)model).Geometry))
@@ -79,66 +68,46 @@ namespace TVGL
                         verts.AddRange(mesh.Positions);
                     }
             }
-            vertices = verts.Distinct(new Point3DComparer()).Select(p => new Vertex(p)).ToList();
+            vertices = verts.Distinct(new Point3DComparer()).Select(p =>
+            new MIConvexHull.DefaultVertex { Position = new[] { p.X, p.Y, p.Z } }).ToList();
 
 
-            var defaultMaterial = MaterialHelper.CreateMaterial(
-                new System.Windows.Media.Color
-                {
-                    A = ts.SolidColor.A,
-                    B = ts.SolidColor.B,
-                    G = ts.SolidColor.G,
-                    R = ts.SolidColor.R
-                });
-            if (ts.HasUniformColor)
-            {
-                var positions =
-                    ts.Faces.SelectMany(
-                        f => f.Vertices.Select(v => new Point3D(v.Position[0], v.Position[1], v.Position[2])));
-                var normals =
-                    ts.Faces.SelectMany(f => f.Vertices.Select(v => new Vector3D(f.Normal[0], f.Normal[1], f.Normal[2])));
-                return new ModelVisual3D
-                {
-                    Content =
-                        new GeometryModel3D
-                        {
-                            Geometry = new MeshGeometry3D
-                            {
-                                Positions = new Point3DCollection(positions),
-                                // TriangleIndices = new Int32Collection(triIndices),
-                                Normals = new Vector3DCollection(normals)
-                            },
-                            Material = defaultMaterial
-                        }
-                };
-            }
-            var result = new ModelVisual3D();
-            foreach (var f in ts.Faces)
-            {
-                var vOrder = new Point3DCollection();
-                for (var i = 0; i < 3; i++)
-                    vOrder.Add(new Point3D(f.Vertices[i].X, f.Vertices[i].Y, f.Vertices[i].Z));
+            return new ModelVisual3D { Content = currentModel.Children[0] };
 
-                var c = f.Color == null
-                    ? defaultMaterial
-                    : MaterialHelper.CreateMaterial(new System.Windows.Media.Color
-                    {
-                        A = f.Color.A,
-                        B = f.Color.B,
-                        G = f.Color.G,
-                        R = f.Color.R
-                    });
-                result.Children.Add(new ModelVisual3D
-                {
-                    Content =
-                        new GeometryModel3D
-                        {
-                            Geometry = new MeshGeometry3D { Positions = vOrder },
-                            Material = c
-                        }
-                });
-            }
-            return result;
         }
+
+
+
+        internal class Point3DComparer : IEqualityComparer<Point3D>
+        {
+            #region Implementation of IEqualityComparer<in Point3D>
+
+            /// <summary>
+            /// Determines whether the specified objects are equal.
+            /// </summary>
+            /// <returns>
+            /// true if the specified objects are equal; otherwise, false.
+            /// </returns>
+            /// <param name="x">The first object of type <paramref name="T"/> to compare.</param><param name="y">The second object of type <paramref name="T"/> to compare.</param>
+            bool IEqualityComparer<Point3D>.Equals(Point3D x, Point3D y)
+            {
+                return ((x - y).Length < 0.00000000001);
             }
+
+            /// <summary>
+            /// Returns a hash code for the specified object.
+            /// </summary>
+            /// <returns>
+            /// A hash code for the specified object.
+            /// </returns>
+            /// <param name="obj">The <see cref="T:System.Object"/> for which a hash code is to be returned.</param><exception cref="T:System.ArgumentNullException">The type of <paramref name="obj"/> is a reference type and <paramref name="obj"/> is null.</exception>
+            int IEqualityComparer<Point3D>.GetHashCode(Point3D obj)
+            {
+                var d = obj.ToVector3D().LengthSquared;
+                return d.GetHashCode();
+            }
+
+            #endregion
+        }
+    }
 }

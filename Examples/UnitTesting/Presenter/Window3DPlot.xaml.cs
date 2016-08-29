@@ -15,7 +15,7 @@
 using System.Windows;
 
 
-namespace TVGL
+namespace Presenter
 {
     /// <summary>
     ///     Class Window3DPlot.
