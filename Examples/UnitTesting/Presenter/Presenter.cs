@@ -19,7 +19,6 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Media.Media3D;
 using HelixToolkit.Wpf;
-using OxyPlot;
 
 namespace TVGL
 {
@@ -30,244 +29,6 @@ namespace TVGL
     /// </summary>
     public static class Presenter
     {
-        ModelImporter modelImporter = new ModelImporter();
-
-        #region 2D Plots via OxyPlot
-
-        #region Single Series of Points
-
-        /// <summary>
-        ///     Shows the specified points.
-        /// </summary>
-        /// <param name="points">The points.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="plot2DType">Type of the plot2 d.</param>
-        /// <param name="closeShape">if set to <c>true</c> [close shape].</param>
-        /// <param name="marker">The marker.</param>
-        public static void Show(IList<Point> points, string title = "", Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-            var window = new Window2DPlot(points, title, plot2DType, closeShape, marker);
-            window.Show();
-        }
-
-        /// <summary>
-        ///     Shows the specified vertices.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <param name="direction">The direction.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="plot2DType">Type of the plot2 d.</param>
-        /// <param name="closeShape">if set to <c>true</c> [close shape].</param>
-        /// <param name="marker">The marker.</param>
-        public static void Show(IList<Vertex> vertices, double[] direction, string title = "",
-            Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-            Show(MiscFunctions.Get2DProjectionPoints(vertices, direction, false), title, plot2DType, closeShape, marker);
-        }
-
-        /// <summary>
-        ///     Shows the and hang.
-        /// </summary>
-        /// <param name="points">The points.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="plot2DType">Type of the plot2 d.</param>
-        /// <param name="closeShape">if set to <c>true</c> [close shape].</param>
-        /// <param name="marker">The marker.</param>
-        public static void ShowAndHang(IList<Point> points, string title = "", Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-            var window = new Window2DPlot(points, title, plot2DType, closeShape, marker);
-            window.ShowDialog();
-        }
-
-        public static void ShowAndHang(IEnumerable<List<Point>> pointsList, string title = "", Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-
-            var window = new Window2DPlot(pointsList, title, plot2DType, closeShape, marker);
-            window.ShowDialog();
-        }
-
-        public static void ShowAndHang(IEnumerable<List<List<Point>>> pointsLists, string title = "", Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-
-            var window = new Window2DPlot(pointsLists, title, plot2DType, closeShape, marker);
-            window.ShowDialog();
-        }
-
-        /// <summary>
-        ///     Shows the and hang.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <param name="direction">The direction.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="plot2DType">Type of the plot2 d.</param>
-        /// <param name="closeShape">if set to <c>true</c> [close shape].</param>
-        /// <param name="marker">The marker.</param>
-        public static void ShowAndHang(IList<Vertex> vertices, double[] direction, string title = "",
-            Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-            ShowAndHang(MiscFunctions.Get2DProjectionPoints(vertices, direction, false), title, plot2DType, closeShape,
-                marker);
-        }
-
-        #endregion
-
-        #region List of Series of Points
-
-        #region for Points
-
-        /// <summary>
-        ///     Shows the specified points.
-        /// </summary>
-        /// <param name="points">The points.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="plot2DType">Type of the plot2 d.</param>
-        /// <param name="closeShape">if set to <c>true</c> [close shape].</param>
-        /// <param name="marker">The marker.</param>
-        public static void Show(IList<Point[]> points, string title = "", Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-            var window = new Window2DPlot(points, title, plot2DType, closeShape, marker);
-            window.Show();
-        }
-
-        /// <summary>
-        ///     Shows the specified points.
-        /// </summary>
-        /// <param name="points">The points.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="plot2DType">Type of the plot2 d.</param>
-        /// <param name="closeShape">if set to <c>true</c> [close shape].</param>
-        /// <param name="marker">The marker.</param>
-        public static void Show(IList<List<Point>> points, string title = "", Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-            var window = new Window2DPlot(points, title, plot2DType, closeShape, marker);
-            window.Show();
-        }
-
-        /// <summary>
-        ///     Shows the and hang.
-        /// </summary>
-        /// <param name="points">The points.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="plot2DType">Type of the plot2 d.</param>
-        /// <param name="closeShape">if set to <c>true</c> [close shape].</param>
-        /// <param name="marker">The marker.</param>
-        public static void ShowAndHang(IList<List<Point>> points, string title = "",
-            Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-            var window = new Window2DPlot(points, title, plot2DType, closeShape, marker);
-            window.ShowDialog();
-        }
-
-        /// <summary>
-        ///     Shows the and hang.
-        /// </summary>
-        /// <param name="points">The points.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="plot2DType">Type of the plot2 d.</param>
-        /// <param name="closeShape">if set to <c>true</c> [close shape].</param>
-        /// <param name="marker">The marker.</param>
-        public static void ShowAndHang(IList<Point[]> points, string title = "", Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-            var window = new Window2DPlot(points, title, plot2DType, closeShape, marker);
-            window.ShowDialog();
-        }
-
-        #endregion
-
-        #region for Vertices and projection vector
-
-        /// <summary>
-        ///     Shows the specified vertices.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <param name="direction">The direction.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="plot2DType">Type of the plot2 d.</param>
-        /// <param name="closeShape">if set to <c>true</c> [close shape].</param>
-        /// <param name="marker">The marker.</param>
-        public static void Show(IList<List<Vertex>> vertices, double[] direction, string title = "",
-            Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-            Show(
-                vertices.Select(listsOfVerts => MiscFunctions.Get2DProjectionPoints(listsOfVerts, direction, false))
-                    .ToList(), title, plot2DType, closeShape, marker);
-        }
-
-        /// <summary>
-        ///     Shows the specified vertices.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <param name="direction">The direction.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="plot2DType">Type of the plot2 d.</param>
-        /// <param name="closeShape">if set to <c>true</c> [close shape].</param>
-        /// <param name="marker">The marker.</param>
-        public static void Show(IList<Vertex[]> vertices, double[] direction, string title = "",
-            Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-            Show(
-                vertices.Select(listsOfVerts => MiscFunctions.Get2DProjectionPoints(listsOfVerts, direction, false))
-                    .ToList(), title, plot2DType, closeShape, marker);
-        }
-
-
-        /// <summary>
-        ///     Shows the and hang.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <param name="direction">The direction.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="plot2DType">Type of the plot2 d.</param>
-        /// <param name="closeShape">if set to <c>true</c> [close shape].</param>
-        /// <param name="marker">The marker.</param>
-        public static void ShowAndHang(IList<List<Vertex>> vertices, double[] direction, string title = "",
-            Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-            ShowAndHang(
-                vertices.Select(listsOfVerts => MiscFunctions.Get2DProjectionPoints(listsOfVerts, direction, false))
-                    .ToList(), title, plot2DType, closeShape, marker);
-        }
-
-        /// <summary>
-        ///     Shows the and hang.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <param name="direction">The direction.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="plot2DType">Type of the plot2 d.</param>
-        /// <param name="closeShape">if set to <c>true</c> [close shape].</param>
-        /// <param name="marker">The marker.</param>
-        public static void ShowAndHang(IList<Vertex[]> vertices, double[] direction, string title = "",
-            Plot2DType plot2DType = Plot2DType.Line,
-            bool closeShape = true, MarkerType marker = MarkerType.Circle)
-        {
-            ShowAndHang(
-                vertices.Select(listsOfVerts => MiscFunctions.Get2DProjectionPoints(listsOfVerts, direction, false))
-                    .ToList(), title, plot2DType, closeShape, marker);
-        }
-
-        #endregion
-
-        #endregion
-
-        #endregion
-
-        #region 3D Plots via Helix.Toolkit
-
-
         public static void ShowWithConvexHull(TessellatedSolid ts)
         {
             var window = new Window3DPlot();
@@ -305,8 +66,8 @@ namespace TVGL
         /// <returns>Visual3D.</returns>
         private static Visual3D MakeModelVisual3D(string filename)
         {
-            var model = modelImporter.Load(d.FileName);
-
+            var model = ModelImporter.Load(fileName);
+            return new Visual3D(model.Children[0]);
             var verts = new List<Point3D>();
             mesh = null;
             foreach (var model in CurrentModel.Children)
@@ -379,7 +140,5 @@ namespace TVGL
             }
             return result;
         }
-
-        #endregion
-    }
+            }
 }

@@ -36,18 +36,6 @@
       <HintPath>..\..\packages\HelixToolkit.Wpf.2015.1.715\lib\net45\HelixToolkit.Wpf.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OxyPlot, Version=1.0.0.0, Culture=neutral, PublicKeyToken=638079a8f0bd61e9, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\OxyPlot.Core.1.0.0-unstable2100\lib\net45\OxyPlot.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="OxyPlot.Wpf, Version=1.0.0.0, Culture=neutral, PublicKeyToken=75e952ba404cdbb0, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\OxyPlot.Wpf.1.0.0-unstable2100\lib\net45\OxyPlot.Wpf.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="OxyPlot.Xps, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\OxyPlot.Wpf.1.0.0-unstable2100\lib\net45\OxyPlot.Xps.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="PropertyTools, Version=2015.2.0.0, Culture=neutral, PublicKeyToken=ea0c9f2b460934d0, processorArchitecture=MSIL">
@@ -87,9 +75,6 @@
   <ItemGroup>
     <Compile Include="Class1.cs" />
     <Compile Include="Presenter\Presenter.cs" />
-    <Compile Include="Presenter\Window2DPlot.xaml.cs">
-      <DependentUpon>Window2DPlot.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Presenter\Window3DPlot.xaml.cs">
       <DependentUpon>Window3DPlot.xaml</DependentUpon>
     </Compile>
@@ -102,10 +87,6 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Presenter\Window2DPlot.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Presenter\Window3DPlot.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
