@@ -495,9 +495,8 @@ namespace MIConvexHull
         {
             var cellCount = ConvexFaces.Count;
             var hullVertexCount = 0;
-            var vertexCount = Vertices.Length;
 
-            for (var i = 0; i < vertexCount; i++) VertexVisited[i] = false;
+            for (var i = 0; i < NumberOfVertices; i++) VertexVisited[i] = false;
 
             for (var i = 0; i < cellCount; i++)
             {
@@ -514,7 +513,7 @@ namespace MIConvexHull
             }
 
             var result = new TVertex[hullVertexCount];
-            for (var i = 0; i < vertexCount; i++)
+            for (var i = 0; i < NumberOfVertices; i++)
             {
                 if (VertexVisited[i]) result[--hullVertexCount] = data[i];
             }
