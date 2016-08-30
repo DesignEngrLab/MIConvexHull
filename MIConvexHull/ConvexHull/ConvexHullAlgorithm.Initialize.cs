@@ -85,7 +85,7 @@ namespace MIConvexHull
         /// Dimension of the input must be 2 or greater.
         /// </exception>
         /// <exception cref="ArgumentException">There are too few vertices (m) for the n-dimensional space. (m must be greater " +
-        ///                     "than the n, but m is " + Vertices.Length + " and n is " + Dimension</exception>
+        ///                     "than the n, but m is " + NumberOfVertices + " and n is " + Dimension</exception>
         private ConvexHullAlgorithm(IVertex[] vertices, bool lift, ConvexHullComputationConfig config)
         {
             if (config.PointTranslationType != PointTranslationType.None && config.PointTranslationGenerator == null)
@@ -96,14 +96,15 @@ namespace MIConvexHull
 
             IsLifted = lift;
             Vertices = vertices;
+            NumberOfVertices = vertices.Length;
             PlaneDistanceTolerance = config.PlaneDistanceTolerance;
 
             Dimension = DetermineDimension();
             if (Dimension < 2) throw new InvalidOperationException("Dimension of the input must be 2 or greater.");
-            if (Vertices.Length <= Dimension)
+            if (NumberOfVertices <= Dimension)
                 throw new ArgumentException(
                     "There are too few vertices (m) for the n-dimensional space. (m must be greater " +
-                    "than the n, but m is " + Vertices.Length + " and n is " + Dimension);
+                    "than the n, but m is " + NumberOfVertices + " and n is " + Dimension);
             if (lift) Dimension++;
 
             UnprocessedFaces = new FaceList();
@@ -126,7 +127,7 @@ namespace MIConvexHull
             ConnectorTable = new ConnectorList[ConnectorTableSize];
             for (var i = 0; i < ConnectorTableSize; i++) ConnectorTable[i] = new ConnectorList();
 
-            VertexVisited = new bool[Vertices.Length];
+            VertexVisited = new bool[NumberOfVertices];
             InitializePositions(config);
 
             MathHelper = new MathHelper(Dimension, Positions);
@@ -169,7 +170,7 @@ namespace MIConvexHull
         /// <param name="config">The configuration.</param>
         private void InitializePositions(ConvexHullComputationConfig config)
         {
-            Positions = new double[Vertices.Length * Dimension];
+            Positions = new double[NumberOfVertices * Dimension];
             var index = 0;
             if (IsLifted)
             {
@@ -235,10 +236,9 @@ namespace MIConvexHull
         private int DetermineDimension()
         {
             var r = new Random();
-            var vCount = Vertices.Length;
             var dimensions = new List<int>();
             for (var i = 0; i < 10; i++)
-                dimensions.Add(Vertices[r.Next(vCount)].Position.Length);
+                dimensions.Add(Vertices[r.Next(NumberOfVertices)].Position.Length);
             var dimension = dimensions.Min();
             if (dimension != dimensions.Max())
                 throw new ArgumentException("Invalid input data (non-uniform dimension).");
@@ -301,9 +301,13 @@ namespace MIConvexHull
             boundingBoxPoints[0].RemoveAt(0);
             boundingBoxPoints[0].RemoveAt(boundingBoxPoints[0].Count - 1);
             var initialPoints = new List<int> { vertex0, vertex1 };
+            VertexVisited[vertex0] = VertexVisited[vertex1] = true;
+            CurrentVertex = vertex0; UpdateCenter();
+            CurrentVertex = vertex1; UpdateCenter();
             var edgeUnitVectors = new List<double[]> { makeUnitVector(vertex0, vertex1) };
+            var numberLeft = boundingBoxPoints.Sum(bb => bb.Count);
             var dimensionIndex = 0;
-            while (initialPoints.Count < Dimension + 1)
+            while (initialPoints.Count < Dimension + 1 && numberLeft > 0)
             {
                 dimensionIndex++;
                 if (dimensionIndex == Dimension) dimensionIndex = 0;
@@ -326,24 +330,33 @@ namespace MIConvexHull
                         }
                     }
                 }
-                if (lowestDotProduct >= 1.0) continue;
+                numberLeft = boundingBoxPoints.Sum(bb => bb.Count);
+                if (lowestDotProduct >= Constants.MaxDotProductInSimplex) continue;
                 boundingBoxPoints[dimensionIndex].Remove(bestNewIndex);
                 edgeUnitVectors.Add(bestUnitVector);
                 initialPoints.Add(bestNewIndex);
-            }
-
-            #endregion
-
-            // Add the initial points to the convex hull.
-            foreach (var vertex in initialPoints)
-            {
-                CurrentVertex = vertex;
+                // Mark the vertex so that it's not included in any beyond set.
+                VertexVisited[bestNewIndex] = true;
+                CurrentVertex = bestNewIndex;
                 // update center must be called before adding the vertex.
                 UpdateCenter();
-
-                // Mark the vertex so that it's not included in any beyond set.
-                VertexVisited[vertex] = true;
             }
+            var index = -1;
+            while (initialPoints.Count < Dimension + 1 && ++index < NumberOfVertices)
+            {
+                if (VertexVisited[index]) continue;
+                var newUnitVector = makeUnitVector(vertex0, index);
+                if (calcMaxDotProduct(edgeUnitVectors, newUnitVector) >= Constants.MaxDotProductInSimplex)
+                    continue;
+                edgeUnitVectors.Add(newUnitVector);
+                initialPoints.Add(index);
+            }
+            if (initialPoints.Count < Dimension + 1)
+                throw new ArgumentException("The input data is degenerate. It appears to exist in " + Dimension +
+                    " dimensions, but it is a " + (Dimension - 1) + " dimensional set (i.e. the point of collinear,"
+                    + " coplanar, or co-hyperplanar.)");
+
+            #endregion
 
             #region Create the first faces from (dimension + 1) vertices.
 
@@ -392,12 +405,9 @@ namespace MIConvexHull
         private void FindBeyondVertices(ConvexFaceInternal face)
         {
             var beyondVertices = face.VerticesBeyond;
-
             MaxDistance = double.NegativeInfinity;
             FurthestVertex = 0;
-
-            var count = Vertices.Length;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < NumberOfVertices; i++)
             {
                 if (VertexVisited[i]) continue;
                 IsBeyond(face, beyondVertices, i);
@@ -415,15 +425,20 @@ namespace MIConvexHull
         private double calcMaxDotProduct(List<double[]> edgeUnitVectors, double[] newUnitVector)
         {
             var maxDotProduct = 0.0;
-            for (var i = 0; i < edgeUnitVectors.Count; i++)
+            foreach (double[] edgeUnitVector in edgeUnitVectors)
             {
-                var dot = 0.0;
-                for (var dimIndex = 0; dimIndex < Dimension; dimIndex++)
-                    dot += edgeUnitVectors[i][dimIndex] * newUnitVector[dimIndex];
-                dot = Math.Abs(dot);
+                var dot = calcDotProduct(edgeUnitVector, newUnitVector);
                 if (maxDotProduct < dot) maxDotProduct = dot;
             }
             return maxDotProduct;
+        }
+
+        private double calcDotProduct(double[] a, double[] b)
+        {
+            var dot = 0.0;
+            for (var dimIndex = 0; dimIndex < Dimension; dimIndex++)
+                dot += a[dimIndex] * b[dimIndex];
+            return Math.Abs(dot);
         }
 
         /// <summary>
@@ -455,13 +470,12 @@ namespace MIConvexHull
         {
             var extremes = new List<List<int>>();
             var fewestExtremes = int.MaxValue;
-            var vCount = Vertices.Length;
             for (var i = 0; i < Dimension; i++)
             {
                 var minIndices = new List<int>();
                 var maxIndices = new List<int>();
                 double min = double.MaxValue, max = double.MinValue;
-                for (var j = 0; j < vCount; j++)
+                for (var j = 0; j < NumberOfVertices; j++)
                 {
                     var v = GetCoordinate(j, i);
                     var difference = min - v;
@@ -559,6 +573,8 @@ namespace MIConvexHull
         /// The vertex marks
         /// </summary>
         private readonly bool[] VertexVisited;
+
+        private readonly int NumberOfVertices;
 
         /*
          * The triangulation faces are represented in a single pool for objects that are being reused.

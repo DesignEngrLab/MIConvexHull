@@ -28,6 +28,13 @@ using System;
 
 namespace MIConvexHull
 {
+    internal static class Constants
+    {
+        internal const double DefaultPlaneDistanceTolerance = 1e-5;
+        internal const double DefaultShiftRadius = 1e-6;
+        internal const double DefaultZeroCellVolumeTolerance = 1e-5;
+        internal const double MaxDotProductInSimplex = 0.995;
+    }
     /// <summary>
     /// Determines the type of the point translation to use.
     /// This is useful for handling "degenerate" data (i.e. uniform grids of points).
@@ -56,7 +63,7 @@ namespace MIConvexHull
         /// </summary>
         public ConvexHullComputationConfig()
         {
-            PlaneDistanceTolerance = 0.00001;
+            PlaneDistanceTolerance = Constants.DefaultPlaneDistanceTolerance;
             PointTranslationType = PointTranslationType.None;
             PointTranslationGenerator = null;
         }
@@ -70,7 +77,6 @@ namespace MIConvexHull
         /// Now, the point C would need to be at least 'PlaneDistanceTolerance'
         /// away from the line determined by A and B to be also considered
         /// a hull point.
-        /// Default = 0.00001
         /// </summary>
         /// <value>The plane distance tolerance.</value>
         public double PlaneDistanceTolerance { get; set; }
@@ -111,7 +117,7 @@ namespace MIConvexHull
         /// <returns>Func&lt;System.Double&gt;.</returns>
         private static Func<double> Closure(double radius, Random rnd)
         {
-            return () => radius*(rnd.NextDouble() - 0.5);
+            return () => radius * (rnd.NextDouble() - 0.5);
         }
 
         /// <summary>
@@ -120,7 +126,8 @@ namespace MIConvexHull
         /// <param name="radius">The radius.</param>
         /// <param name="randomSeed">If null, initialized to random default System.Random value</param>
         /// <returns>Func&lt;System.Double&gt;.</returns>
-        public static Func<double> RandomShiftByRadius(double radius = 0.000001, int? randomSeed = 0)
+        public static Func<double> RandomShiftByRadius(double radius = Constants.DefaultShiftRadius,
+            int? randomSeed = 0)
         {
             Random rnd;
             if (randomSeed.HasValue) rnd = new Random(randomSeed.Value);
@@ -140,7 +147,7 @@ namespace MIConvexHull
         /// </summary>
         public TriangulationComputationConfig()
         {
-            ZeroCellVolumeTolerance = 0.00001;
+            ZeroCellVolumeTolerance = Constants.DefaultZeroCellVolumeTolerance;
         }
 
         /// <summary>
