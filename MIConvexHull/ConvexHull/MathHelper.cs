@@ -86,7 +86,7 @@ namespace MIConvexHull
             ntZ = new double[Dimension];
 
             nDNormalHelperVector = new double[Dimension];
-            nDMatrix = new double[Dimension*Dimension];
+            nDMatrix = new double[Dimension * Dimension];
             matrixPivots = new int[Dimension];
         }
 
@@ -109,12 +109,12 @@ namespace MIConvexHull
 
             var offset = 0.0;
             var centerDistance = 0.0;
-            var fi = vertices[0]*Dimension;
+            var fi = vertices[0] * Dimension;
             for (var i = 0; i < Dimension; i++)
             {
                 var n = normal[i];
-                offset += n*PositionData[fi + i];
-                centerDistance += n*center[i];
+                offset += n * PositionData[fi + i];
+                centerDistance += n * center[i];
             }
             face.Offset = -offset;
             centerDistance -= offset;
@@ -140,9 +140,9 @@ namespace MIConvexHull
         public double GetVertexDistance(int v, ConvexFaceInternal f)
         {
             var normal = f.Normal;
-            var x = v*Dimension;
+            var x = v * Dimension;
             var distance = f.Offset;
-            for (var i = 0; i < normal.Length; i++) distance += normal[i]*PositionData[x + i];
+            for (var i = 0; i < normal.Length; i++) distance += normal[i] * PositionData[x + i];
             return distance;
         }
 
@@ -168,7 +168,7 @@ namespace MIConvexHull
             // Outer loop.
             for (var j = 0; j < order; j++)
             {
-                var indexj = j*order;
+                var indexj = j * order;
                 var indexjj = indexj + j;
 
                 // Make a copy of the j-th column to localize references.
@@ -185,7 +185,7 @@ namespace MIConvexHull
                     var s = 0.0;
                     for (var k = 0; k < kmax; k++)
                     {
-                        s += data[k*order + i]*vecLUcolj[k];
+                        s += data[k * order + i] * vecLUcolj[k];
                     }
 
                     data[indexj + i] = vecLUcolj[i] -= s;
@@ -205,7 +205,7 @@ namespace MIConvexHull
                 {
                     for (var k = 0; k < order; k++)
                     {
-                        var indexk = k*order;
+                        var indexk = k * order;
                         var indexkp = indexk + p;
                         var indexkj = indexk + j;
                         var temp = data[indexkp];
@@ -243,25 +243,25 @@ namespace MIConvexHull
             {
                 for (var i = 0; i < Dimension; i++)
                 {
-                    var offset = vertices[i]*Dimension;
+                    var offset = vertices[i] * Dimension;
                     for (var j = 0; j < Dimension; j++)
                     {
-                        data[Dimension*j + i] = j == x ? 1.0 : PositionData[offset + j];
+                        data[Dimension * j + i] = j == x ? 1.0 : PositionData[offset + j];
                     }
                 }
                 LUFactor(data, Dimension, iPiv, nDNormalHelperVector);
                 var coord = 1.0;
                 for (var i = 0; i < Dimension; i++)
                 {
-                    if (iPiv[i] != i) coord *= -data[Dimension*i + i];
-                    else coord *= data[Dimension*i + i];
+                    if (iPiv[i] != i) coord *= -data[Dimension * i + i];
+                    else coord *= data[Dimension * i + i];
                 }
                 normal[x] = coord;
-                norm += coord*coord;
+                norm += coord * coord;
             }
 
             // Normalize the result
-            var f = 1.0/Math.Sqrt(norm);
+            var f = 1.0 / Math.Sqrt(norm);
             for (var i = 0; i < normal.Length; i++) normal[i] *= f;
         }
 
@@ -276,7 +276,7 @@ namespace MIConvexHull
             for (var i = 0; i < x.Length; i++)
             {
                 var t = x[i];
-                norm += t*t;
+                norm += t * t;
             }
             return norm;
         }
@@ -289,7 +289,7 @@ namespace MIConvexHull
         /// <param name="target">The target.</param>
         public void SubtractFast(int x, int y, double[] target)
         {
-            int u = x*Dimension, v = y*Dimension;
+            int u = x * Dimension, v = y * Dimension;
             for (var i = 0; i < target.Length; i++)
             {
                 target[i] = PositionData[u + i] - PositionData[v + i];
@@ -312,26 +312,26 @@ namespace MIConvexHull
             var z = ntZ;
 
             // This was generated using Mathematica
-            var nx = x[3]*(y[2]*z[1] - y[1]*z[2])
-                     + x[2]*(y[1]*z[3] - y[3]*z[1])
-                     + x[1]*(y[3]*z[2] - y[2]*z[3]);
-            var ny = x[3]*(y[0]*z[2] - y[2]*z[0])
-                     + x[2]*(y[3]*z[0] - y[0]*z[3])
-                     + x[0]*(y[2]*z[3] - y[3]*z[2]);
-            var nz = x[3]*(y[1]*z[0] - y[0]*z[1])
-                     + x[1]*(y[0]*z[3] - y[3]*z[0])
-                     + x[0]*(y[3]*z[1] - y[1]*z[3]);
-            var nw = x[2]*(y[0]*z[1] - y[1]*z[0])
-                     + x[1]*(y[2]*z[0] - y[0]*z[2])
-                     + x[0]*(y[1]*z[2] - y[2]*z[1]);
+            var nx = x[3] * (y[2] * z[1] - y[1] * z[2])
+                     + x[2] * (y[1] * z[3] - y[3] * z[1])
+                     + x[1] * (y[3] * z[2] - y[2] * z[3]);
+            var ny = x[3] * (y[0] * z[2] - y[2] * z[0])
+                     + x[2] * (y[3] * z[0] - y[0] * z[3])
+                     + x[0] * (y[2] * z[3] - y[3] * z[2]);
+            var nz = x[3] * (y[1] * z[0] - y[0] * z[1])
+                     + x[1] * (y[0] * z[3] - y[3] * z[0])
+                     + x[0] * (y[3] * z[1] - y[1] * z[3]);
+            var nw = x[2] * (y[0] * z[1] - y[1] * z[0])
+                     + x[1] * (y[2] * z[0] - y[0] * z[2])
+                     + x[0] * (y[1] * z[2] - y[2] * z[1]);
 
-            var norm = Math.Sqrt(nx*nx + ny*ny + nz*nz + nw*nw);
+            var norm = Math.Sqrt(nx * nx + ny * ny + nz * nz + nw * nw);
 
-            var f = 1.0/norm;
-            normal[0] = f*nx;
-            normal[1] = f*ny;
-            normal[2] = f*nz;
-            normal[3] = f*nw;
+            var f = 1.0 / norm;
+            normal[0] = f * nx;
+            normal[1] = f * ny;
+            normal[2] = f * nz;
+            normal[3] = f * nw;
         }
 
         /// <summary>
@@ -347,16 +347,16 @@ namespace MIConvexHull
             var x = ntX;
             var y = ntY;
 
-            var nx = x[1]*y[2] - x[2]*y[1];
-            var ny = x[2]*y[0] - x[0]*y[2];
-            var nz = x[0]*y[1] - x[1]*y[0];
+            var nx = x[1] * y[2] - x[2] * y[1];
+            var ny = x[2] * y[0] - x[0] * y[2];
+            var nz = x[0] * y[1] - x[1] * y[0];
 
-            var norm = Math.Sqrt(nx*nx + ny*ny + nz*nz);
+            var norm = Math.Sqrt(nx * nx + ny * ny + nz * nz);
 
-            var f = 1.0/norm;
-            normal[0] = f*nx;
-            normal[1] = f*ny;
-            normal[2] = f*nz;
+            var f = 1.0 / norm;
+            normal[0] = f * nx;
+            normal[1] = f * ny;
+            normal[2] = f * nz;
         }
 
         /// <summary>
@@ -373,11 +373,11 @@ namespace MIConvexHull
             var nx = -x[1];
             var ny = x[0];
 
-            var norm = Math.Sqrt(nx*nx + ny*ny);
+            var norm = Math.Sqrt(nx * nx + ny * ny);
 
-            var f = 1.0/norm;
-            normal[0] = f*nx;
-            normal[1] = f*ny;
+            var f = 1.0 / norm;
+            normal[0] = f * nx;
+            normal[1] = f * ny;
         }
 
         /// <summary>
@@ -409,27 +409,27 @@ namespace MIConvexHull
             {
                 for (var i = 0; i < Dimension; i++)
                 {
-                    var offset = vertices[i]*Dimension;
+                    var offset = vertices[i] * Dimension;
                     for (var j = 0; j < Dimension; j++)
                     {
                         // maybe I got the i/j mixed up here regarding the representation Math.net uses...
                         // ...but it does not matter since Det(A) = Det(Transpose(A)).
-                        data[Dimension*i + j] = j == x ? 1.0 : PositionData[offset + j];
+                        data[Dimension * i + j] = j == x ? 1.0 : PositionData[offset + j];
                     }
                 }
                 LUFactor(data, Dimension, iPiv, nDNormalHelperVector);
                 var coord = 1.0;
                 for (var i = 0; i < Dimension; i++)
                 {
-                    if (iPiv[i] != i) coord *= -data[Dimension*i + i]; // the determinant sign changes on row swap.
-                    else coord *= data[Dimension*i + i];
+                    if (iPiv[i] != i) coord *= -data[Dimension * i + i]; // the determinant sign changes on row swap.
+                    else coord *= data[Dimension * i + i];
                 }
                 normal[x] = coord;
-                norm += coord*coord;
+                norm += coord * coord;
             }
 
             // Normalize the result
-            var f = 1.0/Math.Sqrt(norm);
+            var f = 1.0 / Math.Sqrt(norm);
             for (var i = 0; i < normal.Length; i++) normal[i] *= f;
         }
 
@@ -491,7 +491,7 @@ namespace MIConvexHull
             public SimplexVolumeBuffer(int dimension)
             {
                 Dimension = dimension;
-                Data = new double[dimension*dimension];
+                Data = new double[dimension * dimension];
                 Helper = new double[dimension];
                 Pivots = new int[dimension];
             }
@@ -517,10 +517,10 @@ namespace MIConvexHull
             {
                 f *= i + 1;
                 var point = vertices[xs[i]].Position;
-                for (var j = 0; j < point.Length; j++) data[j*dim + i - 1] = point[j] - pivot[j];
+                for (var j = 0; j < point.Length; j++) data[j * dim + i - 1] = point[j] - pivot[j];
             }
 
-            return Math.Abs(DeterminantDestructive(buffer))/f;
+            return Math.Abs(DeterminantDestructive(buffer)) / f;
         }
 
         /// <summary>
@@ -538,23 +538,23 @@ namespace MIConvexHull
                 case 1:
                     return A[0];
                 case 2:
-                    return A[0]*A[3] - A[1]*A[2];
+                    return A[0] * A[3] - A[1] * A[2];
                 case 3:
-                    return A[0]*A[4]*A[8] + A[1]*A[5]*A[6] + A[2]*A[3]*A[7]
-                           - A[0]*A[5]*A[7] - A[1]*A[3]*A[8] - A[2]*A[4]*A[6];
+                    return A[0] * A[4] * A[8] + A[1] * A[5] * A[6] + A[2] * A[3] * A[7]
+                           - A[0] * A[5] * A[7] - A[1] * A[3] * A[8] - A[2] * A[4] * A[6];
                 default:
-                {
-                    var iPiv = buff.Pivots;
-                    var dim = buff.Dimension;
-                    LUFactor(A, dim, iPiv, buff.Helper);
-                    var det = 1.0;
-                    for (var i = 0; i < iPiv.Length; i++)
                     {
-                        det *= A[dim*i + i];
-                        if (iPiv[i] != i) det *= -1; // the determinant sign changes on row swap.
+                        var iPiv = buff.Pivots;
+                        var dim = buff.Dimension;
+                        LUFactor(A, dim, iPiv, buff.Helper);
+                        var det = 1.0;
+                        for (var i = 0; i < iPiv.Length; i++)
+                        {
+                            det *= A[dim * i + i];
+                            if (iPiv[i] != i) det *= -1; // the determinant sign changes on row swap.
+                        }
+                        return det;
                     }
-                    return det;
-                }
             }
         }
 

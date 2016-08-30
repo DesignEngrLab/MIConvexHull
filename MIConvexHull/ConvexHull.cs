@@ -116,7 +116,7 @@ namespace MIConvexHull
         /// <exception cref="ArgumentNullException">data</exception>
         public static ConvexHull<TVertex, TFace> Create(IList<TVertex> data, ConvexHullComputationConfig config)
         {
-            if (data == null) throw new ArgumentNullException("data");
+            if (data == null) throw new ArgumentNullException("The supplied data is null.");
             return ConvexHullAlgorithm.GetConvexHull<TVertex, TFace>(data, config);
         }
     }

@@ -25,6 +25,7 @@
  *****************************************************************************/
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MIConvexHull
 {
@@ -51,13 +52,9 @@ namespace MIConvexHull
             where TVertex : IVertex
         {
             config = config ?? new TriangulationComputationConfig();
-
-            var vertices = new IVertex[data.Count];
-            for (var i = 0; i < data.Count; i++) vertices[i] = data[i];
-            var ch = new ConvexHullAlgorithm(vertices, true, config);
+            var ch = new ConvexHullAlgorithm(data.Cast<IVertex>().ToArray(), true, config);
             ch.GetConvexHull();
             ch.PostProcessTriangulation(config);
-
             return ch.GetConvexFaces<TVertex, TCell>();
         }
 

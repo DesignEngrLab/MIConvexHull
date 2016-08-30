@@ -60,10 +60,7 @@ namespace MIConvexHull
                     where TVertex : IVertex
         {
             config = config ?? new ConvexHullComputationConfig();
-
-            var vertices = new IVertex[data.Count];
-            for (var i = 0; i < data.Count; i++) vertices[i] = data[i];
-            var ch = new ConvexHullAlgorithm(vertices, false, config);
+            var ch = new ConvexHullAlgorithm(data.Cast<IVertex>().ToArray(), false, config);
             ch.GetConvexHull();
 
             return new ConvexHull<TVertex, TFace>
@@ -124,8 +121,8 @@ namespace MIConvexHull
             SingularVertices = new HashSet<int>();
             BeyondBuffer = new IndexBuffer();
 
-            ConnectorTable = new ConnectorList[ConnectorTableSize];
-            for (var i = 0; i < ConnectorTableSize; i++) ConnectorTable[i] = new ConnectorList();
+            ConnectorTable = new ConnectorList[Constants.ConnectorTableSize];
+            for (var i = 0; i < Constants.ConnectorTableSize; i++) ConnectorTable[i] = new ConnectorList();
 
             VertexVisited = new bool[NumberOfVertices];
             InitializePositions(config);
@@ -675,12 +672,7 @@ namespace MIConvexHull
         /// especially for higher dimensions.
         /// </summary>
         private readonly ConnectorList[] ConnectorTable;
-
-        /// <summary>
-        /// The connector table size
-        /// </summary>
-        private const int ConnectorTableSize = 2017;
-
+                                               
         /// <summary>
         /// Manages the memory allocations and storage of unused objects.
         /// Saves the garbage collector a lot of work.

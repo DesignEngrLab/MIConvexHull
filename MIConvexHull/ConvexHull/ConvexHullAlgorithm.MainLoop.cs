@@ -120,7 +120,7 @@ namespace MIConvexHull
         /// <param name="connector">The connector.</param>
         private void ConnectFace(FaceConnector connector)
         {
-            var index = connector.HashCode % ConnectorTableSize;
+            var index = connector.HashCode % Constants.ConnectorTableSize;
             var list = ConnectorTable[index];
 
             for (var current = list.First; current != null; current = current.Next)

@@ -34,6 +34,10 @@ namespace MIConvexHull
         internal const double DefaultShiftRadius = 1e-6;
         internal const double DefaultZeroCellVolumeTolerance = 1e-5;
         internal const double MaxDotProductInSimplex = 0.995;
+        /// <summary>
+        /// The connector table size
+        /// </summary>
+        internal const int ConnectorTableSize = 2017;
     }
     /// <summary>
     /// Determines the type of the point translation to use.
@@ -154,7 +158,6 @@ namespace MIConvexHull
         /// If using PointTranslationType.TranslateInternal, this value is
         /// used to determine which boundary cells have zero volume after the
         /// points get "translated back".
-        /// Default value is 0.00001.
         /// </summary>
         /// <value>The zero cell volume tolerance.</value>
         public double ZeroCellVolumeTolerance { get; set; }
