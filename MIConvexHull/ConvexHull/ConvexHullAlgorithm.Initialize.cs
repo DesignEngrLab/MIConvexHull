@@ -96,25 +96,25 @@ namespace MIConvexHull
             NumberOfVertices = vertices.Length;
             PlaneDistanceTolerance = config.PlaneDistanceTolerance;
 
-            Dimension = DetermineDimension();
-            if (Dimension < 2) throw new InvalidOperationException("Dimension of the input must be 2 or greater.");
-            if (NumberOfVertices <= Dimension)
+            NumOfDimensions = DetermineDimension();
+            if (NumOfDimensions < 2) throw new InvalidOperationException("Dimension of the input must be 2 or greater.");
+            if (NumberOfVertices <= NumOfDimensions)
                 throw new ArgumentException(
                     "There are too few vertices (m) for the n-dimensional space. (m must be greater " +
-                    "than the n, but m is " + NumberOfVertices + " and n is " + Dimension);
-            if (lift) Dimension++;
+                    "than the n, but m is " + NumberOfVertices + " and n is " + NumOfDimensions);
+            if (lift) NumOfDimensions++;
 
             UnprocessedFaces = new FaceList();
             ConvexFaces = new IndexBuffer();
 
-            FacePool = new ConvexFaceInternal[(Dimension + 1) * 10]; // must be initialized before object manager
-            AffectedFaceFlags = new bool[(Dimension + 1) * 10];
+            FacePool = new ConvexFaceInternal[(NumOfDimensions + 1) * 10]; // must be initialized before object manager
+            AffectedFaceFlags = new bool[(NumOfDimensions + 1) * 10];
             ObjectManager = new ObjectManager(this);
 
-            Center = new double[Dimension];
+            Center = new double[NumOfDimensions];
             TraverseStack = new IndexBuffer();
-            UpdateBuffer = new int[Dimension];
-            UpdateIndices = new int[Dimension];
+            UpdateBuffer = new int[NumOfDimensions];
+            UpdateIndices = new int[NumOfDimensions];
             EmptyBuffer = new IndexBuffer();
             AffectedFaceBuffer = new IndexBuffer();
             ConeFaceBuffer = new SimpleList<DeferredFace>();
@@ -127,7 +127,7 @@ namespace MIConvexHull
             VertexVisited = new bool[NumberOfVertices];
             InitializePositions(config);
 
-            MathHelper = new MathHelper(Dimension, Positions);
+            MathHelper = new MathHelper(NumOfDimensions, Positions);
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace MIConvexHull
         {
             // Find the (dimension+1) initial points and create the simplexes.
             CreateInitialSimplex();
-            
+
             // Expand the convex hull and faces.
             while (UnprocessedFaces.First != null)
             {
@@ -167,11 +167,11 @@ namespace MIConvexHull
         /// <param name="config">The configuration.</param>
         private void InitializePositions(ConvexHullComputationConfig config)
         {
-            Positions = new double[NumberOfVertices * Dimension];
+            Positions = new double[NumberOfVertices * NumOfDimensions];
             var index = 0;
             if (IsLifted)
             {
-                var origDim = Dimension - 1;
+                var origDim = NumOfDimensions - 1;
                 var tf = config.PointTranslationGenerator;
                 switch (config.PointTranslationType)
                 {
@@ -211,13 +211,13 @@ namespace MIConvexHull
                     case PointTranslationType.None:
                         foreach (var v in Vertices)
                         {
-                            for (var i = 0; i < Dimension; i++) Positions[index++] = v.Position[i];
+                            for (var i = 0; i < NumOfDimensions; i++) Positions[index++] = v.Position[i];
                         }
                         break;
                     case PointTranslationType.TranslateInternal:
                         foreach (var v in Vertices)
                         {
-                            for (var i = 0; i < Dimension; i++) Positions[index++] = v.Position[i] + tf();
+                            for (var i = 0; i < NumOfDimensions; i++) Positions[index++] = v.Position[i] + tf();
                         }
                         break;
                 }
@@ -263,7 +263,7 @@ namespace MIConvexHull
             for (i = 0; i < lv.Length; i++) if (!VertexVisited[lv[i]]) break;
 
             // no vertex was marked
-            if (i == Dimension) return;
+            if (i == NumOfDimensions) return;
 
             // check if only 1 vertex wasn't marked
             for (var j = i + 1; j < lv.Length; j++) if (!VertexVisited[lv[j]]) return;
@@ -291,23 +291,29 @@ namespace MIConvexHull
         private void CreateInitialSimplex()
         {
             #region Get the best points
-
-            var boundingBoxPoints = FindBoundingBoxPoints(Vertices);
-            var vertex0 = boundingBoxPoints[0].First(); // these are min and max vertices along
-            var vertex1 = boundingBoxPoints[0].Last(); // the dimension that had the fewest points
-            boundingBoxPoints[0].RemoveAt(0);
-            boundingBoxPoints[0].RemoveAt(boundingBoxPoints[0].Count - 1);
+            int dimensionIndex;
+            var boundingBoxPoints = FindBoundingBoxPoints(out dimensionIndex);
+            var vertex0 = boundingBoxPoints[dimensionIndex].First(); // these are min and max vertices along
+            var vertex1 = boundingBoxPoints[dimensionIndex].Last(); // the dimension that had the fewest points
+            boundingBoxPoints[dimensionIndex].RemoveAt(0);
+            boundingBoxPoints[dimensionIndex].RemoveAt(boundingBoxPoints[dimensionIndex].Count - 1);
             var initialPoints = new List<int> { vertex0, vertex1 };
             VertexVisited[vertex0] = VertexVisited[vertex1] = true;
             CurrentVertex = vertex0; UpdateCenter();
             CurrentVertex = vertex1; UpdateCenter();
             var edgeUnitVectors = new List<double[]> { makeUnitVector(vertex0, vertex1) };
             var numberLeft = boundingBoxPoints.Sum(bb => bb.Count);
-            var dimensionIndex = 0;
-            while (initialPoints.Count < Dimension + 1 && numberLeft > 0)
+            var deltaForAllowableDotProduct = Constants.StartingDeltaDotProductInSimplex;
+            var allowableDotProduct = 1.0 - deltaForAllowableDotProduct;
+            while (initialPoints.Count < NumOfDimensions + 1 && numberLeft > 0)
             {
                 dimensionIndex++;
-                if (dimensionIndex == Dimension) dimensionIndex = 0;
+                if (dimensionIndex == NumOfDimensions)
+                {
+                    dimensionIndex = 0;
+                    deltaForAllowableDotProduct *= deltaForAllowableDotProduct;
+                    allowableDotProduct = 1 - deltaForAllowableDotProduct;
+                }
                 var bestNewIndex = -1;
                 var lowestDotProduct = 1.0;
                 double[] bestUnitVector = { };
@@ -329,7 +335,7 @@ namespace MIConvexHull
                 }
                 numberLeft = boundingBoxPoints.Sum(bb => bb.Count);
                 boundingBoxPoints[dimensionIndex].Remove(bestNewIndex);
-                if (lowestDotProduct >= Constants.MaxDotProductInSimplex) continue;
+                if (lowestDotProduct >= allowableDotProduct) continue;
                 edgeUnitVectors.Add(bestUnitVector);
                 initialPoints.Add(bestNewIndex);
                 // Mark the vertex so that it's not included in any beyond set.
@@ -339,30 +345,30 @@ namespace MIConvexHull
                 UpdateCenter();
             }
             var index = -1;
-            while (initialPoints.Count < Dimension + 1 && ++index < NumberOfVertices)
+            while (initialPoints.Count < NumOfDimensions + 1 && ++index < NumberOfVertices)
             {
                 if (VertexVisited[index]) continue;
                 var newUnitVector = makeUnitVector(vertex0, index);
-                if (calcMaxDotProduct(edgeUnitVectors, newUnitVector) >= Constants.MaxDotProductInSimplex)
+                if (calcMaxDotProduct(edgeUnitVectors, newUnitVector) >= Constants.StartingDeltaDotProductInSimplex)
                     continue;
                 edgeUnitVectors.Add(newUnitVector);
                 initialPoints.Add(index);
             }
-            if (initialPoints.Count < Dimension + 1)
-                throw new ArgumentException("The input data is degenerate. It appears to exist in " + Dimension +
-                    " dimensions, but it is a " + (Dimension - 1) + " dimensional set (i.e. the point of collinear,"
+            if (initialPoints.Count < NumOfDimensions + 1)
+                throw new ArgumentException("The input data is degenerate. It appears to exist in " + NumOfDimensions +
+                    " dimensions, but it is a " + (NumOfDimensions - 1) + " dimensional set (i.e. the point of collinear,"
                     + " coplanar, or co-hyperplanar.)");
 
             #endregion
 
             #region Create the first faces from (dimension + 1) vertices.
 
-            var faces = new int[Dimension + 1];
+            var faces = new int[NumOfDimensions + 1];
 
-            for (var i = 0; i < Dimension + 1; i++)
+            for (var i = 0; i < NumOfDimensions + 1; i++)
             {
-                var vertices = new int[Dimension];
-                for (int j = 0, k = 0; j <= Dimension; j++)
+                var vertices = new int[NumOfDimensions];
+                for (int j = 0, k = 0; j <= NumOfDimensions; j++)
                 {
                     if (i != j) vertices[k++] = initialPoints[j];
                 }
@@ -373,8 +379,8 @@ namespace MIConvexHull
                 faces[i] = newFace.Index;
             }
             // update the adjacency (check all pairs of faces)
-            for (var i = 0; i < Dimension; i++)
-                for (var j = i + 1; j < Dimension + 1; j++) UpdateAdjacency(FacePool[faces[i]], FacePool[faces[j]]);
+            for (var i = 0; i < NumOfDimensions; i++)
+                for (var j = i + 1; j < NumOfDimensions + 1; j++) UpdateAdjacency(FacePool[faces[i]], FacePool[faces[j]]);
 
             #endregion
 
@@ -433,7 +439,7 @@ namespace MIConvexHull
         private double calcDotProduct(double[] a, double[] b)
         {
             var dot = 0.0;
-            for (var dimIndex = 0; dimIndex < Dimension; dimIndex++)
+            for (var dimIndex = 0; dimIndex < NumOfDimensions; dimIndex++)
                 dot += a[dimIndex] * b[dimIndex];
             return Math.Abs(dot);
         }
@@ -446,14 +452,14 @@ namespace MIConvexHull
         /// <returns>System.Double[].</returns>
         private double[] makeUnitVector(int v1, int v2)
         {
-            var vector = new double[Dimension];
-            for (var i = 0; i < Dimension; i++)
+            var vector = new double[NumOfDimensions];
+            for (var i = 0; i < NumOfDimensions; i++)
                 vector[i] = GetCoordinate(v1, i) - GetCoordinate(v2, i);
             var magnitude = 0.0;
-            for (var i = 0; i < Dimension; i++)
+            for (var i = 0; i < NumOfDimensions; i++)
                 magnitude += vector[i] * vector[i];
             magnitude = Math.Sqrt(magnitude);
-            for (var i = 0; i < Dimension; i++)
+            for (var i = 0; i < NumOfDimensions; i++)
                 vector[i] /= magnitude;
             return vector;
         }
@@ -463,15 +469,16 @@ namespace MIConvexHull
         /// </summary>
         /// <param name="vertices">The vertices.</param>
         /// <returns>List&lt;List&lt;System.Int32&gt;&gt;.</returns>
-        private List<List<int>> FindBoundingBoxPoints(IVertex[] vertices)
+        private List<int>[] FindBoundingBoxPoints(out int indexOfDimensionWithLeast)
         {
-            var extremes = new List<List<int>>();
-            var fewestExtremes = int.MaxValue;
-            for (var i = 0; i < Dimension; i++)
+            indexOfDimensionWithLeast = -1;
+            var minNumExtremes = int.MaxValue;
+            var extremes = new List<int>[NumOfDimensions];
+            for (var i = 0; i < NumOfDimensions; i++)
             {
                 var minIndices = new List<int>();
                 var maxIndices = new List<int>();
-                double min = double.MaxValue, max = double.MinValue;
+                double min = double.PositiveInfinity, max = double.NegativeInfinity;
                 for (var j = 0; j < NumberOfVertices; j++)
                 {
                     var v = GetCoordinate(j, i);
@@ -516,16 +523,13 @@ namespace MIConvexHull
                         maxIndices.Add(j);
                     }
                 }
-                // in the CreateInitialSimplex method that calls this we want the most restrictive bounds first, so we do a
-                // simple sorting - in a way - we put the dimensions with the fewest points first.
-                // this is why the following if-else takes care of.
                 minIndices.AddRange(maxIndices);
-                if (minIndices.Count <= fewestExtremes)
+                if (minIndices.Count < minNumExtremes)
                 {
-                    extremes.Insert(0, minIndices);
-                    fewestExtremes = minIndices.Count;
+                    minNumExtremes = minIndices.Count;
+                    indexOfDimensionWithLeast = i;
                 }
-                else extremes.Add(minIndices);
+                extremes[i] = minIndices;
             }
             return extremes;
         }
@@ -536,7 +540,7 @@ namespace MIConvexHull
         /// Corresponds to the dimension of the data.
         /// When the "lifted" hull is computed, Dimension is automatically incremented by one.
         /// </summary>
-        internal readonly int Dimension;
+        internal readonly int NumOfDimensions;
 
         /// <summary>
         /// Are we on a paraboloid?
@@ -672,7 +676,7 @@ namespace MIConvexHull
         /// especially for higher dimensions.
         /// </summary>
         private readonly ConnectorList[] ConnectorTable;
-                                               
+
         /// <summary>
         /// Manages the memory allocations and storage of unused objects.
         /// Saves the garbage collector a lot of work.

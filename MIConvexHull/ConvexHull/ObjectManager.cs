@@ -81,7 +81,7 @@ namespace MIConvexHull
         /// <param name="hull">The hull.</param>
         public ObjectManager(ConvexHullAlgorithm hull)
         {
-            Dimension = hull.Dimension;
+            Dimension = hull.NumOfDimensions;
             Hull = hull;
             FacePool = hull.FacePool;
             FacePoolSize = 0;

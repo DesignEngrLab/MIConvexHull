@@ -76,7 +76,7 @@ namespace MIConvexHull
             while (TraverseStack.Count > 0)
             {
                 var top = FacePool[TraverseStack.Pop()];
-                for (var i = 0; i < Dimension; i++)
+                for (var i = 0; i < NumOfDimensions; i++)
                 {
                     var adjFace = top.AdjacentFaces[i];
 
@@ -125,7 +125,7 @@ namespace MIConvexHull
 
             for (var current = list.First; current != null; current = current.Next)
             {
-                if (FaceConnector.AreConnectable(connector, current, Dimension))
+                if (FaceConnector.AreConnectable(connector, current, NumOfDimensions))
                 {
                     list.Remove(current);
                     FaceConnector.Connect(current, connector);
@@ -156,7 +156,7 @@ namespace MIConvexHull
 
                 // Find the faces that need to be updated
                 var updateCount = 0;
-                for (var i = 0; i < Dimension; i++)
+                for (var i = 0; i < NumOfDimensions; i++)
                 {
                     var af = oldFace.AdjacentFaces[i];
                     if (!AffectedFaceFlags[af]) // Tag == false when oldFaces does not contain af
@@ -190,7 +190,7 @@ namespace MIConvexHull
                     var newFaceIndex = ObjectManager.GetFace();
                     var newFace = FacePool[newFaceIndex];
                     vertices = newFace.Vertices;
-                    for (var j = 0; j < Dimension; j++) vertices[j] = oldFace.Vertices[j];
+                    for (var j = 0; j < NumOfDimensions; j++) vertices[j] = oldFace.Vertices[j];
                     oldVertexIndex = vertices[forbidden];
 
                     int orderedPivotIndex;
@@ -211,8 +211,8 @@ namespace MIConvexHull
                     }
                     else
                     {
-                        orderedPivotIndex = Dimension - 1;
-                        for (var j = forbidden + 1; j < Dimension; j++)
+                        orderedPivotIndex = NumOfDimensions - 1;
+                        for (var j = forbidden + 1; j < NumOfDimensions; j++)
                         {
                             if (vertices[j] < currentVertexIndex) vertices[j - 1] = vertices[j];
                             else
@@ -257,11 +257,11 @@ namespace MIConvexHull
                 adjacentFace.AdjacentFaces[face.PivotIndex] = newFace.Index;
 
                 // let there be a connection.
-                for (var j = 0; j < Dimension; j++)
+                for (var j = 0; j < NumOfDimensions; j++)
                 {
                     if (j == orderedPivotIndex) continue;
                     var connector = ObjectManager.GetConnector();
-                    connector.Update(newFace, j, Dimension);
+                    connector.Update(newFace, j, NumOfDimensions);
                     ConnectFace(connector);
                 }
 
@@ -343,8 +343,8 @@ namespace MIConvexHull
         /// <returns>System.Int32.</returns>
         private int LexCompare(int u, int v)
         {
-            int uOffset = u * Dimension, vOffset = v * Dimension;
-            for (var i = 0; i < Dimension; i++)
+            int uOffset = u * NumOfDimensions, vOffset = v * NumOfDimensions;
+            for (var i = 0; i < NumOfDimensions; i++)
             {
                 double x = Positions[uOffset + i], y = Positions[vOffset + i];
                 var comp = x.CompareTo(y);
@@ -427,11 +427,11 @@ namespace MIConvexHull
         /// </summary>
         private void UpdateCenter()
         {
-            for (var i = 0; i < Dimension; i++) Center[i] *= ConvexHullSize;
+            for (var i = 0; i < NumOfDimensions; i++) Center[i] *= ConvexHullSize;
             ConvexHullSize += 1;
             var f = 1.0 / ConvexHullSize;
-            var co = CurrentVertex * Dimension;
-            for (var i = 0; i < Dimension; i++) Center[i] = f * (Center[i] + Positions[co + i]);
+            var co = CurrentVertex * NumOfDimensions;
+            for (var i = 0; i < NumOfDimensions; i++) Center[i] = f * (Center[i] + Positions[co + i]);
         }
 
         /// <summary>
@@ -439,11 +439,11 @@ namespace MIConvexHull
         /// </summary>
         private void RollbackCenter()
         {
-            for (var i = 0; i < Dimension; i++) Center[i] *= ConvexHullSize;
+            for (var i = 0; i < NumOfDimensions; i++) Center[i] *= ConvexHullSize;
             ConvexHullSize -= 1;
             var f = ConvexHullSize > 0 ? 1.0 / ConvexHullSize : 0.0;
-            var co = CurrentVertex * Dimension;
-            for (var i = 0; i < Dimension; i++) Center[i] = f * (Center[i] - Positions[co + i]);
+            var co = CurrentVertex * NumOfDimensions;
+            for (var i = 0; i < NumOfDimensions; i++) Center[i] = f * (Center[i] - Positions[co + i]);
         }
 
         /// <summary>
@@ -480,7 +480,7 @@ namespace MIConvexHull
         /// <returns>System.Double.</returns>
         private double GetCoordinate(int vIndex, int dimension)
         {
-            return Positions[vIndex * Dimension + dimension];
+            return Positions[vIndex * NumOfDimensions + dimension];
         }
 
         #region Returning the Results in the proper format
@@ -538,8 +538,8 @@ namespace MIConvexHull
             for (var i = 0; i < cellCount; i++)
             {
                 var face = FacePool[faces[i]];
-                var vertices = new TVertex[Dimension];
-                for (var j = 0; j < Dimension; j++)
+                var vertices = new TVertex[NumOfDimensions];
+                for (var j = 0; j < NumOfDimensions; j++)
                 {
                     vertices[j] = (TVertex)Vertices[face.Vertices[j]];
                 }
@@ -547,7 +547,7 @@ namespace MIConvexHull
                 cells[i] = new TFace
                 {
                     Vertices = vertices,
-                    Adjacency = new TFace[Dimension],
+                    Adjacency = new TFace[NumOfDimensions],
                     Normal = IsLifted ? null : face.Normal
                 };
                 face.Tag = i;
@@ -557,7 +557,7 @@ namespace MIConvexHull
             {
                 var face = FacePool[faces[i]];
                 var cell = cells[i];
-                for (var j = 0; j < Dimension; j++)
+                for (var j = 0; j < NumOfDimensions; j++)
                 {
                     if (face.AdjacentFaces[j] < 0) continue;
                     cell.Adjacency[j] = cells[FacePool[face.AdjacentFaces[j]].Tag];
@@ -567,12 +567,12 @@ namespace MIConvexHull
                 if (face.IsNormalFlipped)
                 {
                     var tempVert = cell.Vertices[0];
-                    cell.Vertices[0] = cell.Vertices[Dimension - 1];
-                    cell.Vertices[Dimension - 1] = tempVert;
+                    cell.Vertices[0] = cell.Vertices[NumOfDimensions - 1];
+                    cell.Vertices[NumOfDimensions - 1] = tempVert;
 
                     var tempAdj = cell.Adjacency[0];
-                    cell.Adjacency[0] = cell.Adjacency[Dimension - 1];
-                    cell.Adjacency[Dimension - 1] = tempAdj;
+                    cell.Adjacency[0] = cell.Adjacency[NumOfDimensions - 1];
+                    cell.Adjacency[NumOfDimensions - 1] = tempAdj;
                 }
             }
 

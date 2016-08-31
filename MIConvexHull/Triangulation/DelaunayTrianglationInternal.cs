@@ -78,7 +78,7 @@ namespace MIConvexHull
         private void RemoveUpperFaces()
         {
             var delaunayFaces = ConvexFaces;
-            var dimension = Dimension - 1;
+            var dimension = NumOfDimensions - 1;
 
             // Remove the "upper" faces
             for (var i = delaunayFaces.Count - 1; i >= 0; i--)
@@ -116,7 +116,7 @@ namespace MIConvexHull
         {
             var faces = ConvexFaces;
             var pool = FacePool;
-            var dimension = Dimension - 1;
+            var dimension = NumOfDimensions - 1;
 
             var visited = new bool[pool.Length];
             var remove = new bool[pool.Length];

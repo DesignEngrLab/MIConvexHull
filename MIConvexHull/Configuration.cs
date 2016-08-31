@@ -33,7 +33,7 @@ namespace MIConvexHull
         internal const double DefaultPlaneDistanceTolerance = 1e-5;
         internal const double DefaultShiftRadius = 1e-6;
         internal const double DefaultZeroCellVolumeTolerance = 1e-5;
-        internal const double MaxDotProductInSimplex = 0.995;
+        internal const double StartingDeltaDotProductInSimplex = 0.5;
         /// <summary>
         /// The connector table size
         /// </summary>
