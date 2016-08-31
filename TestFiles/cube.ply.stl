@@ -1,0 +1,88 @@
+solid C:\Users\Matt Campbell\Documents\GitHub\TVGL\TestFiles\cube
+	facet normal 0 0 -1
+		outer loop
+			vertex -1 1 -1
+			vertex 1 1 -1
+			vertex 1 -1 -1
+		endloop
+	endfacet
+	facet normal 0 0 -1
+		outer loop
+			vertex -1 1 -1
+			vertex 1 -1 -1
+			vertex -1 -1 -1
+		endloop
+	endfacet
+	facet normal 0 0 1
+		outer loop
+			vertex 1 -1 1
+			vertex 1 1 1
+			vertex -1 1 1
+		endloop
+	endfacet
+	facet normal 0 0 1
+		outer loop
+			vertex -1 -1 1
+			vertex 1 -1 1
+			vertex -1 1 1
+		endloop
+	endfacet
+	facet normal 1 0 0
+		outer loop
+			vertex 1 1 -1
+			vertex 1 1 1
+			vertex 1 -1 1
+		endloop
+	endfacet
+	facet normal 1 0 0
+		outer loop
+			vertex 1 1 -1
+			vertex 1 -1 1
+			vertex 1 -1 -1
+		endloop
+	endfacet
+	facet normal -1 0 0
+		outer loop
+			vertex -1 1 1
+			vertex -1 1 -1
+			vertex -1 -1 -1
+		endloop
+	endfacet
+	facet normal -1 0 0
+		outer loop
+			vertex -1 1 1
+			vertex -1 -1 -1
+			vertex -1 -1 1
+		endloop
+	endfacet
+	facet normal 0 1 0
+		outer loop
+			vertex -1 1 1
+			vertex 1 1 1
+			vertex 1 1 -1
+		endloop
+	endfacet
+	facet normal 0 1 0
+		outer loop
+			vertex -1 1 1
+			vertex 1 1 -1
+			vertex -1 1 -1
+		endloop
+	endfacet
+	facet normal 0 -1 0
+		outer loop
+			vertex -1 -1 -1
+			vertex 1 -1 -1
+			vertex 1 -1 1
+		endloop
+	endfacet
+	facet normal 0 -1 0
+		outer loop
+			vertex -1 -1 -1
+			vertex 1 -1 1
+			vertex -1 -1 1
+		endloop
+	endfacet
+endsolid C:\Users\Matt Campbell\Documents\GitHub\TVGL\TestFiles\cube
+#  created by TVGL on 2016/8/30 at 8:16:39
+#  Originally loaded from : C:\Users\Matt Campbell\Documents\GitHub\TVGL\TestFiles\cube.ply
