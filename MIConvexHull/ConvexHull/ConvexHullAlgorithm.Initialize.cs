@@ -137,7 +137,7 @@ namespace MIConvexHull
         {
             // Find the (dimension+1) initial points and create the simplexes.
             CreateInitialSimplex();
-
+            
             // Expand the convex hull and faces.
             while (UnprocessedFaces.First != null)
             {
@@ -328,8 +328,8 @@ namespace MIConvexHull
                     }
                 }
                 numberLeft = boundingBoxPoints.Sum(bb => bb.Count);
-                if (lowestDotProduct >= Constants.MaxDotProductInSimplex) continue;
                 boundingBoxPoints[dimensionIndex].Remove(bestNewIndex);
+                if (lowestDotProduct >= Constants.MaxDotProductInSimplex) continue;
                 edgeUnitVectors.Add(bestUnitVector);
                 initialPoints.Add(bestNewIndex);
                 // Mark the vertex so that it's not included in any beyond set.
