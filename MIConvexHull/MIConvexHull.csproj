@@ -40,7 +40,7 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="ConvexHull\Collections.cs" />
     <Compile Include="ConvexHull\ConvexFace.cs" />
     <Compile Include="ConvexHull\DataModel.cs" />

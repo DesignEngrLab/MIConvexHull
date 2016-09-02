@@ -228,60 +228,6 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        /// Finds the normal.
-        /// </summary>
-        /// <param name="vertices">The vertices.</param>
-        /// <param name="normal">The normal.</param>
-        private void FindNormal(int[] vertices, double[] normal)
-        {
-            var iPiv = matrixPivots;
-            var data = nDMatrix;
-
-            var norm = 0.0;
-            // Solve determinants by replacing x-th column by all 1.
-            for (var x = 0; x < Dimension; x++)
-            {
-                for (var i = 0; i < Dimension; i++)
-                {
-                    var offset = vertices[i] * Dimension;
-                    for (var j = 0; j < Dimension; j++)
-                    {
-                        data[Dimension * j + i] = j == x ? 1.0 : PositionData[offset + j];
-                    }
-                }
-                LUFactor(data, Dimension, iPiv, nDNormalHelperVector);
-                var coord = 1.0;
-                for (var i = 0; i < Dimension; i++)
-                {
-                    if (iPiv[i] != i) coord *= -data[Dimension * i + i];
-                    else coord *= data[Dimension * i + i];
-                }
-                normal[x] = coord;
-                norm += coord * coord;
-            }
-
-            // Normalize the result
-            var f = 1.0 / Math.Sqrt(norm);
-            for (var i = 0; i < normal.Length; i++) normal[i] *= f;
-        }
-
-        /// <summary>
-        /// Squared length of the vector.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        /// <returns>System.Double.</returns>
-        public static double LengthSquared(double[] x)
-        {
-            double norm = 0;
-            for (var i = 0; i < x.Length; i++)
-            {
-                var t = x[i];
-                norm += t * t;
-            }
-            return norm;
-        }
-
-        /// <summary>
         /// Subtracts vectors x and y and stores the result to target.
         /// </summary>
         /// <param name="x">The x.</param>

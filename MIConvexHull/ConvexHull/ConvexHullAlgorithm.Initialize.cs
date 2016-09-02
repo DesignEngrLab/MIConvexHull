@@ -115,13 +115,13 @@ namespace MIConvexHull
             ConeFaceBuffer = new SimpleList<DeferredFace>();
             SingularVertices = new HashSet<int>();
             BeyondBuffer = new IndexBuffer();
-            Positions = new double[NumberOfVertices * NumOfDimensions];
 
             ConnectorTable = new ConnectorList[Constants.ConnectorTableSize];
             for (var i = 0; i < Constants.ConnectorTableSize; i++) ConnectorTable[i] = new ConnectorList();
 
             VertexVisited = new bool[NumberOfVertices];
 
+            Positions = new double[NumberOfVertices * NumOfDimensions];
             InitializePositions();
             boundingBoxPoints = new List<int>[NumOfDimensions];
             minima = new double[NumOfDimensions];
@@ -184,7 +184,10 @@ namespace MIConvexHull
             }
             else
                 foreach (var v in Vertices)
-                    for (var i = 0; i < NumOfDimensions; i++) Positions[index++] = v.Position[i];
+                {
+                    for (var i = 0; i < NumOfDimensions; i++)
+                        Positions[index++] = v.Position[i];
+                }
         }
 
 
@@ -199,7 +202,7 @@ namespace MIConvexHull
             {
                 var index = NumOfDimensions * j;
                 var liftedIndex = index + origDim;
-                Positions[liftedIndex] = 1.0; 
+                Positions[liftedIndex] = 1.0;
                 // the lifted term will inevitably be a positive number since it is a sum of squares.
                 // - unless the origin is in the set of vertices ({0,0,0,...}). This would be a value
                 // of zero here as well - so in order to avoid this, we start at 1.0

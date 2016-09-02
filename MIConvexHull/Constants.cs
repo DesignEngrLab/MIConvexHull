@@ -33,7 +33,7 @@ namespace MIConvexHull
         /// <summary>
         /// The default plane distance tolerance
         /// </summary>
-        internal const double DefaultPlaneDistanceTolerance = 1e-5;
+        internal const double DefaultPlaneDistanceTolerance = 1e-10;
         /// <summary>
         /// The starting delta dot product in simplex
         /// </summary>
