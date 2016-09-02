@@ -44,32 +44,15 @@ namespace MIConvexHull
         /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
         /// <typeparam name="TCell">The type of the t cell.</typeparam>
         /// <param name="data">The data.</param>
-        /// <param name="config">The configuration.</param>
         /// <returns>TCell[].</returns>
-        internal static TCell[] GetDelaunayTriangulation<TVertex, TCell>(IList<TVertex> data,
-            TriangulationComputationConfig config)
+        internal static TCell[] GetDelaunayTriangulation<TVertex, TCell>(IList<TVertex> data)
             where TCell : TriangulationCell<TVertex, TCell>, new()
             where TVertex : IVertex
         {
-            config = config ?? new TriangulationComputationConfig();
-            var ch = new ConvexHullAlgorithm(data.Cast<IVertex>().ToArray(), true, config);
+            var ch = new ConvexHullAlgorithm(data.Cast<IVertex>().ToArray(), true, Constants.DefaultPlaneDistanceTolerance);
             ch.GetConvexHull();
-            ch.PostProcessTriangulation(config);
+            ch.RemoveUpperFaces();
             return ch.GetConvexFaces<TVertex, TCell>();
-        }
-
-        /// <summary>
-        /// Remove the upper faces from the hull.
-        /// Remove empty boundary cells if shifting was used.
-        /// </summary>
-        /// <param name="config">The configuration.</param>
-        private void PostProcessTriangulation(TriangulationComputationConfig config)
-        {
-            RemoveUpperFaces();
-            if (config.PointTranslationType == PointTranslationType.TranslateInternal)
-            {
-                RemoveEmptyBoundaryCells(config.ZeroCellVolumeTolerance);
-            }
         }
 
         /// <summary>
@@ -104,84 +87,6 @@ namespace MIConvexHull
                     }
                     delaunayFaces[i] = delaunayFaces[delaunayFaces.Count - 1];
                     delaunayFaces.Pop();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Removes the empty boundary cells that might have been created using PointTranslationType.TranslateInternal.
-        /// </summary>
-        /// <param name="tolerance">The tolerance.</param>
-        private void RemoveEmptyBoundaryCells(double tolerance)
-        {
-            var faces = ConvexFaces;
-            var pool = FacePool;
-            var dimension = NumOfDimensions - 1;
-
-            var visited = new bool[pool.Length];
-            var remove = new bool[pool.Length];
-            var toTest = new IndexBuffer();
-
-            for (var i = faces.Count - 1; i >= 0; i--)
-            {
-                var adj = pool[faces[i]].AdjacentFaces;
-                for (var j = 0; j < adj.Length; j++)
-                {
-                    if (adj[j] < 0)
-                    {
-                        toTest.Push(faces[i]);
-                        break;
-                    }
-                }
-            }
-
-            var buffer = new double[dimension][];
-            for (var i = 0; i < dimension; i++) buffer[i] = new double[dimension];
-
-            var simplexVolumeBuffer = new MathHelper.SimplexVolumeBuffer(dimension);
-            while (toTest.Count > 0)
-            {
-                var top = toTest.Pop();
-                var face = pool[top];
-                visited[top] = true;
-
-                if (MathHelper.GetSimplexVolume(face, Vertices, simplexVolumeBuffer) < tolerance)
-                {
-                    remove[top] = true;
-
-                    var adj = face.AdjacentFaces;
-                    for (var j = 0; j < adj.Length; j++)
-                    {
-                        var n = adj[j];
-                        if (n >= 0 && !visited[n]) toTest.Push(n);
-                    }
-                }
-            }
-
-            for (var i = faces.Count - 1; i >= 0; i--)
-            {
-                if (remove[faces[i]])
-                {
-                    var candidateIndex = faces[i];
-                    var candidate = pool[candidateIndex];
-                    for (var fi = 0; fi < candidate.AdjacentFaces.Length; fi++)
-                    {
-                        var af = candidate.AdjacentFaces[fi];
-                        if (af >= 0)
-                        {
-                            var face = pool[af];
-                            for (var j = 0; j < face.AdjacentFaces.Length; j++)
-                            {
-                                if (face.AdjacentFaces[j] == candidateIndex)
-                                {
-                                    face.AdjacentFaces[j] = -1;
-                                }
-                            }
-                        }
-                    }
-
-                    faces[i] = faces[faces.Count - 1];
-                    faces.Pop();
                 }
             }
         }

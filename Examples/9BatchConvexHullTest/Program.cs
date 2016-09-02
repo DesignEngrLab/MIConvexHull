@@ -43,12 +43,6 @@ namespace BatchConvexHullTest
             var dir = new DirectoryInfo("../../../../TestFiles");
             var fileNames = dir.GetFiles();
             string filename = "";
-            ConvexHullComputationConfig config = null;
-            //    new ConvexHullComputationConfig
-            //{
-            //    PlaneDistanceTolerance = 0,
-            //    PointTranslationType = PointTranslationType.None
-            //};
             for (var i = 0; i < fileNames.Count(); i++)
             {
                 try
@@ -58,7 +52,7 @@ namespace BatchConvexHullTest
                     List<DefaultVertex> vertices;
                     var v3D = MakeModelVisual3D(filename, out vertices);
                     var now = DateTime.Now;
-                    var convexHull = ConvexHull.Create(vertices, config);
+                    var convexHull = ConvexHull.Create(vertices);
                     var interval = DateTime.Now - now;
                     Window3DPlot.ShowWithConvexHull(v3D, convexHull);
                     Console.WriteLine("time = " + interval);

@@ -80,25 +80,14 @@ namespace ExampleWithGraphics
             }
         }
 
-        void Create(List<Vertex> vertices, bool translate)
+        void Create(List<Vertex> vertices)
         {
-
             drawingCanvas.Children.Clear();
             ShowVertices(vertices);
-
-            var config = !translate
-                ? new TriangulationComputationConfig()
-                : new TriangulationComputationConfig
-                {
-                    PointTranslationType = PointTranslationType.TranslateInternal,
-                    PlaneDistanceTolerance = 0.00001,
-                    // the translation radius should be lower than PlaneDistanceTolerance / 2
-                    PointTranslationGenerator = TriangulationComputationConfig.RandomShiftByRadius(0.000001, 0)
-                };
-
+            
             try
             {
-                voronoiMesh = VoronoiMesh.Create<Vertex, Cell>(vertices, config);
+                voronoiMesh = VoronoiMesh.Create<Vertex, Cell>(vertices);
             }
             catch (Exception ex)
             {
@@ -117,21 +106,21 @@ namespace ExampleWithGraphics
         {
             var vs = new List<Vertex>();
             MakeRandom(NumberOfVertices, vs);
-            Create(vs, false);           
+            Create(vs);           
         }
 
         private void btnMakeGrid_Click(object sender, RoutedEventArgs e)
         {
             var vs = new List<Vertex>();
             MakeGrid(10, vs);
-            Create(vs, true);
+            Create(vs);
         }
 
         private void btnMakeCircle_Click(object sender, RoutedEventArgs e)
         {
             var vs = new List<Vertex>();
             MakeCircle(25, vs);
-            Create(vs, true);
+            Create(vs);
         }
 
         private void btnMakeFancy_Click(object sender, RoutedEventArgs e)
@@ -139,7 +128,7 @@ namespace ExampleWithGraphics
             var vs = new List<Vertex>();
             MakeGrid(10, vs);
             MakeCircle(25, vs);
-            Create(vs, true);
+            Create(vs);
         }
 
         private void btnFindDelaunay_Click(object sender, RoutedEventArgs e)

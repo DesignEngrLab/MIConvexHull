@@ -52,15 +52,16 @@ namespace MIConvexHull
         /// <typeparam name="TVertex">The type of the vertices in the data.</typeparam>
         /// <typeparam name="TFace">The desired type of the faces.</typeparam>
         /// <param name="data">The data is the vertices as a collection of IVertices.</param>
-        /// <param name="config">The configuration. If null, default ConvexHullComputationConfig.GetDefault() is used.</param>
-        /// <returns>MIConvexHull.ConvexHull&lt;TVertex, TFace&gt;.</returns>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
+        /// <returns>
+        /// MIConvexHull.ConvexHull&lt;TVertex, TFace&gt;.
+        /// </returns>
         internal static ConvexHull<TVertex, TFace> GetConvexHull<TVertex, TFace>(IList<TVertex> data,
-                    ConvexHullComputationConfig config)
+                    double PlaneDistanceTolerance)
                     where TFace : ConvexFace<TVertex, TFace>, new()
                     where TVertex : IVertex
         {
-            config = config ?? new ConvexHullComputationConfig();
-            var ch = new ConvexHullAlgorithm(data.Cast<IVertex>().ToArray(), false, config);
+            var ch = new ConvexHullAlgorithm(data.Cast<IVertex>().ToArray(), false, PlaneDistanceTolerance);
             ch.GetConvexHull();
 
             return new ConvexHull<TVertex, TFace>
@@ -71,30 +72,24 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConvexHullAlgorithm"/> class.
+        /// Initializes a new instance of the <see cref="ConvexHullAlgorithm" /> class.
         /// </summary>
         /// <param name="vertices">The vertices.</param>
         /// <param name="lift">if set to <c>true</c> [lift].</param>
-        /// <param name="config">The configuration.</param>
-        /// <exception cref="InvalidOperationException">
-        /// PointTranslationGenerator cannot be null if PointTranslationType is enabled.
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
+        /// <exception cref="System.InvalidOperationException">Dimension of the input must be 2 or greater.</exception>
+        /// <exception cref="System.ArgumentException">There are too few vertices (m) for the n-dimensional space. (m must be greater  +
+        /// than the n, but m is  + NumberOfVertices +  and n is  + NumOfDimensions</exception>
+        /// <exception cref="InvalidOperationException">PointTranslationGenerator cannot be null if PointTranslationType is enabled.
         /// or
-        /// Dimension of the input must be 2 or greater.
-        /// </exception>
+        /// Dimension of the input must be 2 or greater.</exception>
         /// <exception cref="ArgumentException">There are too few vertices (m) for the n-dimensional space. (m must be greater " +
-        ///                     "than the n, but m is " + NumberOfVertices + " and n is " + Dimension</exception>
-        private ConvexHullAlgorithm(IVertex[] vertices, bool lift, ConvexHullComputationConfig config)
+        /// "than the n, but m is " + NumberOfVertices + " and n is " + Dimension</exception>
+        private ConvexHullAlgorithm(IVertex[] vertices, bool lift, double PlaneDistanceTolerance)
         {
-            if (config.PointTranslationType != PointTranslationType.None && config.PointTranslationGenerator == null)
-            {
-                throw new InvalidOperationException(
-                    "PointTranslationGenerator cannot be null if PointTranslationType is enabled.");
-            }
-
             IsLifted = lift;
             Vertices = vertices;
             NumberOfVertices = vertices.Length;
-            PlaneDistanceTolerance = config.PlaneDistanceTolerance;
 
             NumOfDimensions = DetermineDimension();
             if (NumOfDimensions < 2) throw new InvalidOperationException("Dimension of the input must be 2 or greater.");
@@ -103,7 +98,7 @@ namespace MIConvexHull
                     "There are too few vertices (m) for the n-dimensional space. (m must be greater " +
                     "than the n, but m is " + NumberOfVertices + " and n is " + NumOfDimensions);
             if (lift) NumOfDimensions++;
-
+            this.PlaneDistanceTolerance = PlaneDistanceTolerance;
             UnprocessedFaces = new FaceList();
             ConvexFaces = new IndexBuffer();
 
@@ -120,12 +115,22 @@ namespace MIConvexHull
             ConeFaceBuffer = new SimpleList<DeferredFace>();
             SingularVertices = new HashSet<int>();
             BeyondBuffer = new IndexBuffer();
+            Positions = new double[NumberOfVertices * NumOfDimensions];
 
             ConnectorTable = new ConnectorList[Constants.ConnectorTableSize];
             for (var i = 0; i < Constants.ConnectorTableSize; i++) ConnectorTable[i] = new ConnectorList();
 
             VertexVisited = new bool[NumberOfVertices];
-            InitializePositions(config);
+
+            InitializePositions();
+            boundingBoxPoints = new List<int>[NumOfDimensions];
+            minima = new double[NumOfDimensions];
+            maxima = new double[NumOfDimensions];
+            FindBoundingBoxPoints();
+            var scale = minima.Sum(x => Math.Abs(x));
+            scale += maxima.Sum(x => Math.Abs(x));
+            scale /= 2;
+            if (IsLifted) AddParabolaTerms(scale);
 
             MathHelper = new MathHelper(NumOfDimensions, Positions);
         }
@@ -164,66 +169,48 @@ namespace MIConvexHull
         /// <summary>
         /// Initialize the vertex positions based on the translation type from config.
         /// </summary>
-        /// <param name="config">The configuration.</param>
-        private void InitializePositions(ConvexHullComputationConfig config)
+        private void InitializePositions()
         {
-            Positions = new double[NumberOfVertices * NumOfDimensions];
             var index = 0;
             if (IsLifted)
             {
                 var origDim = NumOfDimensions - 1;
-                var tf = config.PointTranslationGenerator;
-                switch (config.PointTranslationType)
+                foreach (var v in Vertices)
                 {
-                    case PointTranslationType.None:
-                        foreach (var v in Vertices)
-                        {
-                            var lifted = 0.0;
-                            for (var i = 0; i < origDim; i++)
-                            {
-                                var t = v.Position[i];
-                                Positions[index++] = t;
-                                lifted += t * t;
-                            }
-                            Positions[index++] = lifted;
-                        }
-                        break;
-                    case PointTranslationType.TranslateInternal:
-                        foreach (var v in Vertices)
-                        {
-                            var lifted = 0.0;
-                            for (var i = 0; i < origDim; i++)
-                            {
-                                var t = v.Position[i] + tf();
-                                Positions[index++] = t;
-                                lifted += t * t;
-                            }
-                            Positions[index++] = lifted;
-                        }
-                        break;
+                    for (var i = 0; i < origDim; i++)
+                        Positions[index++] = v.Position[i];
+                    index++;
                 }
             }
             else
-            {
-                var tf = config.PointTranslationGenerator;
-                switch (config.PointTranslationType)
-                {
-                    case PointTranslationType.None:
-                        foreach (var v in Vertices)
-                        {
-                            for (var i = 0; i < NumOfDimensions; i++) Positions[index++] = v.Position[i];
-                        }
-                        break;
-                    case PointTranslationType.TranslateInternal:
-                        foreach (var v in Vertices)
-                        {
-                            for (var i = 0; i < NumOfDimensions; i++) Positions[index++] = v.Position[i] + tf();
-                        }
-                        break;
-                }
-            }
+                foreach (var v in Vertices)
+                    for (var i = 0; i < NumOfDimensions; i++) Positions[index++] = v.Position[i];
         }
 
+
+        /// <summary>
+        /// Initialize the vertex positions based on the translation type from config.
+        /// </summary>
+        /// <param name="scale">The scale.</param>
+        private void AddParabolaTerms(double scale)
+        {
+            var origDim = NumOfDimensions - 1;
+            for (int j = 0; j < NumberOfVertices; j++)
+            {
+                var index = NumOfDimensions * j;
+                var liftedIndex = index + origDim;
+                Positions[liftedIndex] = 1.0; 
+                // the lifted term will inevitably be a positive number since it is a sum of squares.
+                // - unless the origin is in the set of vertices ({0,0,0,...}). This would be a value
+                // of zero here as well - so in order to avoid this, we start at 1.0
+                for (var i = 0; i < origDim; i++)
+                {
+                    var t = Positions[index + i];
+                    Positions[liftedIndex] += t * t;
+                }
+                Positions[liftedIndex] /= scale;
+            }
+        }
 
         /// <summary>
         /// Check the dimensionality of the input data.
@@ -291,39 +278,37 @@ namespace MIConvexHull
         private void CreateInitialSimplex()
         {
             #region Get the best points
-            int dimensionIndex;
-            var boundingBoxPoints = FindBoundingBoxPoints(out dimensionIndex);
-            var vertex0 = boundingBoxPoints[dimensionIndex].First(); // these are min and max vertices along
-            var vertex1 = boundingBoxPoints[dimensionIndex].Last(); // the dimension that had the fewest points
-            boundingBoxPoints[dimensionIndex].RemoveAt(0);
-            boundingBoxPoints[dimensionIndex].RemoveAt(boundingBoxPoints[dimensionIndex].Count - 1);
+            var vertex0 = boundingBoxPoints[indexOfDimensionWithLeastExtremes].First(); // these are min and max vertices along
+            var vertex1 = boundingBoxPoints[indexOfDimensionWithLeastExtremes].Last(); // the dimension that had the fewest points
+            boundingBoxPoints[indexOfDimensionWithLeastExtremes].RemoveAt(0);
+            boundingBoxPoints[indexOfDimensionWithLeastExtremes].RemoveAt(boundingBoxPoints[indexOfDimensionWithLeastExtremes].Count - 1);
             var initialPoints = new List<int> { vertex0, vertex1 };
             VertexVisited[vertex0] = VertexVisited[vertex1] = true;
             CurrentVertex = vertex0; UpdateCenter();
             CurrentVertex = vertex1; UpdateCenter();
-            var edgeUnitVectors = new List<double[]> { makeUnitVector(vertex0, vertex1) };
+            var edgeUnitVectors = new List<double[]> { makeUnitVector(vertex0), makeUnitVector(vertex1) };
             var numberLeft = boundingBoxPoints.Sum(bb => bb.Count);
             var deltaForAllowableDotProduct = Constants.StartingDeltaDotProductInSimplex;
             var allowableDotProduct = 1.0 - deltaForAllowableDotProduct;
             while (initialPoints.Count < NumOfDimensions + 1 && numberLeft > 0)
             {
-                dimensionIndex++;
-                if (dimensionIndex == NumOfDimensions)
+                indexOfDimensionWithLeastExtremes++;
+                if (indexOfDimensionWithLeastExtremes == NumOfDimensions)
                 {
-                    dimensionIndex = 0;
+                    indexOfDimensionWithLeastExtremes = 0;
                     deltaForAllowableDotProduct *= deltaForAllowableDotProduct;
                     allowableDotProduct = 1 - deltaForAllowableDotProduct;
                 }
                 var bestNewIndex = -1;
                 var lowestDotProduct = 1.0;
                 double[] bestUnitVector = { };
-                for (var i = boundingBoxPoints[dimensionIndex].Count - 1; i >= 0; i--)
+                for (var i = boundingBoxPoints[indexOfDimensionWithLeastExtremes].Count - 1; i >= 0; i--)
                 {
-                    var vIndex = boundingBoxPoints[dimensionIndex][i];
-                    if (initialPoints.Contains(vIndex)) boundingBoxPoints[dimensionIndex].RemoveAt(i);
+                    var vIndex = boundingBoxPoints[indexOfDimensionWithLeastExtremes][i];
+                    if (initialPoints.Contains(vIndex)) boundingBoxPoints[indexOfDimensionWithLeastExtremes].RemoveAt(i);
                     else
                     {
-                        var newUnitVector = makeUnitVector(vertex0, vIndex);
+                        var newUnitVector = makeUnitVector(vIndex);
                         var maxDotProduct = calcMaxDotProduct(edgeUnitVectors, newUnitVector);
                         if (lowestDotProduct > maxDotProduct)
                         {
@@ -334,7 +319,7 @@ namespace MIConvexHull
                     }
                 }
                 numberLeft = boundingBoxPoints.Sum(bb => bb.Count);
-                boundingBoxPoints[dimensionIndex].Remove(bestNewIndex);
+                boundingBoxPoints[indexOfDimensionWithLeastExtremes].Remove(bestNewIndex);
                 if (lowestDotProduct >= allowableDotProduct) continue;
                 edgeUnitVectors.Add(bestUnitVector);
                 initialPoints.Add(bestNewIndex);
@@ -348,7 +333,7 @@ namespace MIConvexHull
             while (initialPoints.Count < NumOfDimensions + 1 && ++index < NumberOfVertices)
             {
                 if (VertexVisited[index]) continue;
-                var newUnitVector = makeUnitVector(vertex0, index);
+                var newUnitVector = makeUnitVector(index);
                 if (calcMaxDotProduct(edgeUnitVectors, newUnitVector) >= Constants.StartingDeltaDotProductInSimplex)
                     continue;
                 edgeUnitVectors.Add(newUnitVector);
@@ -450,11 +435,11 @@ namespace MIConvexHull
         /// <param name="v1">The v1.</param>
         /// <param name="v2">The v2.</param>
         /// <returns>System.Double[].</returns>
-        private double[] makeUnitVector(int v1, int v2)
+        private double[] makeUnitVector(int v1)
         {
             var vector = new double[NumOfDimensions];
             for (var i = 0; i < NumOfDimensions; i++)
-                vector[i] = GetCoordinate(v1, i) - GetCoordinate(v2, i);
+                vector[i] = GetCoordinate(v1, i) - Center[i];
             var magnitude = 0.0;
             for (var i = 0; i < NumOfDimensions; i++)
                 magnitude += vector[i] * vector[i];
@@ -469,11 +454,10 @@ namespace MIConvexHull
         /// </summary>
         /// <param name="vertices">The vertices.</param>
         /// <returns>List&lt;List&lt;System.Int32&gt;&gt;.</returns>
-        private List<int>[] FindBoundingBoxPoints(out int indexOfDimensionWithLeast)
+        private void FindBoundingBoxPoints()
         {
-            indexOfDimensionWithLeast = -1;
+            indexOfDimensionWithLeastExtremes = -1;
             var minNumExtremes = int.MaxValue;
-            var extremes = new List<int>[NumOfDimensions];
             for (var i = 0; i < NumOfDimensions; i++)
             {
                 var minIndices = new List<int>();
@@ -523,15 +507,16 @@ namespace MIConvexHull
                         maxIndices.Add(j);
                     }
                 }
+                minima[i] = min;
+                maxima[i] = max;
                 minIndices.AddRange(maxIndices);
                 if (minIndices.Count < minNumExtremes)
                 {
                     minNumExtremes = minIndices.Count;
-                    indexOfDimensionWithLeast = i;
+                    indexOfDimensionWithLeastExtremes = i;
                 }
-                extremes[i] = minIndices;
+                boundingBoxPoints[i] = minIndices;
             }
-            return extremes;
         }
 
         #region Fields
@@ -687,6 +672,10 @@ namespace MIConvexHull
         /// Helper class for handling math related stuff.
         /// </summary>
         private readonly MathHelper MathHelper;
+        private readonly List<int>[] boundingBoxPoints;
+        private int indexOfDimensionWithLeastExtremes;
+        private readonly double[] minima;
+        private readonly double[] maxima;
 
         #endregion
     }
