@@ -92,12 +92,12 @@ namespace MIConvexHull
             NumberOfVertices = vertices.Length;
 
             NumOfDimensions = DetermineDimension();
+            if (IsLifted) NumOfDimensions++;
             if (NumOfDimensions < 2) throw new InvalidOperationException("Dimension of the input must be 2 or greater.");
             if (NumberOfVertices <= NumOfDimensions)
                 throw new ArgumentException(
                     "There are too few vertices (m) for the n-dimensional space. (m must be greater " +
                     "than the n, but m is " + NumberOfVertices + " and n is " + NumOfDimensions);
-            if (lift) NumOfDimensions++;
             this.PlaneDistanceTolerance = PlaneDistanceTolerance;
             UnprocessedFaces = new FaceList();
             ConvexFaces = new IndexBuffer();
@@ -120,18 +120,10 @@ namespace MIConvexHull
             for (var i = 0; i < Constants.ConnectorTableSize; i++) ConnectorTable[i] = new ConnectorList();
 
             VertexVisited = new bool[NumberOfVertices];
-
             Positions = new double[NumberOfVertices * NumOfDimensions];
-            InitializePositions();
             boundingBoxPoints = new List<int>[NumOfDimensions];
             minima = new double[NumOfDimensions];
             maxima = new double[NumOfDimensions];
-            FindBoundingBoxPoints();
-            var scale = minima.Sum(x => Math.Abs(x));
-            scale += maxima.Sum(x => Math.Abs(x));
-            scale /= 2;
-            if (IsLifted) AddParabolaTerms(scale);
-
             MathHelper = new MathHelper(NumOfDimensions, Positions);
         }
 
@@ -140,10 +132,18 @@ namespace MIConvexHull
         /// </summary>
         private void GetConvexHull()
         {
+            // accessing a 1D array is quicker than a jagged array, so the first step is to make this array
+            SerializeVerticesToPositions();
+            // next the bounding box extremes are found. This is used to shift, scale and find the starting simplex.
+            FindBoundingBoxPoints();
+            // the positions are shifted to avoid divide by zero problems
+            // and if Delaunay or Voronoi, then the parabola terms are scaled back to match the size of the other coords
+            ShiftAndScalePositions();
             // Find the (dimension+1) initial points and create the simplexes.
             CreateInitialSimplex();
 
-            // Expand the convex hull and faces.
+            // Now, the main loop. These initial faces of a simplex are replaced and expanded 
+            // outwards to make the convex hull and faces.
             while (UnprocessedFaces.First != null)
             {
                 var currentFace = UnprocessedFaces.First;
@@ -169,17 +169,22 @@ namespace MIConvexHull
         /// <summary>
         /// Initialize the vertex positions based on the translation type from config.
         /// </summary>
-        private void InitializePositions()
+        private void SerializeVerticesToPositions()
         {
             var index = 0;
             if (IsLifted)
             {
-                var origDim = NumOfDimensions - 1;
                 foreach (var v in Vertices)
                 {
-                    for (var i = 0; i < origDim; i++)
-                        Positions[index++] = v.Position[i];
-                    index++;
+                    var parabolaTerm = 0.0; // the lifted term is a sum of squares.
+                    var origNumDim = NumOfDimensions - 1;
+                    for (var i = 0; i < origNumDim; i++)
+                    {
+                        var coordinate = v.Position[i];
+                        Positions[index++] = coordinate;
+                        parabolaTerm += coordinate * coordinate;
+                    }
+                    Positions[index++] = parabolaTerm;
                 }
             }
             else
@@ -194,25 +199,39 @@ namespace MIConvexHull
         /// <summary>
         /// Initialize the vertex positions based on the translation type from config.
         /// </summary>
-        /// <param name="scale">The scale.</param>
-        private void AddParabolaTerms(double scale)
+        private void ShiftAndScalePositions()
         {
-            var origDim = NumOfDimensions - 1;
-            for (int j = 0; j < NumberOfVertices; j++)
+            var positionsLength = Positions.Length;
+            if (IsLifted)
             {
-                var index = NumOfDimensions * j;
-                var liftedIndex = index + origDim;
-                Positions[liftedIndex] = 1.0;
-                // the lifted term will inevitably be a positive number since it is a sum of squares.
-                // - unless the origin is in the set of vertices ({0,0,0,...}). This would be a value
-                // of zero here as well - so in order to avoid this, we start at 1.0
-                for (var i = 0; i < origDim; i++)
-                {
-                    var t = Positions[index + i];
-                    Positions[liftedIndex] += t * t;
-                }
-                Positions[liftedIndex] /= scale;
+                var origNumDim = NumOfDimensions - 1;
+                var parabolaScale = 2 / (minima.Sum(x => Math.Abs(x)) + maxima.Sum(x => Math.Abs(x))
+                    -Math.Abs(maxima[origNumDim])-Math.Abs(minima[origNumDim]));
+                // the parabolascale is 1 / average of the sum of the other dimensions.
+                // multiplying this by the parabola will scale it back to be on near similar size to the
+                // other dimensions. Without this, the term is much larger than the others, which causes
+                // problems for roundoff error and finding the normal of faces.
+                minima[origNumDim] /= parabolaScale; // change the extreme values as well
+                maxima[origNumDim] /= parabolaScale;
+                // it is done here because
+                for (int i = origNumDim; i < positionsLength; i += NumOfDimensions)
+                    Positions[i] *= parabolaScale;
             }
+            var shiftAmount = new double[NumOfDimensions];
+            for (int i = 0; i < NumOfDimensions; i++)
+                // now the entire model is shifted to all positive numbers...plus some more.
+                // why? 
+                // 1) to avoid dealing with a point at the origin {0,0,...,0} which causes problems 
+                //    for future normal finding
+                // 2) note that wierd shift that is used (max - min - min). This is to avoid scaling
+                //    issues. this shift means that the minima in a dimension will always be a positive
+                //    number (no points at zero), and the minima [in a given dimension] will always be
+                //    half of the maxima. 'Half' is much preferred to 'thousands of times'
+                //    Think of the first term as the range (max - min), then the second term avoids cases
+                //    where there are both positive and negative numbers.
+                shiftAmount[i] = (maxima[i] - minima[i]) - minima[i];
+            for (int i = 0; i < positionsLength; i++)
+                Positions[i] += shiftAmount[i % NumOfDimensions];
         }
 
         /// <summary>
@@ -280,7 +299,53 @@ namespace MIConvexHull
         /// </summary>
         private void CreateInitialSimplex()
         {
-            #region Get the best points
+            var initialPoints = FindInitialPoints();
+            #region Create the first faces from (dimension + 1) vertices.
+
+            var faces = new int[NumOfDimensions + 1];
+
+            for (var i = 0; i < NumOfDimensions + 1; i++)
+            {
+                var vertices = new int[NumOfDimensions];
+                for (int j = 0, k = 0; j <= NumOfDimensions; j++)
+                {
+                    if (i != j) vertices[k++] = initialPoints[j];
+                }
+                var newFace = FacePool[ObjectManager.GetFace()];
+                newFace.Vertices = vertices;
+                Array.Sort(vertices);
+                MathHelper.CalculateFacePlane(newFace, Center);
+                faces[i] = newFace.Index;
+            }
+            // update the adjacency (check all pairs of faces)
+            for (var i = 0; i < NumOfDimensions; i++)
+                for (var j = i + 1; j < NumOfDimensions + 1; j++) UpdateAdjacency(FacePool[faces[i]], FacePool[faces[j]]);
+
+            #endregion
+
+            #region Init the vertex beyond buffers.
+
+            foreach (var faceIndex in faces)
+            {
+                var face = FacePool[faceIndex];
+                FindBeyondVertices(face);
+                if (face.VerticesBeyond.Count == 0) ConvexFaces.Add(face.Index); // The face is on the hull
+                else UnprocessedFaces.Add(face);
+            }
+
+            #endregion
+
+            // Set all vertices to false (unvisited).
+            foreach (var vertex in initialPoints) VertexVisited[vertex] = false;
+        }
+
+        /// <summary>
+        /// Finds (dimension + 1) initial points.
+        /// </summary>
+        /// <param name="extremes"></param>
+        /// <returns></returns>
+        private List<int> FindInitialPoints()
+        {
             var vertex0 = boundingBoxPoints[indexOfDimensionWithLeastExtremes].First(); // these are min and max vertices along
             var vertex1 = boundingBoxPoints[indexOfDimensionWithLeastExtremes].Last(); // the dimension that had the fewest points
             boundingBoxPoints[indexOfDimensionWithLeastExtremes].RemoveAt(0);
@@ -346,47 +411,85 @@ namespace MIConvexHull
                 throw new ArgumentException("The input data is degenerate. It appears to exist in " + NumOfDimensions +
                     " dimensions, but it is a " + (NumOfDimensions - 1) + " dimensional set (i.e. the point of collinear,"
                     + " coplanar, or co-hyperplanar.)");
-
-            #endregion
-
-            #region Create the first faces from (dimension + 1) vertices.
-
-            var faces = new int[NumOfDimensions + 1];
-
-            for (var i = 0; i < NumOfDimensions + 1; i++)
-            {
-                var vertices = new int[NumOfDimensions];
-                for (int j = 0, k = 0; j <= NumOfDimensions; j++)
-                {
-                    if (i != j) vertices[k++] = initialPoints[j];
-                }
-                var newFace = FacePool[ObjectManager.GetFace()];
-                newFace.Vertices = vertices;
-                Array.Sort(vertices);
-                MathHelper.CalculateFacePlane(newFace, Center);
-                faces[i] = newFace.Index;
-            }
-            // update the adjacency (check all pairs of faces)
-            for (var i = 0; i < NumOfDimensions; i++)
-                for (var j = i + 1; j < NumOfDimensions + 1; j++) UpdateAdjacency(FacePool[faces[i]], FacePool[faces[j]]);
-
-            #endregion
-
-            #region Init the vertex beyond buffers.
-
-            foreach (var faceIndex in faces)
-            {
-                var face = FacePool[faceIndex];
-                FindBeyondVertices(face);
-                if (face.VerticesBeyond.Count == 0) ConvexFaces.Add(face.Index); // The face is on the hull
-                else UnprocessedFaces.Add(face);
-            }
-
-            #endregion
-
-            // Set all vertices to false (unvisited).
-            foreach (var vertex in initialPoints) VertexVisited[vertex] = false;
+            return initialPoints;
         }
+
+        /// <summary>
+        /// Finds (dimension + 1) initial points.
+        /// </summary>
+        /// <param name="extremes"></param>
+        /// <returns></returns>
+        private List<int> FindInitialPointsSIMPLEXVOLUME()
+        {
+            var initialPoints = new List<int>();
+
+            /*** adding in old approach - which may be the most robust and no real speed disadvantage.
+            List<VertexWrap> initialPoints = new List<VertexWrap>();// { extremes[0], extremes[1] };
+
+            VertexWrap first = null, second = null;
+            double maxDist = 0;
+            for (int i = 0; i < extremes.Count - 1; i++)
+            {
+                var a = extremes[i];
+                for (int j = i + 1; j < extremes.Count; j++)
+                {
+                    var b = extremes[j];
+                    var dist = StarMath.norm2(StarMath.subtract(a.PositionData, b.PositionData, Dimension), Dimension, true);
+                    if (dist > maxDist)
+                    {
+                        first = a;
+                        second = b;
+                        maxDist = dist;
+                    }
+                }
+            }
+
+            initialPoints.Add(first);
+            initialPoints.Add(second);
+
+            for (int i = 2; i <= Dimension; i++)
+            {
+                double maximum = 0.000001;
+                VertexWrap maxPoint = null;
+                for (int j = 0; j < extremes.Count; j++)
+                {
+                    var extreme = extremes[j];
+                    if (initialPoints.Contains(extreme)) continue;
+
+                    var val = GetSimplexVolume(extreme, initialPoints);
+
+                    if (val > maximum)
+                    {
+                        maximum = val;
+                        maxPoint = extreme;
+                    }
+                }
+                if (maxPoint != null) initialPoints.Add(maxPoint);
+                else
+                {
+                    int vCount = InputVertices.Count;
+                    for (int j = 0; j < vCount; j++)
+                    {
+                        var point = InputVertices[j];
+                        if (initialPoints.Contains(point)) continue;
+
+                        var val = GetSimplexVolume(point, initialPoints);
+
+                        if (val > maximum)
+                        {
+                            maximum = val;
+                            maxPoint = point;
+                        }
+                    }
+
+                    if (maxPoint != null) initialPoints.Add(maxPoint);
+                    else ThrowSingular();
+                }
+            }
+            ****/
+            return initialPoints;
+        }
+
 
 
         /// <summary>
@@ -679,7 +782,6 @@ namespace MIConvexHull
         private int indexOfDimensionWithLeastExtremes;
         private readonly double[] minima;
         private readonly double[] maxima;
-
         #endregion
     }
 }
