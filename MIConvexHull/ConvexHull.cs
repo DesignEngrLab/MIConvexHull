@@ -41,14 +41,16 @@ namespace MIConvexHull
         /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
         /// <typeparam name="TFace">The type of the t face.</typeparam>
         /// <param name="data">The data.</param>
-        /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
-        /// <returns>ConvexHull&lt;TVertex, TFace&gt;.</returns>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
+        /// <returns>
+        /// ConvexHull&lt;TVertex, TFace&gt;.
+        /// </returns>
         public static ConvexHull<TVertex, TFace> Create<TVertex, TFace>(IList<TVertex> data,
-            ConvexHullComputationConfig config = null)
+            double PlaneDistanceTolerance = Constants.DefaultPlaneDistanceTolerance)
             where TVertex : IVertex
             where TFace : ConvexFace<TVertex, TFace>, new()
         {
-            return ConvexHull<TVertex, TFace>.Create(data, config);
+            return ConvexHull<TVertex, TFace>.Create(data, PlaneDistanceTolerance);
         }
 
         /// <summary>
@@ -56,26 +58,30 @@ namespace MIConvexHull
         /// </summary>
         /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
         /// <param name="data">The data.</param>
-        /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
-        /// <returns>ConvexHull&lt;TVertex, DefaultConvexFace&lt;TVertex&gt;&gt;.</returns>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
+        /// <returns>
+        /// ConvexHull&lt;TVertex, DefaultConvexFace&lt;TVertex&gt;&gt;.
+        /// </returns>
         public static ConvexHull<TVertex, DefaultConvexFace<TVertex>> Create<TVertex>(IList<TVertex> data,
-            ConvexHullComputationConfig config = null)
+            double PlaneDistanceTolerance = Constants.DefaultPlaneDistanceTolerance)
             where TVertex : IVertex
         {
-            return ConvexHull<TVertex, DefaultConvexFace<TVertex>>.Create(data, config);
+            return ConvexHull<TVertex, DefaultConvexFace<TVertex>>.Create(data, PlaneDistanceTolerance);
         }
 
         /// <summary>
         /// Creates a convex hull of the input data.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
-        /// <returns>ConvexHull&lt;DefaultVertex, DefaultConvexFace&lt;DefaultVertex&gt;&gt;.</returns>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
+        /// <returns>
+        /// ConvexHull&lt;DefaultVertex, DefaultConvexFace&lt;DefaultVertex&gt;&gt;.
+        /// </returns>
         public static ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>> Create(IList<double[]> data,
-            ConvexHullComputationConfig config = null)
+            double PlaneDistanceTolerance = Constants.DefaultPlaneDistanceTolerance)
         {
-            var points = data.Select(p => new DefaultVertex {Position = p.ToArray()}).ToList();
-            return ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>>.Create(points, config);
+            var points = data.Select(p => new DefaultVertex { Position = p }).ToList();
+            return ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>>.Create(points, PlaneDistanceTolerance);
         }
     }
 
@@ -111,13 +117,16 @@ namespace MIConvexHull
         /// Creates the convex hull.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
-        /// <returns>ConvexHull&lt;TVertex, TFace&gt;.</returns>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
+        /// <returns>
+        /// ConvexHull&lt;TVertex, TFace&gt;.
+        /// </returns>
+        /// <exception cref="System.ArgumentNullException">The supplied data is null.</exception>
         /// <exception cref="ArgumentNullException">data</exception>
-        public static ConvexHull<TVertex, TFace> Create(IList<TVertex> data, ConvexHullComputationConfig config)
+        public static ConvexHull<TVertex, TFace> Create(IList<TVertex> data, double PlaneDistanceTolerance)
         {
-            if (data == null) throw new ArgumentNullException("data");
-            return ConvexHullAlgorithm.GetConvexHull<TVertex, TFace>(data, config);
+            if (data == null) throw new ArgumentNullException("The supplied data is null.");
+            return ConvexHullAlgorithm.GetConvexHull<TVertex, TFace>(data, PlaneDistanceTolerance);
         }
     }
 }

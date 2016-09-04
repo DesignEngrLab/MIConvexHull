@@ -59,19 +59,7 @@ namespace DelaunayWPF
                     }
                 }
             }
-
-            // calculate the triangulation
-            var config = !uniform
-               ? new TriangulationComputationConfig()
-               : new TriangulationComputationConfig
-               {
-                   PointTranslationType = PointTranslationType.TranslateInternal,
-                   PlaneDistanceTolerance = 0.000001,
-                   // the translation radius should be lower than PlaneDistanceTolerance / 2
-                   PointTranslationGenerator = TriangulationComputationConfig.RandomShiftByRadius(0.0000001, 0)
-               };
-
-            var tetrahedrons = Triangulation.CreateDelaunay<Vertex, Tetrahedron>(vertices, config).Cells;
+            var tetrahedrons = Triangulation.CreateDelaunay<Vertex, Tetrahedron>(vertices).Cells;
 
             // create a model for each tetrahedron, pick a random color
             Model3DGroup model = new Model3DGroup();

@@ -59,14 +59,12 @@ namespace MIConvexHull
         /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
         /// <returns>DelaunayTriangulation&lt;TVertex, TCell&gt;.</returns>
         /// <exception cref="ArgumentNullException">data</exception>
-        public static DelaunayTriangulation<TVertex, TCell> Create(IList<TVertex> data,
-            TriangulationComputationConfig config)
+        public static DelaunayTriangulation<TVertex, TCell> Create(IList<TVertex> data)
         {
             if (data == null) throw new ArgumentNullException("data");
             if (data.Count == 0) return new DelaunayTriangulation<TVertex, TCell> {Cells = new TCell[0]};
 
-            config = config ?? new TriangulationComputationConfig();
-            var cells = ConvexHullAlgorithm.GetDelaunayTriangulation<TVertex, TCell>(data, config);
+            var cells = ConvexHullAlgorithm.GetDelaunayTriangulation<TVertex, TCell>(data);
 
             return new DelaunayTriangulation<TVertex, TCell> {Cells = cells};
         }

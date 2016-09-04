@@ -58,10 +58,10 @@ namespace MIConvexHull
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns>ITriangulation&lt;TVertex, DefaultTriangulationCell&lt;TVertex&gt;&gt;.</returns>
         public static ITriangulation<TVertex, DefaultTriangulationCell<TVertex>> CreateDelaunay<TVertex>(
-            IList<TVertex> data, TriangulationComputationConfig config = null)
+            IList<TVertex> data)
             where TVertex : IVertex
         {
-            return DelaunayTriangulation<TVertex, DefaultTriangulationCell<TVertex>>.Create(data, config);
+            return DelaunayTriangulation<TVertex, DefaultTriangulationCell<TVertex>>.Create(data);
         }
 
         /// <summary>
@@ -71,10 +71,10 @@ namespace MIConvexHull
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns>ITriangulation&lt;DefaultVertex, DefaultTriangulationCell&lt;DefaultVertex&gt;&gt;.</returns>
         public static ITriangulation<DefaultVertex, DefaultTriangulationCell<DefaultVertex>> CreateDelaunay(
-            IList<double[]> data, TriangulationComputationConfig config = null)
+            IList<double[]> data)
         {
-            var points = data.Select(p => new DefaultVertex {Position = p.ToArray()}).ToList();
-            return DelaunayTriangulation<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>.Create(points, config);
+            var points = data.Select(p => new DefaultVertex {Position = p}).ToList();
+            return DelaunayTriangulation<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>.Create(points);
         }
 
         /// <summary>
@@ -85,12 +85,11 @@ namespace MIConvexHull
         /// <param name="data"></param>
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns></returns>
-        public static ITriangulation<TVertex, TFace> CreateDelaunay<TVertex, TFace>(IList<TVertex> data,
-            TriangulationComputationConfig config = null)
+        public static ITriangulation<TVertex, TFace> CreateDelaunay<TVertex, TFace>(IList<TVertex> data)
             where TVertex : IVertex
             where TFace : TriangulationCell<TVertex, TFace>, new()
         {
-            return DelaunayTriangulation<TVertex, TFace>.Create(data, config);
+            return DelaunayTriangulation<TVertex, TFace>.Create(data);
         }
 
 
@@ -103,13 +102,12 @@ namespace MIConvexHull
         /// <param name="data"></param>
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns></returns>
-        public static VoronoiMesh<TVertex, TCell, TEdge> CreateVoronoi<TVertex, TCell, TEdge>(IList<TVertex> data,
-            TriangulationComputationConfig config = null)
+        public static VoronoiMesh<TVertex, TCell, TEdge> CreateVoronoi<TVertex, TCell, TEdge>(IList<TVertex> data)
             where TCell : TriangulationCell<TVertex, TCell>, new()
             where TVertex : IVertex
             where TEdge : VoronoiEdge<TVertex, TCell>, new()
         {
-            return VoronoiMesh<TVertex, TCell, TEdge>.Create(data, config);
+            return VoronoiMesh<TVertex, TCell, TEdge>.Create(data);
         }
 
         /// <summary>
@@ -122,13 +120,13 @@ namespace MIConvexHull
         public static
             VoronoiMesh
                 <TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>>
-            CreateVoronoi<TVertex>(IList<TVertex> data, TriangulationComputationConfig config = null)
+            CreateVoronoi<TVertex>(IList<TVertex> data)
             where TVertex : IVertex
         {
             return
                 VoronoiMesh
                     <TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>
-                        >.Create(data, config);
+                        >.Create(data);
         }
 
         /// <summary>
@@ -141,13 +139,13 @@ namespace MIConvexHull
             VoronoiMesh
                 <DefaultVertex, DefaultTriangulationCell<DefaultVertex>,
                     VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>
-            CreateVoronoi(IList<double[]> data, TriangulationComputationConfig config = null)
+            CreateVoronoi(IList<double[]> data)
         {
             var points = data.Select(p => new DefaultVertex {Position = p.ToArray()}).ToList();
             return
                 VoronoiMesh
                     <DefaultVertex, DefaultTriangulationCell<DefaultVertex>,
-                        VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>.Create(points, config);
+                        VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>.Create(points);
         }
 
         /// <summary>
@@ -159,11 +157,11 @@ namespace MIConvexHull
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns></returns>
         public static VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>> CreateVoronoi<TVertex, TCell>(
-            IList<TVertex> data, TriangulationComputationConfig config = null)
+            IList<TVertex> data)
             where TVertex : IVertex
             where TCell : TriangulationCell<TVertex, TCell>, new()
         {
-            return VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>>.Create(data, config);
+            return VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>>.Create(data);
         }
     }
 }

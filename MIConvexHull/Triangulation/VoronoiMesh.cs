@@ -44,13 +44,12 @@ namespace MIConvexHull
         /// <param name="data">The data.</param>
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns>VoronoiMesh&lt;TVertex, TCell, TEdge&gt;.</returns>
-        public static VoronoiMesh<TVertex, TCell, TEdge> Create<TVertex, TCell, TEdge>(IList<TVertex> data,
-            TriangulationComputationConfig config = null)
+        public static VoronoiMesh<TVertex, TCell, TEdge> Create<TVertex, TCell, TEdge>(IList<TVertex> data)
             where TCell : TriangulationCell<TVertex, TCell>, new()
             where TVertex : IVertex
             where TEdge : VoronoiEdge<TVertex, TCell>, new()
         {
-            return VoronoiMesh<TVertex, TCell, TEdge>.Create(data, config);
+            return VoronoiMesh<TVertex, TCell, TEdge>.Create(data);
         }
 
         /// <summary>
@@ -63,13 +62,13 @@ namespace MIConvexHull
         public static
             VoronoiMesh
                 <TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>>
-            Create<TVertex>(IList<TVertex> data, TriangulationComputationConfig config = null)
+            Create<TVertex>(IList<TVertex> data)
             where TVertex : IVertex
         {
             return
                 VoronoiMesh
                     <TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>
-                        >.Create(data, config);
+                        >.Create(data);
         }
 
         /// <summary>
@@ -82,13 +81,13 @@ namespace MIConvexHull
             VoronoiMesh
                 <DefaultVertex, DefaultTriangulationCell<DefaultVertex>,
                     VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>
-            Create(IList<double[]> data, TriangulationComputationConfig config = null)
+            Create(IList<double[]> data)
         {
             var points = data.Select(p => new DefaultVertex {Position = p.ToArray()}).ToList();
             return
                 VoronoiMesh
                     <DefaultVertex, DefaultTriangulationCell<DefaultVertex>,
-                        VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>.Create(points, config);
+                        VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>.Create(points);
         }
 
         /// <summary>
@@ -100,11 +99,11 @@ namespace MIConvexHull
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns>VoronoiMesh&lt;TVertex, TCell, VoronoiEdge&lt;TVertex, TCell&gt;&gt;.</returns>
         public static VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>> Create<TVertex, TCell>(
-            IList<TVertex> data, TriangulationComputationConfig config = null)
+            IList<TVertex> data)
             where TVertex : IVertex
             where TCell : TriangulationCell<TVertex, TCell>, new()
         {
-            return VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>>.Create(data, config);
+            return VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>>.Create(data);
         }
     }
 
@@ -146,12 +145,11 @@ namespace MIConvexHull
         /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns>VoronoiMesh&lt;TVertex, TCell, TEdge&gt;.</returns>
         /// <exception cref="ArgumentNullException">data</exception>
-        public static VoronoiMesh<TVertex, TCell, TEdge> Create(IList<TVertex> data,
-            TriangulationComputationConfig config)
+        public static VoronoiMesh<TVertex, TCell, TEdge> Create(IList<TVertex> data)
         {
             if (data == null) throw new ArgumentNullException("data");
 
-            var t = DelaunayTriangulation<TVertex, TCell>.Create(data, config);
+            var t = DelaunayTriangulation<TVertex, TCell>.Create(data);
             var vertices = t.Cells.ToList();
             var edges = new HashSet<TEdge>(new EdgeComparer());
 

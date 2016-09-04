@@ -39,8 +39,8 @@
     <DocumentationFile>bin\Release\MIConvexHull.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\MIConvexHull\Configuration.cs">
-      <Link>Configuration.cs</Link>
+    <Compile Include="..\MIConvexHull\Constants.cs">
+      <Link>Constants.cs</Link>
     </Compile>
     <Compile Include="..\MIConvexHull\ConvexHull.cs">
       <Link>ConvexHull.cs</Link>
