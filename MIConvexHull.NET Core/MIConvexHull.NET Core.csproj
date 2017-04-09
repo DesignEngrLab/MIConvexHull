@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.6</TargetFramework>
+    <AssemblyName>MIConvexHull.NET Core</AssemblyName>
+    <PackageId>MIConvexHull.NET Core</PackageId>
+    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
+    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <Version>1.0.17</Version>
+    <Authors>Matt Campbell</Authors>
+    <Description>This project is a convex hull algorithm and library for 2D, 3D, and higher dimensions. The code can also be used to compute Delaunay triangulations and Voronoi meshes of the input data.
+</Description>
+    <Copyright>2017</Copyright>
+    <PackageLicenseUrl>https://github.com/DesignEngrLab/MIConvexHull/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl>https://designengrlab.github.io/MIConvexHull/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/DesignEngrLab/MIConvexHull.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyVersion>1.0.17.0409</AssemblyVersion>
+    <FileVersion>1.0.17.0409</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\MIConvexHull\Constants.cs" Link="Constants.cs" />
+    <Compile Include="..\MIConvexHull\ConvexHull.cs" Link="ConvexHull.cs" />
+    <Compile Include="..\MIConvexHull\ConvexHull\Collections.cs" Link="ConvexHull\Collections.cs" />
+    <Compile Include="..\MIConvexHull\ConvexHull\ConvexFace.cs" Link="ConvexHull\ConvexFace.cs" />
+    <Compile Include="..\MIConvexHull\ConvexHull\ConvexHullAlgorithm.Initialize.cs" Link="ConvexHull\ConvexHullAlgorithm.Initialize.cs" />
+    <Compile Include="..\MIConvexHull\ConvexHull\ConvexHullAlgorithm.MainLoop.cs" Link="ConvexHull\ConvexHullAlgorithm.MainLoop.cs" />
+    <Compile Include="..\MIConvexHull\ConvexHull\DataModel.cs" Link="ConvexHull\DataModel.cs" />
+    <Compile Include="..\MIConvexHull\ConvexHull\MathHelper.cs" Link="ConvexHull\MathHelper.cs" />
+    <Compile Include="..\MIConvexHull\ConvexHull\ObjectManager.cs" Link="ConvexHull\ObjectManager.cs" />
+    <Compile Include="..\MIConvexHull\IVertex.cs" Link="IVertex.cs" />
+    <Compile Include="..\MIConvexHull\Triangulation.cs" Link="Triangulation.cs" />
+    <Compile Include="..\MIConvexHull\Triangulation\DelaunayTrianglationInternal.cs" Link="Triangulation\DelaunayTrianglationInternal.cs" />
+    <Compile Include="..\MIConvexHull\Triangulation\DelaunayTriangulation.cs" Link="Triangulation\DelaunayTriangulation.cs" />
+    <Compile Include="..\MIConvexHull\Triangulation\TriangulationCell.cs" Link="Triangulation\TriangulationCell.cs" />
+    <Compile Include="..\MIConvexHull\Triangulation\VoronoiEdge.cs" Link="Triangulation\VoronoiEdge.cs" />
+    <Compile Include="..\MIConvexHull\Triangulation\VoronoiMesh.cs" Link="Triangulation\VoronoiMesh.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ConvexHull\" />
+    <Folder Include="Properties\" />
+    <Folder Include="Triangulation\" />
+  </ItemGroup>
+
+</Project>
