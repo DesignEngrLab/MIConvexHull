@@ -125,7 +125,7 @@ namespace MIConvexHull
             boundingBoxPoints = new List<int>[NumOfDimensions];
             minima = new double[NumOfDimensions];
             maxima = new double[NumOfDimensions];
-            MathHelper = new MathHelper(NumOfDimensions, Positions);
+            mathHelper = new MathHelper(NumOfDimensions, Positions);
         }
         /// <summary>
         /// Check the dimensionality of the input data.
@@ -346,7 +346,7 @@ namespace MIConvexHull
                 var newFace = FacePool[ObjectManager.GetFace()];
                 newFace.Vertices = vertices;
                 Array.Sort(vertices);
-                MathHelper.CalculateFacePlane(newFace, Center);
+                mathHelper.CalculateFacePlane(newFace, Center);
                 faces[i] = newFace.Index;
             }
             // update the adjacency (check all pairs of faces)
@@ -392,7 +392,7 @@ namespace MIConvexHull
             CurrentVertex = vertex1; UpdateCenter();
             CurrentVertex = vertex2; UpdateCenter();
             var edgeVectors = new double[NumOfDimensions][];
-            edgeVectors[0] = MathHelper.VectorBetweenVertices(vertex2, vertex1);
+            edgeVectors[0] = mathHelper.VectorBetweenVertices(vertex2, vertex1);
             // now the remaining vertices are just combined in one big list
             var extremes = boundingBoxPoints.SelectMany(x => x).ToList();
             // otherwise find the remaining points by maximizing the initial simplex volume
@@ -409,8 +409,8 @@ namespace MIConvexHull
                     if (initialPoints.Contains(vIndex)) extremes.RemoveAt(i);
                     else
                     {
-                        edgeVectors[index] = MathHelper.VectorBetweenVertices(vIndex, vertex1);
-                        var volume = MathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
+                        edgeVectors[index] = mathHelper.VectorBetweenVertices(vIndex, vertex1);
+                        var volume = mathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
                         if (maxVolume < volume)
                         {
                             maxVolume = volume;
@@ -444,8 +444,8 @@ namespace MIConvexHull
                         if (initialPoints.Contains(vIndex)) allVertices.RemoveAt(i);
                         else
                         {
-                            edgeVectors[index] = MathHelper.VectorBetweenVertices(vIndex, vertex1);
-                            var volume = MathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
+                            edgeVectors[index] = mathHelper.VectorBetweenVertices(vIndex, vertex1);
+                            var volume = mathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
                             if (maxVolume < volume)
                             {
                                 maxVolume = volume;
@@ -461,10 +461,43 @@ namespace MIConvexHull
                     CurrentVertex = bestVertex; UpdateCenter();
                 }
             }
-            if (initialPoints.Count <= NumOfDimensions)
+            if (initialPoints.Count <= NumOfDimensions && IsLifted)
+            {
+                var allVertices = Enumerable.Range(0, NumberOfVertices).ToList();
+                while (index < NumOfDimensions && allVertices.Any())
+                {
+                    var bestVertex = -1;
+                    var bestEdgeVector = new double[] { };
+                    var maxVolume = 0.0;
+                    for (var i = allVertices.Count - 1; i >= 0; i--)
+                    {
+                        // count backwards in order to remove potential duplicates
+                        var vIndex = allVertices[i];
+                        if (initialPoints.Contains(vIndex)) allVertices.RemoveAt(i);
+                        else
+                        {
+                            mathHelper.RandomOffsetToLift(vIndex);
+                            edgeVectors[index] = mathHelper.VectorBetweenVertices(vIndex, vertex1);
+                            var volume = mathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
+                            if (maxVolume < volume)
+                            {
+                                maxVolume = volume;
+                                bestVertex = vIndex;
+                                bestEdgeVector = edgeVectors[index];
+                            }
+                        }
+                    }
+                    allVertices.Remove(bestVertex);
+                    if (bestVertex == -1) break;
+                    initialPoints.Add(bestVertex);
+                    edgeVectors[index++] = bestEdgeVector;
+                    CurrentVertex = bestVertex; UpdateCenter();
+                }
+            }
+            if (initialPoints.Count <= NumOfDimensions && IsLifted)
                 throw new ArgumentException("The input data is degenerate. It appears to exist in " + NumOfDimensions +
-           " dimensions, but it is a " + (NumOfDimensions - 1) + " dimensional set (i.e. the point of collinear,"
-           + " coplanar, or co-hyperplanar.)");
+                    " dimensions, but it is a " + (NumOfDimensions - 1) + " dimensional set (i.e. the point of collinear,"
+                    + " coplanar, or co-hyperplanar.)");
             return initialPoints;
         }
 
@@ -675,7 +708,7 @@ namespace MIConvexHull
         /// <summary>
         /// Helper class for handling math related stuff.
         /// </summary>
-        private readonly MathHelper MathHelper;
+        private readonly MathHelper mathHelper;
         private readonly List<int>[] boundingBoxPoints;
         private int indexOfDimensionWithLeastExtremes;
         private readonly double[] minima;

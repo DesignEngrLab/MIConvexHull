@@ -23,11 +23,24 @@ namespace TestEXE_for_MIConvexHull2D
     using System;
     using System.Linq;
     using MIConvexHull;
-
+    using System.Collections.Generic;
 
     static class Program
     {
         static void Main()
+        {
+            var vertices2 = new List<Vertex>
+    {
+        new Vertex(1, 1),
+        new Vertex(0, 1),
+        new Vertex(0, 0),
+        new Vertex(1, 0)
+    };
+            DelaunayTriangulation<Vertex, MIConvexHull.DefaultTriangulationCell<Vertex>>.Create(vertices2);
+
+            Console.ReadLine();
+        }
+        static void MainORIG()
         {
             const int NumberOfVertices = 100000;
             const double size = 1000;

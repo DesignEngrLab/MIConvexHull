@@ -175,6 +175,12 @@ namespace MIConvexHull
             }
         }
 
+        internal void RandomOffsetToLift(int index)
+        {
+            var random = new Random();
+            var liftIndex = (index * Dimension) + Dimension - 1;
+            PositionData[liftIndex] += PositionData[liftIndex] * random.NextDouble();
+        }
         #region Find the normal vector of the face
         /// <summary>
         /// Finds normal vector of a hyper-plane given by vertices.

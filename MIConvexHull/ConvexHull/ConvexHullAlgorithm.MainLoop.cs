@@ -81,7 +81,7 @@ namespace MIConvexHull
                     var adjFace = top.AdjacentFaces[i];
 
                     if (!AffectedFaceFlags[adjFace] &&
-                        MathHelper.GetVertexDistance(CurrentVertex, FacePool[adjFace]) >= PlaneDistanceTolerance)
+                        mathHelper.GetVertexDistance(CurrentVertex, FacePool[adjFace]) >= PlaneDistanceTolerance)
                     {
                         AffectedFaceBuffer.Add(adjFace);
                         AffectedFaceFlags[adjFace] = true;
@@ -225,7 +225,7 @@ namespace MIConvexHull
 
                     vertices[orderedPivotIndex] = CurrentVertex;
 
-                    if (!MathHelper.CalculateFacePlane(newFace, Center))
+                    if (!mathHelper.CalculateFacePlane(newFace, Center))
                     {
                         return false;
                     }
@@ -308,7 +308,7 @@ namespace MIConvexHull
         /// <param name="v">The v.</param>
         private void IsBeyond(ConvexFaceInternal face, IndexBuffer beyondVertices, int v)
         {
-            var distance = MathHelper.GetVertexDistance(v, face);
+            var distance = mathHelper.GetVertexDistance(v, face);
             if (distance >= PlaneDistanceTolerance)
             {
                 if (distance > MaxDistance)
