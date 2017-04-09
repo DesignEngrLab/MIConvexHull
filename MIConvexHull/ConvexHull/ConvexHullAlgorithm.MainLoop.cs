@@ -579,6 +579,57 @@ namespace MIConvexHull
             return cells;
         }
 
+        /// <summary>
+        /// For 2D only: Returns the result in counter-clockwise order starting with the element with the lowest X value.
+        /// If there are multiple vertices with the same minimum X, then the one with the lowest Y is chosen.
+        /// </summary>
+        /// <typeparam name="TVertex">The type of the vertex.</typeparam>
+        /// <typeparam name="TFace">The type of the face.</typeparam>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
+        private ConvexHull<TVertex, TFace> Return2DResultInOrder<TVertex, TFace>(IList<TVertex> data)
+            where TVertex : IVertex
+            where TFace : ConvexFace<TVertex, TFace>, new()
+        {
+            TFace[] faces = GetConvexFaces<TVertex, TFace>();
+            var numPoints = faces.Length;
+            var orderDictionary = new Dictionary<TVertex, TFace>();
+            foreach (var face in faces)
+                orderDictionary.Add(face.Vertices[1], face);
+            var firstPoint = faces[0].Vertices[1];
+            var nextPoint = faces[0].Vertices[0];
+            var orderedPointList = new List<TVertex>();
+            orderedPointList.Add(firstPoint);
+            var orderedFaceList = new List<TFace>();
+            orderedFaceList.Add(faces[1]);
+            var lowestXMinIndex = 0;
+            var k = 0;
+            while (!nextPoint.Equals(firstPoint))
+            {
+                orderedPointList.Add(nextPoint);
+                var nextFace = orderDictionary[nextPoint];
+                orderedFaceList.Add(nextFace);
+                if (nextPoint.Position[0] < orderedPointList[lowestXMinIndex].Position[0]
+                    || (nextPoint.Position[0] == orderedPointList[lowestXMinIndex].Position[0]
+                        && nextPoint.Position[1] <= orderedPointList[lowestXMinIndex].Position[1]))
+                    lowestXMinIndex = k;
+                k++;
+                nextPoint = nextFace.Vertices[0];
+            }
+            TVertex[] points = new TVertex[numPoints];
+            for (int i = 0; i < numPoints; i++)
+            {
+                var j = (i + lowestXMinIndex) % numPoints;
+                points[i] = orderedPointList[j];
+                faces[i] = orderedFaceList[j];
+            }
+            return new ConvexHull<TVertex, TFace>
+            {
+                Points = points,
+                Faces = faces
+            };
+        }
+
         #endregion
     }
 }
