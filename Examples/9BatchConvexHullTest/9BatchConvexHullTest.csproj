@@ -80,9 +80,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\MIConvexHull\MIConvexHull.csproj">
-      <Project>{2337776d-7d0c-40aa-a439-c26c3ce24fab}</Project>
-      <Name>MIConvexHull</Name>
+    <ProjectReference Include="..\..\MIConvexHull.NET Standard\MIConvexHull.NET Standard.csproj">
+      <Project>{3250db91-b2e5-407a-b990-66b43f47a102}</Project>
+      <Name>MIConvexHull.NET Standard</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

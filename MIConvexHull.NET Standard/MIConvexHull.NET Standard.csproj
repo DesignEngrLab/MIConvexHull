@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
-    <AssemblyName>MIConvexHull.NET Core</AssemblyName>
-    <PackageId>MIConvexHull.NET Core</PackageId>
-    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <AssemblyName>MIConvexHull.NET Standard</AssemblyName>
+    <PackageId>MIConvexHull.NET Standard</PackageId>
+    <!--<NetStandardImplicitPackageVersion>1.0</NetStandardImplicitPackageVersion>
     <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>-->
     <Version>1.0.17</Version>
     <Authors>Matt Campbell</Authors>
     <Description>This project is a convex hull algorithm and library for 2D, 3D, and higher dimensions. The code can also be used to compute Delaunay triangulations and Voronoi meshes of the input data.
@@ -18,8 +18,8 @@
     <PackageProjectUrl>https://designengrlab.github.io/MIConvexHull/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/DesignEngrLab/MIConvexHull.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>1.0.17.0409</AssemblyVersion>
-    <FileVersion>1.0.17.0409</FileVersion>
+    <AssemblyVersion>1.0.17.0411</AssemblyVersion>
+    <FileVersion>1.0.17.0411</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
