@@ -56,8 +56,8 @@ namespace MIConvexHull
         /// Creates the Delaunay triangulation of the input data.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="config">If null, default ConvexHullComputationConfig is used.</param>
         /// <returns>DelaunayTriangulation&lt;TVertex, TCell&gt;.</returns>
+        /// <exception cref="System.ArgumentNullException">data</exception>
         /// <exception cref="ArgumentNullException">data</exception>
         public static DelaunayTriangulation<TVertex, TCell> Create(IList<TVertex> data)
         {

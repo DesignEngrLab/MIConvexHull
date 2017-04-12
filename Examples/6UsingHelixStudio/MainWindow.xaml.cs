@@ -31,6 +31,9 @@ namespace ExampleWithGraphics
         private List<Vertex> CVXvertices;
         private List<DefaultTriangulationCell<Vertex>> Del_tetras;
         List<DefaultTriangulationCell<Vertex>> Voro_nodes;
+        /// <summary>
+        /// The voro edges
+        /// </summary>
         List<VoronoiEdge<Vertex, DefaultTriangulationCell<Vertex>>> Voro_edges;
         public Model3DGroup CurrentModel { get; set; }
         private MeshGeometry3D mesh;

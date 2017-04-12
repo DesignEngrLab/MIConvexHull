@@ -62,7 +62,6 @@ namespace MIConvexHull
     /// A default convex face representation.
     /// </summary>
     /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
-    /// <seealso cref="MIConvexHull.ConvexFace{TVertex, MIConvexHull.DefaultConvexFace{TVertex}}" />
     public class DefaultConvexFace<TVertex> : ConvexFace<TVertex, DefaultConvexFace<TVertex>>
         where TVertex : IVertex
     {

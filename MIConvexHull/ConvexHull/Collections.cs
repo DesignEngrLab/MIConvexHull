@@ -119,10 +119,11 @@ namespace MIConvexHull
         }
     }
 
+
     /// <summary>
+    /// Class IndexBuffer.
     /// A fancy name for a list of integers.
     /// </summary>
-    /// <seealso cref="MIConvexHull.SimpleList{System.Int32}" />
     internal class IndexBuffer : SimpleList<int>
     {
     }

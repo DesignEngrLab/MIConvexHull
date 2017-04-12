@@ -44,7 +44,6 @@ namespace MIConvexHull
     /// Default triangulation cell.
     /// </summary>
     /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
-    /// <seealso cref="MIConvexHull.TriangulationCell{TVertex, MIConvexHull.DefaultTriangulationCell{TVertex}}" />
     public class DefaultTriangulationCell<TVertex> : TriangulationCell<TVertex, DefaultTriangulationCell<TVertex>>
         where TVertex : IVertex
     {

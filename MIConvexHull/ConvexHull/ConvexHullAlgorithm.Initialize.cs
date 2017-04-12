@@ -375,8 +375,10 @@ namespace MIConvexHull
         /// <summary>
         /// Finds (dimension + 1) initial points.
         /// </summary>
-        /// <param name="extremes"></param>
-        /// <returns></returns>
+        /// <returns>List&lt;System.Int32&gt;.</returns>
+        /// <exception cref="System.ArgumentException">The input data is degenerate. It appears to exist in " + NumOfDimensions +
+        ///                     " dimensions, but it is a " + (NumOfDimensions - 1) + " dimensional set (i.e. the point of collinear,"
+        ///                     + " coplanar, or co-hyperplanar.)</exception>
         private List<int> FindInitialPoints()
         {
             var bigNumber = maxima.Sum() * NumOfDimensions * NumberOfVertices;

@@ -55,7 +55,6 @@ namespace MIConvexHull
         /// </summary>
         /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
         /// <param name="data">The data.</param>
-        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns>ITriangulation&lt;TVertex, DefaultTriangulationCell&lt;TVertex&gt;&gt;.</returns>
         public static ITriangulation<TVertex, DefaultTriangulationCell<TVertex>> CreateDelaunay<TVertex>(
             IList<TVertex> data)
@@ -68,7 +67,6 @@ namespace MIConvexHull
         /// Creates the Delaunay triangulation of the input data.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns>ITriangulation&lt;DefaultVertex, DefaultTriangulationCell&lt;DefaultVertex&gt;&gt;.</returns>
         public static ITriangulation<DefaultVertex, DefaultTriangulationCell<DefaultVertex>> CreateDelaunay(
             IList<double[]> data)
@@ -78,13 +76,12 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        ///     Creates the Delaunay triangulation of the input data.
+        /// Creates the Delaunay triangulation of the input data.
         /// </summary>
-        /// <typeparam name="TVertex"></typeparam>
-        /// <typeparam name="TFace"></typeparam>
-        /// <param name="data"></param>
-        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
-        /// <returns></returns>
+        /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+        /// <typeparam name="TFace">The type of the t face.</typeparam>
+        /// <param name="data">The data.</param>
+        /// <returns>ITriangulation&lt;TVertex, TFace&gt;.</returns>
         public static ITriangulation<TVertex, TFace> CreateDelaunay<TVertex, TFace>(IList<TVertex> data)
             where TVertex : IVertex
             where TFace : TriangulationCell<TVertex, TFace>, new()
@@ -94,14 +91,13 @@ namespace MIConvexHull
 
 
         /// <summary>
-        ///     Create the voronoi mesh.
+        /// Create the voronoi mesh.
         /// </summary>
-        /// <typeparam name="TVertex"></typeparam>
-        /// <typeparam name="TCell"></typeparam>
-        /// <typeparam name="TEdge"></typeparam>
-        /// <param name="data"></param>
-        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
-        /// <returns></returns>
+        /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+        /// <typeparam name="TCell">The type of the t cell.</typeparam>
+        /// <typeparam name="TEdge">The type of the t edge.</typeparam>
+        /// <param name="data">The data.</param>
+        /// <returns>VoronoiMesh&lt;TVertex, TCell, TEdge&gt;.</returns>
         public static VoronoiMesh<TVertex, TCell, TEdge> CreateVoronoi<TVertex, TCell, TEdge>(IList<TVertex> data)
             where TCell : TriangulationCell<TVertex, TCell>, new()
             where TVertex : IVertex
@@ -111,12 +107,11 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        ///     Create the voronoi mesh.
+        /// Create the voronoi mesh.
         /// </summary>
-        /// <typeparam name="TVertex"></typeparam>
-        /// <param name="data"></param>
-        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
-        /// <returns></returns>
+        /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+        /// <param name="data">The data.</param>
+        /// <returns>VoronoiMesh&lt;TVertex, DefaultTriangulationCell&lt;TVertex&gt;, VoronoiEdge&lt;TVertex, DefaultTriangulationCell&lt;TVertex&gt;&gt;&gt;.</returns>
         public static
             VoronoiMesh
                 <TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>>
@@ -130,11 +125,10 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        ///     Create the voronoi mesh.
+        /// Create the voronoi mesh.
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
-        /// <returns></returns>
+        /// <param name="data">The data.</param>
+        /// <returns>VoronoiMesh&lt;DefaultVertex, DefaultTriangulationCell&lt;DefaultVertex&gt;, VoronoiEdge&lt;DefaultVertex, DefaultTriangulationCell&lt;DefaultVertex&gt;&gt;&gt;.</returns>
         public static
             VoronoiMesh
                 <DefaultVertex, DefaultTriangulationCell<DefaultVertex>,
@@ -149,13 +143,12 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        ///     Create the voronoi mesh.
+        /// Create the voronoi mesh.
         /// </summary>
-        /// <typeparam name="TVertex"></typeparam>
-        /// <typeparam name="TCell"></typeparam>
-        /// <param name="data"></param>
-        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
-        /// <returns></returns>
+        /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+        /// <typeparam name="TCell">The type of the t cell.</typeparam>
+        /// <param name="data">The data.</param>
+        /// <returns>VoronoiMesh&lt;TVertex, TCell, VoronoiEdge&lt;TVertex, TCell&gt;&gt;.</returns>
         public static VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>> CreateVoronoi<TVertex, TCell>(
             IList<TVertex> data)
             where TVertex : IVertex

@@ -149,10 +149,9 @@ namespace MIConvexHull
         /// <summary>
         /// Returns the vector the between vertices.
         /// </summary>
-        /// <param name="fromIndex">From index.</param>
         /// <param name="toIndex">To index.</param>
-        /// <param name="target">The target.</param>
-        /// <returns></returns>
+        /// <param name="fromIndex">From index.</param>
+        /// <returns>System.Double[].</returns>
         internal double[] VectorBetweenVertices(int toIndex, int fromIndex)
         {
             var target = new double[Dimension];
@@ -333,12 +332,13 @@ namespace MIConvexHull
         #region Simplex Volume
         /// <summary>
         /// Gets the simplex volume. Prior to having enough edge vectors, the method pads the remaining with all
-        /// "other numbers". So, yes, this method is not really finding the volume. But a relative volume-like measure. It 
+        /// "other numbers". So, yes, this method is not really finding the volume. But a relative volume-like measure. It
         /// uses the magnitude of the determinant as the volume stand-in following the Cayley-Menger theorem.
         /// </summary>
         /// <param name="edgeVectors">The edge vectors.</param>
         /// <param name="lastIndex">The last index.</param>
-        /// <returns></returns>
+        /// <param name="bigNumber">The big number.</param>
+        /// <returns>System.Double.</returns>
         internal double GetSimplexVolume(double[][] edgeVectors, int lastIndex, double bigNumber)
         {
             var A = new double[Dimension * Dimension];
@@ -361,7 +361,7 @@ namespace MIConvexHull
         /// <summary>
         /// Determinants the destructive.
         /// </summary>
-        /// <param name="buff">The buff.</param>
+        /// <param name="A">a.</param>
         /// <returns>System.Double.</returns>
         private double DeterminantDestructive(double[] A)
         {

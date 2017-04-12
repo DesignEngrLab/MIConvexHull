@@ -42,7 +42,6 @@ namespace MIConvexHull
         /// <typeparam name="TCell">The type of the t cell.</typeparam>
         /// <typeparam name="TEdge">The type of the t edge.</typeparam>
         /// <param name="data">The data.</param>
-        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns>VoronoiMesh&lt;TVertex, TCell, TEdge&gt;.</returns>
         public static VoronoiMesh<TVertex, TCell, TEdge> Create<TVertex, TCell, TEdge>(IList<TVertex> data)
             where TCell : TriangulationCell<TVertex, TCell>, new()
@@ -57,7 +56,6 @@ namespace MIConvexHull
         /// </summary>
         /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
         /// <param name="data">The data.</param>
-        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns>VoronoiMesh&lt;TVertex, DefaultTriangulationCell&lt;TVertex&gt;, VoronoiEdge&lt;TVertex, DefaultTriangulationCell&lt;TVertex&gt;&gt;&gt;.</returns>
         public static
             VoronoiMesh
@@ -75,7 +73,6 @@ namespace MIConvexHull
         /// Create the voronoi mesh.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns>VoronoiMesh&lt;DefaultVertex, DefaultTriangulationCell&lt;DefaultVertex&gt;, VoronoiEdge&lt;DefaultVertex, DefaultTriangulationCell&lt;DefaultVertex&gt;&gt;&gt;.</returns>
         public static
             VoronoiMesh
@@ -83,7 +80,7 @@ namespace MIConvexHull
                     VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>
             Create(IList<double[]> data)
         {
-            var points = data.Select(p => new DefaultVertex {Position = p.ToArray()}).ToList();
+            var points = data.Select(p => new DefaultVertex { Position = p.ToArray() }).ToList();
             return
                 VoronoiMesh
                     <DefaultVertex, DefaultTriangulationCell<DefaultVertex>,
@@ -96,7 +93,6 @@ namespace MIConvexHull
         /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
         /// <typeparam name="TCell">The type of the t cell.</typeparam>
         /// <param name="data">The data.</param>
-        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns>VoronoiMesh&lt;TVertex, TCell, VoronoiEdge&lt;TVertex, TCell&gt;&gt;.</returns>
         public static VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>> Create<TVertex, TCell>(
             IList<TVertex> data)
@@ -142,8 +138,8 @@ namespace MIConvexHull
         /// Create a Voronoi diagram of the input data.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="config">If null, default TriangulationComputationConfig is used.</param>
         /// <returns>VoronoiMesh&lt;TVertex, TCell, TEdge&gt;.</returns>
+        /// <exception cref="System.ArgumentNullException">data</exception>
         /// <exception cref="ArgumentNullException">data</exception>
         public static VoronoiMesh<TVertex, TCell, TEdge> Create(IList<TVertex> data)
         {
@@ -176,11 +172,11 @@ namespace MIConvexHull
         private class EdgeComparer : IEqualityComparer<TEdge>
         {
             /// <summary>
-            /// Determines whether the specified objects are equal.
+            /// Equalses the specified x.
             /// </summary>
-            /// <param name="x">The first object of type <paramref name="T" /> to compare.</param>
-            /// <param name="y">The second object of type <paramref name="T" /> to compare.</param>
-            /// <returns>true if the specified objects are equal; otherwise, false.</returns>
+            /// <param name="x">The x.</param>
+            /// <param name="y">The y.</param>
+            /// <returns>System.Boolean.</returns>
             public bool Equals(TEdge x, TEdge y)
             {
                 return (x.Source == y.Source && x.Target == y.Target) || (x.Source == y.Target && x.Target == y.Source);
