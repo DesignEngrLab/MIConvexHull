@@ -64,14 +64,14 @@ namespace MIConvexHull
             var ch = new ConvexHullAlgorithm(data.Cast<IVertex>().ToArray(), false, PlaneDistanceTolerance);
             ch.GetConvexHull();
 
-            if (ch.NumOfDimensions == 2) return ch.Return2DResultInOrder<TVertex, TFace>(data); 
+            if (ch.NumOfDimensions == 2) return ch.Return2DResultInOrder<TVertex, TFace>(data);
             return new ConvexHull<TVertex, TFace>
             {
                 Points = ch.GetHullVertices(data),
                 Faces = ch.GetConvexFaces<TVertex, TFace>()
             };
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ConvexHullAlgorithm" /> class.
         /// </summary>
@@ -316,7 +316,8 @@ namespace MIConvexHull
                 //    half of the maxima. 'Half' is much preferred to 'thousands of times'
                 //    Think of the first term as the range (max - min), then the second term avoids cases
                 //    where there are both positive and negative numbers.
-                shiftAmount[i] = (maxima[i] - minima[i]) - minima[i];
+                if (maxima[i] == minima[i]) shiftAmount[i] = 0.0;
+                else shiftAmount[i] = (maxima[i] - minima[i]) - minima[i];
             for (int i = 0; i < positionsLength; i++)
                 Positions[i] += shiftAmount[i % NumOfDimensions];
         }
