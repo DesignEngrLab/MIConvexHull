@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A901BBAD-9E91-44FC-A65C-6B74BB0A94DA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>MIConvexHull.NET4._5</RootNamespace>
+    <AssemblyName>MIConvexHull.NET4.5</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- A reference to the entire .NET Framework is automatically included -->
+    <Compile Include="..\MIConvexHull\Constants.cs">
+      <Link>Constants.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\ConvexHull.cs">
+      <Link>ConvexHull.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\ConvexHull\Collections.cs">
+      <Link>ConvexHull\Collections.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\ConvexHull\ConvexFace.cs">
+      <Link>ConvexHull\ConvexFace.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\ConvexHull\ConvexHullAlgorithm.Initialize.cs">
+      <Link>ConvexHull\ConvexHullAlgorithm.Initialize.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\ConvexHull\ConvexHullAlgorithm.MainLoop.cs">
+      <Link>ConvexHull\ConvexHullAlgorithm.MainLoop.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\ConvexHull\DataModel.cs">
+      <Link>ConvexHull\DataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\ConvexHull\MathHelper.cs">
+      <Link>ConvexHull\MathHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\ConvexHull\ObjectManager.cs">
+      <Link>ConvexHull\ObjectManager.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\IVertex.cs">
+      <Link>IVertex.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\Triangulation.cs">
+      <Link>Triangulation.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\Triangulation\DelaunayTrianglationInternal.cs">
+      <Link>Triangulation\DelaunayTrianglationInternal.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\Triangulation\DelaunayTriangulation.cs">
+      <Link>Triangulation\DelaunayTriangulation.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\Triangulation\TriangulationCell.cs">
+      <Link>Triangulation\TriangulationCell.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\Triangulation\VoronoiEdge.cs">
+      <Link>Triangulation\VoronoiEdge.cs</Link>
+    </Compile>
+    <Compile Include="..\MIConvexHull\Triangulation\VoronoiMesh.cs">
+      <Link>Triangulation\VoronoiMesh.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+</Project>
