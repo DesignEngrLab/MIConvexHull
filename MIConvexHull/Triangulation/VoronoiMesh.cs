@@ -43,12 +43,13 @@ namespace MIConvexHull
         /// <typeparam name="TEdge">The type of the t edge.</typeparam>
         /// <param name="data">The data.</param>
         /// <returns>VoronoiMesh&lt;TVertex, TCell, TEdge&gt;.</returns>
-        public static VoronoiMesh<TVertex, TCell, TEdge> Create<TVertex, TCell, TEdge>(IList<TVertex> data)
+        public static VoronoiMesh<TVertex, TCell, TEdge> Create<TVertex, TCell, TEdge>(IList<TVertex> data,
+            double PlaneDistanceTolerance = Constants.DefaultPlaneDistanceTolerance)
             where TCell : TriangulationCell<TVertex, TCell>, new()
             where TVertex : IVertex
             where TEdge : VoronoiEdge<TVertex, TCell>, new()
         {
-            return VoronoiMesh<TVertex, TCell, TEdge>.Create(data);
+            return VoronoiMesh<TVertex, TCell, TEdge>.Create(data, PlaneDistanceTolerance);
         }
 
         /// <summary>
@@ -60,13 +61,14 @@ namespace MIConvexHull
         public static
             VoronoiMesh
                 <TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>>
-            Create<TVertex>(IList<TVertex> data)
+            Create<TVertex>(IList<TVertex> data,
+                double PlaneDistanceTolerance = Constants.DefaultPlaneDistanceTolerance)
             where TVertex : IVertex
         {
             return
                 VoronoiMesh
                     <TVertex, DefaultTriangulationCell<TVertex>, VoronoiEdge<TVertex, DefaultTriangulationCell<TVertex>>
-                        >.Create(data);
+                        >.Create(data, PlaneDistanceTolerance);
         }
 
         /// <summary>
@@ -78,13 +80,14 @@ namespace MIConvexHull
             VoronoiMesh
                 <DefaultVertex, DefaultTriangulationCell<DefaultVertex>,
                     VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>
-            Create(IList<double[]> data)
+            Create(IList<double[]> data,
+                double PlaneDistanceTolerance = Constants.DefaultPlaneDistanceTolerance)
         {
             var points = data.Select(p => new DefaultVertex { Position = p.ToArray() }).ToList();
             return
                 VoronoiMesh
                     <DefaultVertex, DefaultTriangulationCell<DefaultVertex>,
-                        VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>.Create(points);
+                        VoronoiEdge<DefaultVertex, DefaultTriangulationCell<DefaultVertex>>>.Create(points, PlaneDistanceTolerance);
         }
 
         /// <summary>
@@ -95,11 +98,12 @@ namespace MIConvexHull
         /// <param name="data">The data.</param>
         /// <returns>VoronoiMesh&lt;TVertex, TCell, VoronoiEdge&lt;TVertex, TCell&gt;&gt;.</returns>
         public static VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>> Create<TVertex, TCell>(
-            IList<TVertex> data)
+            IList<TVertex> data,
+            double PlaneDistanceTolerance = Constants.DefaultPlaneDistanceTolerance)
             where TVertex : IVertex
             where TCell : TriangulationCell<TVertex, TCell>, new()
         {
-            return VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>>.Create(data);
+            return VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>>.Create(data, PlaneDistanceTolerance);
         }
     }
 
@@ -138,14 +142,17 @@ namespace MIConvexHull
         /// Create a Voronoi diagram of the input data.
         /// </summary>
         /// <param name="data">The data.</param>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance (default is 1e-10). If too high, points 
+        /// will be missed. If too low, the algorithm may break. Only adjust if you notice problems.</param>
         /// <returns>VoronoiMesh&lt;TVertex, TCell, TEdge&gt;.</returns>
         /// <exception cref="System.ArgumentNullException">data</exception>
         /// <exception cref="ArgumentNullException">data</exception>
-        public static VoronoiMesh<TVertex, TCell, TEdge> Create(IList<TVertex> data)
+        public static VoronoiMesh<TVertex, TCell, TEdge> Create(IList<TVertex> data,
+            double PlaneDistanceTolerance = Constants.DefaultPlaneDistanceTolerance)
         {
             if (data == null) throw new ArgumentNullException("data");
 
-            var t = DelaunayTriangulation<TVertex, TCell>.Create(data);
+            var t = DelaunayTriangulation<TVertex, TCell>.Create(data, PlaneDistanceTolerance);
             var vertices = t.Cells.ToList();
             var edges = new HashSet<TEdge>(new EdgeComparer());
 
@@ -154,7 +161,7 @@ namespace MIConvexHull
                 for (var i = 0; i < f.Adjacency.Length; i++)
                 {
                     var af = f.Adjacency[i];
-                    if (af != null) edges.Add(new TEdge {Source = f, Target = af});
+                    if (af != null) edges.Add(new TEdge { Source = f, Target = af });
                 }
             }
 
@@ -172,7 +179,7 @@ namespace MIConvexHull
         private class EdgeComparer : IEqualityComparer<TEdge>
         {
             /// <summary>
-            /// Equalses the specified x.
+            /// Equals the specified x.
             /// </summary>
             /// <param name="x">The x.</param>
             /// <param name="y">The y.</param>

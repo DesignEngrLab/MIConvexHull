@@ -56,17 +56,20 @@ namespace MIConvexHull
         /// Creates the Delaunay triangulation of the input data.
         /// </summary>
         /// <param name="data">The data.</param>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance (default is 1e-10). If too high, points 
+        /// will be missed. If too low, the algorithm may break. Only adjust if you notice problems.</param>
         /// <returns>DelaunayTriangulation&lt;TVertex, TCell&gt;.</returns>
         /// <exception cref="System.ArgumentNullException">data</exception>
         /// <exception cref="ArgumentNullException">data</exception>
-        public static DelaunayTriangulation<TVertex, TCell> Create(IList<TVertex> data)
+        public static DelaunayTriangulation<TVertex, TCell> Create(IList<TVertex> data,
+            double PlaneDistanceTolerance)// = Constants.DefaultPlaneDistanceTolerance)
         {
             if (data == null) throw new ArgumentNullException("data");
-            if (data.Count == 0) return new DelaunayTriangulation<TVertex, TCell> {Cells = new TCell[0]};
+            if (data.Count == 0) return new DelaunayTriangulation<TVertex, TCell> { Cells = new TCell[0] };
 
-            var cells = ConvexHullAlgorithm.GetDelaunayTriangulation<TVertex, TCell>(data);
+            var cells = ConvexHullAlgorithm.GetDelaunayTriangulation<TVertex, TCell>(data, PlaneDistanceTolerance);
 
-            return new DelaunayTriangulation<TVertex, TCell> {Cells = cells};
+            return new DelaunayTriangulation<TVertex, TCell> { Cells = cells };
         }
     }
 }

@@ -62,6 +62,7 @@ namespace BatchConvexHullTest
                     Console.WriteLine("Failed on " + filename + ": " + e.Message);
                 }
             }
+            Console.WriteLine("Finished.");
             Console.ReadLine();
         }
 

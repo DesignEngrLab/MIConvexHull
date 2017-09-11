@@ -174,11 +174,11 @@ namespace MIConvexHull
             }
         }
 
-        internal void RandomOffsetToLift(int index)
+        internal void RandomOffsetToLift(int index, double maxHeight)
         {
             var random = new Random();
             var liftIndex = (index * Dimension) + Dimension - 1;
-            PositionData[liftIndex] += PositionData[liftIndex] * random.NextDouble();
+            PositionData[liftIndex] += 0.0001 * maxHeight * (random.NextDouble() - 0.5);
         }
         #region Find the normal vector of the face
         /// <summary>

@@ -41,7 +41,8 @@ namespace MIConvexHull
         /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
         /// <typeparam name="TFace">The type of the t face.</typeparam>
         /// <param name="data">The data.</param>
-        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance (default is 1e-10). If too high, points 
+        /// will be missed. If too low, the algorithm may break. Only adjust if you notice problems.</param>
         /// <returns>
         /// ConvexHull&lt;TVertex, TFace&gt;.
         /// </returns>
@@ -58,7 +59,8 @@ namespace MIConvexHull
         /// </summary>
         /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
         /// <param name="data">The data.</param>
-        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance (default is 1e-10). If too high, points 
+        /// will be missed. If too low, the algorithm may break. Only adjust if you notice problems.</param>
         /// <returns>
         /// ConvexHull&lt;TVertex, DefaultConvexFace&lt;TVertex&gt;&gt;.
         /// </returns>
@@ -73,7 +75,8 @@ namespace MIConvexHull
         /// Creates a convex hull of the input data.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance (default is 1e-10). If too high, points 
+        /// will be missed. If too low, the algorithm may break. Only adjust if you notice problems.</param>
         /// <returns>
         /// ConvexHull&lt;DefaultVertex, DefaultConvexFace&lt;DefaultVertex&gt;&gt;.
         /// </returns>

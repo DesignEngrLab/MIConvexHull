@@ -294,7 +294,7 @@ namespace MIConvexHull
                 var origNumDim = NumOfDimensions - 1;
                 var parabolaScale = 2 / (minima.Sum(x => Math.Abs(x)) + maxima.Sum(x => Math.Abs(x))
                     - Math.Abs(maxima[origNumDim]) - Math.Abs(minima[origNumDim]));
-                // the parabolascale is 1 / average of the sum of the other dimensions.
+                // the parabola scale is 1 / average of the sum of the other dimensions.
                 // multiplying this by the parabola will scale it back to be on near similar size to the
                 // other dimensions. Without this, the term is much larger than the others, which causes
                 // problems for roundoff error and finding the normal of faces.
@@ -310,7 +310,7 @@ namespace MIConvexHull
                 // why? 
                 // 1) to avoid dealing with a point at the origin {0,0,...,0} which causes problems 
                 //    for future normal finding
-                // 2) note that wierd shift that is used (max - min - min). This is to avoid scaling
+                // 2) note that weird shift that is used (max - min - min). This is to avoid scaling
                 //    issues. this shift means that the minima in a dimension will always be a positive
                 //    number (no points at zero), and the minima [in a given dimension] will always be
                 //    half of the maxima. 'Half' is much preferred to 'thousands of times'
@@ -404,7 +404,7 @@ namespace MIConvexHull
             {
                 var bestVertex = -1;
                 var bestEdgeVector = new double[] { };
-                var maxVolume = 0.0;
+                var maxVolume = Constants.DefaultPlaneDistanceTolerance;
                 for (var i = extremes.Count - 1; i >= 0; i--)
                 {
                     // count backwards in order to remove potential duplicates
@@ -432,7 +432,7 @@ namespace MIConvexHull
             // As an extreme, the bounding box can be made in n dimensions from only 2 unique points. When we can't find
             // enough unique points, we start again with ALL the vertices. The following is a near replica of the code 
             // above, but instead of extremes, we consider "allVertices".
-            if (initialPoints.Count <= NumOfDimensions)
+            if (initialPoints.Count <= NumOfDimensions && !IsLifted)
             {
                 var allVertices = Enumerable.Range(0, NumberOfVertices).ToList();
                 while (index < NumOfDimensions && allVertices.Any())
@@ -479,7 +479,7 @@ namespace MIConvexHull
                         if (initialPoints.Contains(vIndex)) allVertices.RemoveAt(i);
                         else
                         {
-                            mathHelper.RandomOffsetToLift(vIndex);
+                            mathHelper.RandomOffsetToLift(vIndex, maxima.Last()-minima.Last());
                             edgeVectors[index] = mathHelper.VectorBetweenVertices(vIndex, vertex1);
                             var volume = mathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
                             if (maxVolume < volume)
