@@ -7,33 +7,6 @@ namespace TestEXE_for_MIConvexHull_No_Interfaces
 {
     class Program
     {
-        class VectorComparer : IComparer<double[]>
-        {
-            public int Compare(double[] x, double[] y)
-            {
-                for (int i = 0; i < x.Length; i++)
-                {
-                    var comp = x[i].CompareTo(y[i]);
-                    if (comp != 0) return comp;
-                }
-                return 0;
-            }
-        }
-
-        static void TestHypercube(int dim)
-        {
-            var hypercube = new double[1 << dim][];
-            for (int i = 0; i < 1 << dim; i++)
-            {
-                hypercube[i] = Enumerable.Range(0, dim).Select(j => ((i >> j) & 1) == 1 ? 10.0 : 0.0).ToArray();
-            }
-            var hull = ConvexHull.Create(hypercube);
-            foreach (var n in hull.Faces.Select(f => f.Normal).OrderBy(v => v, new VectorComparer()))
-            {
-                Console.WriteLine(string.Join(" ", n.Select(x => x.ToString("0.0"))));
-            }
-        }
-
         static void Main()
         {            
             const int NumberOfVertices = 30000;
@@ -64,11 +37,7 @@ namespace TestEXE_for_MIConvexHull_No_Interfaces
             var interval = DateTime.Now - now;
             Console.WriteLine("Out of the {0} 2D vertices, there are {1} on the convex hull.", NumberOfVertices, hullPoints.Length);
             Console.WriteLine("time = " + interval);
-
-            Console.WriteLine();
-            Console.WriteLine("Push Return/Enter to test 5D hypercube hull and print its normals.");
             Console.ReadLine();
-            TestHypercube(5);
         }
     }
 }

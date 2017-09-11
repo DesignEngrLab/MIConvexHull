@@ -1,0 +1,12 @@
+﻿  
+            const int NumberOfVertices = 4;
+
+            var vertices = new double[NumberOfVertices][];
+            vertices[0] = new[] {0.0, 0.0};
+            vertices[1] = new[] {0.0, -2.0};
+            vertices[2] = new[] {-0.70710678118654746, -1.5};
+            vertices[3] = new[] {-0.70710678118654746, -0.5};
+
+            var div = Triangulation.CreateDelaunay(vertices);
+          
+            Console.WriteLine();
