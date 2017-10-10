@@ -32,6 +32,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>MIConvexHull.pfx</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <Compile Include="..\MIConvexHull\Constants.cs">
@@ -85,6 +91,9 @@
     <Compile Include="..\MIConvexHull\Triangulation\VoronoiMesh.cs">
       <Link>Triangulation\VoronoiMesh.cs</Link>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MIConvexHull.pfx" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
 </Project>

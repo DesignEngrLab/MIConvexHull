@@ -36,8 +36,15 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\MIConvexHull.xml</DocumentationFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>MIConvexHull.pfx</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <None Include="MIConvexHull.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
