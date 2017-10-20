@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.0</TargetFramework>
-    <AssemblyName>MIConvexHull.NET Standard</AssemblyName>
+    <AssemblyName>MIConvexHull</AssemblyName>
     <PackageId>MIConvexHull</PackageId>
     <!--<NetStandardImplicitPackageVersion>1.0</NetStandardImplicitPackageVersion>
     <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
@@ -18,13 +18,14 @@
     <PackageProjectUrl>https://designengrlab.github.io/MIConvexHull/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/DesignEngrLab/MIConvexHull.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>1.0.17.1009</AssemblyVersion>
-    <FileVersion>1.0.17.1009</FileVersion>
+    <AssemblyVersion>1.0.17.1019</AssemblyVersion>
+    <FileVersion>1.0.17.1019</FileVersion>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>MIConvexHull.pfx</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Product>MIConvexHull</Product>
     <DelaySign>false</DelaySign>
+    <RootNamespace>MIConvexHull</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
