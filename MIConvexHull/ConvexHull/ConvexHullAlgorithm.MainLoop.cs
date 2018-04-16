@@ -601,7 +601,7 @@ namespace MIConvexHull
             var orderedPointList = new List<TVertex>();
             orderedPointList.Add(firstPoint);
             var orderedFaceList = new List<TFace>();
-            orderedFaceList.Add(faces[1]);
+            orderedFaceList.Add(faces[0]);
             var lowestXMinIndex = 0;
             var k = 0;
             while (!nextPoint.Equals(firstPoint))
