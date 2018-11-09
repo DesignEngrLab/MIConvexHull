@@ -94,9 +94,9 @@ namespace MIConvexHull
 
             NumOfDimensions = DetermineDimension();
             if (IsLifted) NumOfDimensions++;
-            if (NumOfDimensions < 2) throw new InvalidOperationException("Dimension of the input must be 2 or greater.");
+            if (NumOfDimensions < 2) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DimensionSmallerTwo, "Dimension of the input must be 2 or greater.");
             if (NumberOfVertices <= NumOfDimensions)
-                throw new ArgumentException(
+                throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.NotEnoughVerticesForDimension,
                     "There are too few vertices (m) for the n-dimensional space. (m must be greater " +
                     "than the n, but m is " + NumberOfVertices + " and n is " + NumOfDimensions);
             this.PlaneDistanceTolerance = PlaneDistanceTolerance;
@@ -140,7 +140,7 @@ namespace MIConvexHull
                 dimensions.Add(Vertices[r.Next(NumberOfVertices)].Position.Length);
             var dimension = dimensions.Min();
             if (dimension != dimensions.Max())
-                throw new ArgumentException("Invalid input data (non-uniform dimension).");
+                throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.NonUniformDimension, "Invalid input data (non-uniform dimension).");
             return dimension;
         }
 
@@ -498,7 +498,7 @@ namespace MIConvexHull
                 }
             }
             if (initialPoints.Count <= NumOfDimensions && IsLifted)
-                throw new ArgumentException("The input data is degenerate. It appears to exist in " + NumOfDimensions +
+                throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DegenerateData, "The input data is degenerate. It appears to exist in " + NumOfDimensions +
                     " dimensions, but it is a " + (NumOfDimensions - 1) + " dimensional set (i.e. the point of collinear,"
                     + " coplanar, or co-hyperplanar.)");
             return initialPoints;

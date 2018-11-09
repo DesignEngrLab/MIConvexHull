@@ -48,6 +48,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="ConvexHullCreationResultOutcome.cs" />
+    <Compile Include="ConvexHullGenerationException.cs" />
     <Compile Include="ConvexHull\Collections.cs" />
     <Compile Include="ConvexHull\ConvexFace.cs" />
     <Compile Include="ConvexHull\DataModel.cs" />
