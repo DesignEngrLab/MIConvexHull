@@ -117,11 +117,11 @@ namespace MIConvexHull
             }
             catch (ConvexHullGenerationException e)
             {
-                return new ConvexHullCreationResult<TVertex, TFace>(null, e.Error);
+                return new ConvexHullCreationResult<TVertex, TFace>(null, e.Error, e.ErrorMessage);
             }
             catch (Exception e)
             {
-                return new ConvexHullCreationResult<TVertex, TFace>(null, ConvexHullCreationResultOutcome.UnknownError);
+                return new ConvexHullCreationResult<TVertex, TFace>(null, ConvexHullCreationResultOutcome.UnknownError, e.Message);
             }
 
         }
@@ -130,15 +130,17 @@ namespace MIConvexHull
     public class ConvexHullCreationResult<TVertex, TFace> where TVertex : IVertex
                                                           where TFace : ConvexFace<TVertex, TFace>, new()
     {
-        public ConvexHullCreationResult(ConvexHull<TVertex, TFace> result, ConvexHullCreationResultOutcome outcome)
+        public ConvexHullCreationResult(ConvexHull<TVertex, TFace> result, ConvexHullCreationResultOutcome outcome, string errorMessage="")
         {
             Result  = result;
             Outcome = outcome;
+            ErrorMessage = errorMessage;
         }
 
         //this could be null
         public ConvexHull<TVertex, TFace> Result { get; }
 
         public ConvexHullCreationResultOutcome Outcome { get; }
+        public string ErrorMessage { get; }
     }
 }
