@@ -6,6 +6,7 @@ namespace MIConvexHull
         DimensionSmallerTwo,
         NotEnoughVerticesForDimension,
         NonUniformDimension,
-        DegenerateData
+        DegenerateData,
+        UnknownError
     }
 }

@@ -32,7 +32,7 @@ namespace TestEXE_for_MIConvexHull_No_Interfaces
             
             var convexHull = ConvexHull.Create(vertices);
 
-            double[][] hullPoints = convexHull.Points.Select(p => p.Position).ToArray();
+            double[][] hullPoints = convexHull.Result.Points.Select(p => p.Position).ToArray();
 
             var interval = DateTime.Now - now;
             Console.WriteLine("Out of the {0} 2D vertices, there are {1} on the convex hull.", NumberOfVertices, hullPoints.Length);

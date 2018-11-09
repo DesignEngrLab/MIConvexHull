@@ -54,7 +54,7 @@ namespace BatchConvexHullTest
                     var now = DateTime.Now;
                     var convexHull = ConvexHull.Create(vertices);
                     var interval = DateTime.Now - now;
-                    Window3DPlot.ShowWithConvexHull(v3D, convexHull);
+                    Window3DPlot.ShowWithConvexHull(v3D, convexHull.Result);
                     Console.WriteLine("time = " + interval);
                 }
                 catch (Exception e)
