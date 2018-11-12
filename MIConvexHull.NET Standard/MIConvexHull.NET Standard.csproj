@@ -31,6 +31,8 @@
   <ItemGroup>
     <Compile Include="..\MIConvexHull\Constants.cs" Link="Constants.cs" />
     <Compile Include="..\MIConvexHull\ConvexHull.cs" Link="ConvexHull.cs" />
+    <Compile Include="..\MIConvexHull\ConvexHullCreationResultOutcome.cs" Link="ConvexHullCreationResultOutcome.cs" />
+    <Compile Include="..\MIConvexHull\ConvexHullGenerationException.cs" Link="ConvexHullGenerationException.cs" />
     <Compile Include="..\MIConvexHull\ConvexHull\Collections.cs" Link="ConvexHull\Collections.cs" />
     <Compile Include="..\MIConvexHull\ConvexHull\ConvexFace.cs" Link="ConvexHull\ConvexFace.cs" />
     <Compile Include="..\MIConvexHull\ConvexHull\ConvexHullAlgorithm.Initialize.cs" Link="ConvexHull\ConvexHullAlgorithm.Initialize.cs" />

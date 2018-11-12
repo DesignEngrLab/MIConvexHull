@@ -55,8 +55,8 @@ namespace ExampleWithGraphics
             {
                 var now = DateTime.Now;
                 var hull = ConvexHull.Create(vertices);
-                CVXvertices = hull.Points.ToList();
-                CVXfaces = hull.Faces.ToList();
+                CVXvertices = hull.Result.Points.ToList();
+                CVXfaces = hull.Result.Faces.ToList();
                 var interval = DateTime.Now - now;
                 UpdateTimer(interval);
                 btnDisplay.IsEnabled = btnDisplay.IsDefault = true;
