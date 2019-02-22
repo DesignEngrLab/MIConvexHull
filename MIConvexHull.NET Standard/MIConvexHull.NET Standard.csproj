@@ -9,7 +9,7 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>-->
-    <Version>1.0.17</Version>
+    <Version>1.1.18</Version>
     <Authors>David Sehnal, Matt Campbell</Authors>
     <Description>This project is a convex hull algorithm and library for 2D, 3D, and higher dimensions. The code can also be used to compute Delaunay triangulations and Voronoi meshes of the input data.
 </Description>
@@ -18,10 +18,10 @@
     <PackageProjectUrl>https://designengrlab.github.io/MIConvexHull/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/DesignEngrLab/MIConvexHull.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>1.0.17.1019</AssemblyVersion>
-    <FileVersion>1.0.17.1019</FileVersion>
+    <AssemblyVersion>1.1.18.1017</AssemblyVersion>
+    <FileVersion>1.1.18.1017</FileVersion>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>MIConvexHull.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>DesignEngineeringLab.pfx</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Product>MIConvexHull</Product>
     <DelaySign>false</DelaySign>

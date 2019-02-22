@@ -40,12 +40,8 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>MIConvexHull.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>DesignEngineeringLab.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
-  <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <None Include="MIConvexHull.pfx" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="ConvexHullCreationResultOutcome.cs" />
@@ -66,6 +62,9 @@
     <Compile Include="Triangulation\TriangulationCell.cs" />
     <Compile Include="Triangulation\VoronoiEdge.cs" />
     <Compile Include="Triangulation\VoronoiMesh.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DesignEngineeringLab.pfx" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
