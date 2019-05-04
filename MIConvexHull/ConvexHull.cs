@@ -90,14 +90,14 @@ namespace MIConvexHull
                              .ToList();
             return ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>>.Create(points, PlaneDistanceTolerance);
         }
+
         /// <summary>
-        /// Creates a convex hull of the input data.
+        /// Creates the 2D convex hull of the input data.
         /// </summary>
-        /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
-        /// <typeparam name="TFace">The type of the t face.</typeparam>
-        /// <param name="data">The data.</param>
+        /// <param name="data"></param>
+        /// <typeparam name="TVertex"></typeparam>
         /// <returns>
-        /// ConvexHull&lt;TVertex, TFace&gt;.
+        /// List&lt;TVertex&gt;.
         /// </returns>
         public static List<TVertex> Create<TVertex>(IList<TVertex> data)
             where TVertex : IVertex2D, new()
