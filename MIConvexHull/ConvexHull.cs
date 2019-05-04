@@ -90,6 +90,21 @@ namespace MIConvexHull
                              .ToList();
             return ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>>.Create(points, PlaneDistanceTolerance);
         }
+        /// <summary>
+        /// Creates a convex hull of the input data.
+        /// </summary>
+        /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+        /// <typeparam name="TFace">The type of the t face.</typeparam>
+        /// <param name="data">The data.</param>
+        /// <returns>
+        /// ConvexHull&lt;TVertex, TFace&gt;.
+        /// </returns>
+        public static List<TVertex> Create<TVertex>(IList<TVertex> data)
+            where TVertex : IVertex2D, new()
+        {
+            return ConvexHull2DAlgorithm.Create<TVertex>(data);
+        }
+
     }
 
     /// <summary>

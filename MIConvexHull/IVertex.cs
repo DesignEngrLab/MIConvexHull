@@ -39,6 +39,20 @@ namespace MIConvexHull
     }
 
     /// <summary>
+    /// An interface for a structure with nD position.
+    /// </summary>
+    public interface IVertex2D
+    {
+        /// <summary>
+        /// X coordinate value of the 2D vertex.
+        double X { get; }
+
+        /// <summary>
+        /// Y coordinate value of the 2D vertex.
+        double Y { get; }
+    }
+
+    /// <summary>
     /// "Default" vertex.
     /// </summary>
     /// <seealso cref="MIConvexHull.IVertex" />

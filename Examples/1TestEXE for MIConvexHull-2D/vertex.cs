@@ -24,7 +24,7 @@ namespace TestEXE_for_MIConvexHull2D
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>
-    public class Vertex : IVertex
+    public struct Vertex : IVertex2D
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Vertex"/> class.
@@ -33,9 +33,12 @@ namespace TestEXE_for_MIConvexHull2D
         /// <param name="y">The y position.</param>
         public Vertex(double x, double y)
         {
-            Position = new double[2] { x, y };
+            X = x;
+            Y = y;
         }
-        
-        public double[] Position { get; set; }
+
+        public double X { get; set; }
+
+        public double Y { get; set; }
     }
 }

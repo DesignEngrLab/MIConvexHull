@@ -24,6 +24,7 @@
  *  
  *****************************************************************************/
 
+using System;
 using System.Collections.Generic;
 
 namespace MIConvexHull
@@ -143,7 +144,7 @@ namespace MIConvexHull
         /// <summary>
         /// Removes the faces "covered" by the current vertex and adds the newly created ones.
         /// </summary>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if possible, <c>false</c> otherwise.</returns>
         private bool CreateCone()
         {
             var currentVertexIndex = CurrentVertex;
@@ -184,14 +185,11 @@ namespace MIConvexHull
 
                     var forbidden = UpdateIndices[i]; // Index of the face that corresponds to this adjacent face
 
-                    int oldVertexIndex;
-                    int[] vertices;
-
                     var newFaceIndex = ObjectManager.GetFace();
                     var newFace = FacePool[newFaceIndex];
-                    vertices = newFace.Vertices;
+                    var vertices = newFace.Vertices;
                     for (var j = 0; j < NumOfDimensions; j++) vertices[j] = oldFace.Vertices[j];
-                    oldVertexIndex = vertices[forbidden];
+                    var oldVertexIndex = vertices[forbidden];
 
                     int orderedPivotIndex;
 
@@ -404,11 +402,10 @@ namespace MIConvexHull
 
             MaxDistance = double.NegativeInfinity;
             FurthestVertex = 0;
-            int v;
 
             for (var i = 0; i < beyond.Count; i++)
             {
-                v = beyond[i];
+                var v = beyond[i];
                 if (v == CurrentVertex) continue;
                 IsBeyond(face, beyondVertices, v);
             }
@@ -566,9 +563,9 @@ namespace MIConvexHull
                 // Fix the vertex orientation.
                 if (face.IsNormalFlipped)
                 {
-                    var tempVert = cell.Vertices[0];
+                    var tempVertex = cell.Vertices[0];
                     cell.Vertices[0] = cell.Vertices[NumOfDimensions - 1];
-                    cell.Vertices[NumOfDimensions - 1] = tempVert;
+                    cell.Vertices[NumOfDimensions - 1] = tempVertex;
 
                     var tempAdj = cell.Adjacency[0];
                     cell.Adjacency[0] = cell.Adjacency[NumOfDimensions - 1];
@@ -585,9 +582,9 @@ namespace MIConvexHull
         /// </summary>
         /// <typeparam name="TVertex">The type of the vertex.</typeparam>
         /// <typeparam name="TFace">The type of the face.</typeparam>
-        /// <param name="data">The data.</param>
         /// <returns></returns>
-        private ConvexHull<TVertex, TFace> Return2DResultInOrder<TVertex, TFace>(IList<TVertex> data)
+        [Obsolete("The method of finding the 2D convex hull is not as efficient as making TVertex inherit from IVertex2D.")]
+        private ConvexHull<TVertex, TFace> Return2DResultInOrder<TVertex, TFace>()
             where TVertex : IVertex
             where TFace : ConvexFace<TVertex, TFace>, new()
         {
@@ -598,10 +595,8 @@ namespace MIConvexHull
                 orderDictionary.Add(face.Vertices[1], face);
             var firstPoint = faces[0].Vertices[1];
             var nextPoint = faces[0].Vertices[0];
-            var orderedPointList = new List<TVertex>();
-            orderedPointList.Add(firstPoint);
-            var orderedFaceList = new List<TFace>();
-            orderedFaceList.Add(faces[0]);
+            var orderedPointList = new List<TVertex> {firstPoint};
+            var orderedFaceList = new List<TFace> {faces[0]};
             var lowestXMinIndex = 0;
             var k = 0;
             while (!nextPoint.Equals(firstPoint))

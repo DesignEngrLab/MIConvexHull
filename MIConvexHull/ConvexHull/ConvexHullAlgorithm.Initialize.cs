@@ -64,7 +64,7 @@ namespace MIConvexHull
             var ch = new ConvexHullAlgorithm(data.Cast<IVertex>().ToArray(), false, PlaneDistanceTolerance);
             ch.GetConvexHull();
 
-            if (ch.NumOfDimensions == 2) return ch.Return2DResultInOrder<TVertex, TFace>(data);
+            if (ch.NumOfDimensions == 2) return ch.Return2DResultInOrder<TVertex, TFace>();
             return new ConvexHull<TVertex, TFace>
             {
                 Points = ch.GetHullVertices(data),

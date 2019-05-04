@@ -48,6 +48,7 @@
     <Compile Include="ConvexHullGenerationException.cs" />
     <Compile Include="ConvexHull\Collections.cs" />
     <Compile Include="ConvexHull\ConvexFace.cs" />
+    <Compile Include="ConvexHull\ConvexHullAlgorithm.2D.cs" />
     <Compile Include="ConvexHull\DataModel.cs" />
     <Compile Include="ConvexHull.cs" />
     <Compile Include="ConvexHull\ConvexHullAlgorithm.MainLoop.cs" />
