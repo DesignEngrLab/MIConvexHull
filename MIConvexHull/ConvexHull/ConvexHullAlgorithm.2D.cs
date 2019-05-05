@@ -175,7 +175,7 @@ namespace MIConvexHull
             else
                 for (var i = cvxVNum - 1; i >= 0; i--)
                 {
-                    // in rare cases, often due to some roundoff error, the extrema point will produce a concavity with its
+                    // in other rare cases, often due to some roundoff error, the extrema point will produce a concavity with its
                     // two neighbors. Here, we check that case. If it does make a concavity we don't use it in the initial convex
                     // hull (we have captured its index and will still skip it below. it will not be searched a second time).
                     // counting backwards again, we grab the previous and next point and check the "cross product" to see if the 
@@ -332,9 +332,10 @@ namespace MIConvexHull
 
             #endregion
 
-            /* An array of sorted lists. As we find new candidate convex points, we store them here. The key in the
-             * list is the "positionAlong" - this is used to order the nodes that
-             * are found for a particular side (More on this in 23 lines). */
+            /* An array of arrays of new convex hull points along the sides of the polygon created by the 3 to 8 points
+             * above. These are to be sorted arrays and they are sorted by the distances (stored in sortedDistances) from the
+             * started extrema vertex to the last. We are going to make each array really big so that we don't have to waste
+             * time extending them later. The sizes array keeps the true length. */
             var sortedPoints = new TVertex[cvxVNum][];
             var sortedDistances = new double[cvxVNum][];
             var sizes = new int[cvxVNum];
@@ -379,10 +380,10 @@ namespace MIConvexHull
 
             #region Step 3: now remove concave "zigs" from each sorted dictionary
 
-            /* Now it's time to go through our array of sorted lists of tuples. We search backwards through
+            /* Now it's time to go through our array of sorted arrays. We search backwards through
              * the current convex hull points s.t. any additions will not confuse our for-loop indexers.
              * This approach is linear over the zig-zag polyline defined by each sorted list. This linear approach
-             * was defined long ago by a number of author pairs: McCallum and Avis, Tor and Middleditch (1984), or
+             * was defined long ago by a number of authors: McCallum and Avis, Tor and Middleditch (1984), or
              * Melkman (1985) */
             for (var j = cvxVNum - 1; j >= 0; j--)
             {
@@ -392,7 +393,8 @@ namespace MIConvexHull
                     convexHullCCW.Insert(j + 1, sortedPoints[j][0]);
                 else if (size > 1)
                 {
-                    /* a renaming for compactness and clarity */
+                    /* it seems a shame to have this list since it's nearly the same as the sorted array, but
+                     * it is necessary for the removal of points. */
                     var pointsAlong = new List<TVertex>();
                     /* put the known starting point as the beginning of the list.  */
                     pointsAlong.Add(convexHullCCW[j]);
@@ -406,7 +408,6 @@ namespace MIConvexHull
                     /* Now starting from second from end, work backwards looks for places where the angle 
                      * between the vertices is concave (which would produce a negative value of z). */
                     var i = size;
-                    var nextPoint = (j == cvxVNum - 1) ? convexHullCCW[0] : convexHullCCW[j + 1];
                     while (i > 0)
                     {
                         //var currentPoint =
@@ -481,7 +482,7 @@ namespace MIConvexHull
             return newCvxList;
         }
 
-        // this function adds the new point to the sorted list. The reason it is complicated is that
+        // this function adds the new point to the sorted array. The reason it is complicated is that
         // if it errors - it is because there are two points at the same distance along. So, we then
         // check if the new point or the existing one on the list should stay. Simply keep the one that is
         // furthest from the edge vector.
@@ -500,6 +501,8 @@ namespace MIConvexHull
             int index = BinarySearch(sortedKeys, size, newDxAlong);
             if (index >= 0)
             {
+                // non-negative values occur when the same key is found. In this case, we only want to keep
+                // the one vertex that sticks out the farthest.
                 var ptOnList = sortedPoints[index];
                 var onListDxOut = (ptOnList.X - basePointX) * edgeVectorY - (ptOnList.Y - basePointY) * edgeVectorX;
                 if (newDxOut > onListDxOut)
@@ -507,7 +510,12 @@ namespace MIConvexHull
             }
             else
             {
+                // here a new value is found. first, invert the index to find where to put it
                 index = ~index;
+                // as a slight time saver, we can check the two points that will surround this new point. 
+                // If it makes a concave corner then don't add it. this part is actually in the middle 
+                // condition ("else if (index < size)"). We don't need to perform this check if the insertion
+                // is at either at. At the beginning ("index == 0"), we still need to increment the rest of the list
                 if (index == 0)
                 {
                     for (int i = size; i > index; i--)
@@ -526,7 +534,8 @@ namespace MIConvexHull
                     double lX = newPointX - prevPt.X, lY = newPointY - prevPt.Y;
                     double rX = nextPt.X - newPointX, rY = nextPt.Y - newPointY;
                     double zValue = lX * rY - lY * rX;
-                    if (zValue >= 0)
+                    // if cross produce is negative then new point is concave. Don't add it.
+                    if (zValue > 0)
                     {
                         for (int i = size; i > index; i--)
                         {
@@ -539,7 +548,7 @@ namespace MIConvexHull
                     }
                 }
                 else
-                {
+                {   // if at the end, then no need to increment any other members.
                     sortedKeys[index] = newDxAlong;
                     sortedPoints[index] = newPoint;
                     size++;
@@ -547,6 +556,9 @@ namespace MIConvexHull
             }
             return true;
         }
+
+        // This binary search is modified/simplified from Array.BinarySearch
+        // (https://referencesource.microsoft.com/mscorlib/a.html#b92d187c91d4c9a9)
 #if NETSTANDARD
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif

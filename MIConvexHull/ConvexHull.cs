@@ -92,7 +92,7 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        /// Creates the 2D convex hull of the input data.
+        /// Creates the 2D convex hull of the input data. This method skips the "ConvexHullCreationResult"
         /// </summary>
         /// <param name="data"></param>
         /// <typeparam name="TVertex"></typeparam>

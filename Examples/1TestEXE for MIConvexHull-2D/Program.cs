@@ -1,6 +1,6 @@
 ﻿/*************************************************************************
  *     This file & class is part of the MIConvexHull Library Project. 
- *     Copyright 2010 Matthew Ira Campbell, PhD.
+ *     Copyright 2010 Matthew Ira MIConvexHull, PhD.
  *
  *     MIConvexHull is free software: you can redistribute it and/or modify
  *     it under the terms of the MIT License as published by
@@ -18,6 +18,9 @@
  *     Please find further details and contact information on GraphSynth
  *     at https://designengrlab.github.io/MIConvexHull/
  *************************************************************************/
+
+using OuelletConvexHull;
+
 namespace TestEXE_for_MIConvexHull2D
 {
     using System;
@@ -31,61 +34,157 @@ namespace TestEXE_for_MIConvexHull2D
         static readonly Stopwatch stopwatch = new Stopwatch();
         static void Main()
         {
+            var averageTimes = new Dictionary<int, List<(string MethodName, double AverageTimeInMilliseconds)>>();
             var repeat = 100;
-
+            var percentError = 0.001;
             #region Edge Cases
             Console.WriteLine("******* EDGE CASES ***********");
-            for (int k = 1; k <= 8; k++)
+            for (int k = 1; k < 8; k++)
             {
-                var totalSpan = TimeSpan.Zero;
+                averageTimes[-k] = new List<(string MethodName, double AverageTimeInMilliseconds)>();
+                var miconvexhullTotalTime = TimeSpan.Zero;
+                var ouelletTotalTime = TimeSpan.Zero;
+
                 for (int i = 0; i < repeat; i++)
                 {
                     Vertex[] points = Issues(k);
+                    var windowsPoints = points.Select(p => new System.Windows.Point(p.X, p.Y)).ToList();
+                    // not including the creation of window points in the time for fairer algorithm comparison
+                    // however, converting to System.Windows.Point is a complication especially if performing the
+                    // convex hull in a library that does not depend on windows.
+                    stopwatch.Restart();
+                    var ouelletConvexHull = new OuelletConvexHull.ConvexHull(windowsPoints);
+                    ouelletConvexHull.CalcConvexHull(ConvexHullThreadUsage.OnlyOne);
+                    stopwatch.Stop();
+                    ouelletTotalTime += stopwatch.Elapsed;
+                    var ouelletAsVertices = ouelletConvexHull.GetResultsAsArrayOfPoint()
+                          .Select(p => new Vertex(p.X, p.Y)).ToList();
 
                     stopwatch.Restart();
-                    var convexHull = MIConvexHull.ConvexHull.Create(points);
+                    var miconvexHull = MIConvexHull.ConvexHull.Create(points);
                     stopwatch.Stop();
-                    totalSpan += stopwatch.Elapsed;
+                    miconvexhullTotalTime += stopwatch.Elapsed;
+
+                    //check if they are the same
+                    var p1 = FindPerimeter(miconvexHull);
+                    var p2 = FindPerimeter(ouelletAsVertices);
+
+                    if (!IsPracticallySame(p1, p2, p1 * (1 - percentError)))
+                    {
+                        ShowAndHang(miconvexHull, ouelletAsVertices);
+                    }
 
                 }
 
-                var ave = totalSpan.TotalMilliseconds / repeat;
-                Console.WriteLine("Case #{0}in {1} ", k, ave);
+                var MIConvexHullAverage = miconvexhullTotalTime.TotalMilliseconds / repeat;
+                var ouelletAverage = ouelletTotalTime.TotalMilliseconds / repeat;
+                Console.WriteLine("Case #{0}", k);
+                Console.WriteLine("1) {0} in {1} ", "MIConvexHull", MIConvexHullAverage);
+                Console.WriteLine("2) {0} in {1} ", "Ouellet", ouelletAverage);
+                if (MIConvexHullAverage / ouelletAverage > 1)
+                    Console.WriteLine("******************* increased by {0} ", MIConvexHullAverage / ouelletAverage);
+                else Console.WriteLine("reduced by {0} ", MIConvexHullAverage / ouelletAverage);
+
+                averageTimes[-k].Add(("MIConvexHull", MIConvexHullAverage));
+                averageTimes[-k].Add(("Ouellet", ouelletAverage));
             }
             #endregion
-            repeat = 5;
             #region random cases
             Console.WriteLine("\n\n\n******* Random CASES ***********");
-            var random = new Random();
+            var repeats = new[] { 100, 100, 100, 80, 50, 20 };
+
             var nums = new[] { 3, 10 };
-            for (int k = 0; k < 5; k++)
+            for (int k = 0; k < 6; k++)
             {
                 foreach (var n in nums)
                 {
-                    var totalSpan = TimeSpan.Zero;
-                    for (int i = 0; i < repeat; i++)
+                    averageTimes[n] = new List<(string MethodName, double AverageTimeInMilliseconds)>();
+                    var miconvexhullTotalTime = TimeSpan.Zero;
+                    var ouelletTotalTime = TimeSpan.Zero;
+                    for (int i = 0; i < repeats[k]; i++)
                     {
-                        Vertex[] points = new Vertex[n];
+                        var random = new Random();
+
+                        var points = new Vertex[n];
                         for (int j = 0; j < n; j++)
                             points[j] = new Vertex(100 * random.NextDouble(), 100 * random.NextDouble());
+                        var windowsPoints = points.Select(p => new System.Windows.Point(p.X, p.Y)).ToList();
+                        stopwatch.Restart();
+                        var ouelletConvexHull = new OuelletConvexHull.ConvexHull(windowsPoints);
+                        ouelletConvexHull.CalcConvexHull(ConvexHullThreadUsage.OnlyOne);
+                        stopwatch.Stop();
+                        ouelletTotalTime += stopwatch.Elapsed;
+                        var ouelletAsVertices = ouelletConvexHull.GetResultsAsArrayOfPoint()
+                            .Select(p => new Vertex(p.X, p.Y)).ToList();
 
                         stopwatch.Restart();
-                        var convexHull = MIConvexHull.ConvexHull.Create(points);
+                        var miconvexHull = MIConvexHull.ConvexHull.Create(points);
                         stopwatch.Stop();
-                        totalSpan += stopwatch.Elapsed;
+                        miconvexhullTotalTime += stopwatch.Elapsed;
+
+                        //check if they are the same
+                        var p1 = FindPerimeter(miconvexHull);
+                        var p2 = FindPerimeter(ouelletAsVertices);
+
+                        if (!IsPracticallySame(p1, p2, p1 * (1 - percentError)))
+                        {
+                            ShowAndHang(miconvexHull, ouelletAsVertices);
+                        }
+
                     }
-                    var ave = totalSpan.TotalMilliseconds / repeat;
-                    Console.WriteLine("{0} random points in {1} ", n, ave);
+
+                    var MIConvexHullAverage = miconvexhullTotalTime.TotalMilliseconds / repeats[k];
+                    var ouelletAverage = ouelletTotalTime.TotalMilliseconds / repeats[k];
+                    //var monotoneChainAverage = monotoneChainTotalTime.TotalMilliseconds / repeat;
+                    Console.WriteLine("N = {0}", n);
+                    Console.WriteLine("1) {0} in {1} ", "MIConvexHull", MIConvexHullAverage);
+                    Console.WriteLine("2) {0} in {1} ", "Ouellet", ouelletAverage);
+                    if (MIConvexHullAverage / ouelletAverage > 1)
+                        Console.WriteLine("******************* increased by {0} ",
+                            MIConvexHullAverage / ouelletAverage);
+                    else Console.WriteLine("reduced by {0} ", MIConvexHullAverage / ouelletAverage);
+                    //Console.WriteLine("3) {0} in {1} ", "Monotone Chain", monotoneChainAverage);
+
+                    averageTimes[n].Add(("MIConvexHull", MIConvexHullAverage));
+                    averageTimes[n].Add(("Ouellet", ouelletAverage));
+                    //averageTimes[n].Add(("Monotone Chain", monotoneChainAverage));
                 }
+
                 for (var n = 0; n < nums.Length; n++)
                 {
                     nums[n] *= 10;
                 }
             }
             #endregion
-            Console.WriteLine("******** completed *********");
+            Console.WriteLine("****Completed****");
             Console.ReadKey();
+        }
 
+        private static void ShowAndHang(List<Vertex> miconvexHull, List<Vertex> ouelletAsVertices)
+        {
+            throw new NotImplementedException();
+            //var window = new Window2DPlot(new[]{ miconvexHull , ouelletAsVertices },
+            //    "difference in perimeter", Plot2DType.Line,true, MarkerType.Circle);
+            //window.ShowDialog();
+        }
+
+
+        private static bool IsPracticallySame(double p1, double p2, double v)
+        {
+            return (Math.Abs(p1 - p2) <= v);
+        }
+
+        private static double FindPerimeter(List<Vertex> convexHull)
+        {
+            var perimeter = Math.Sqrt(
+                (convexHull.Last().X - convexHull[0].X) * (convexHull.Last().X - convexHull[0].X) +
+                (convexHull.Last().Y - convexHull[0].Y) * (convexHull.Last().Y - convexHull[0].Y));
+            for (int i = 1; i < convexHull.Count; i++)
+
+                perimeter += Math.Sqrt(
+                    (convexHull[i].X - convexHull[i - 1].X) * (convexHull[i].X - convexHull[i - 1].X) +
+                    (convexHull[i].Y - convexHull[i - 1].Y) * (convexHull[i].Y - convexHull[i - 1].Y));
+            return perimeter;
         }
 
         internal static Vertex[] Issues(int index)

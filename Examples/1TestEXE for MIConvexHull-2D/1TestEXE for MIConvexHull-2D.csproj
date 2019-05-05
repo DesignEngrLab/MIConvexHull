@@ -64,6 +64,16 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ouellet Method\ConvexHull.cs" />
+    <Compile Include="Ouellet Method\ConvexHullThreadUsage.cs" />
+    <Compile Include="Ouellet Method\Geometry.cs" />
+    <Compile Include="Ouellet Method\Limit.cs" />
+    <Compile Include="Ouellet Method\PointInfo.cs" />
+    <Compile Include="Ouellet Method\Quadrant.cs" />
+    <Compile Include="Ouellet Method\QuadrantSpecific1.cs" />
+    <Compile Include="Ouellet Method\QuadrantSpecific2.cs" />
+    <Compile Include="Ouellet Method\QuadrantSpecific3.cs" />
+    <Compile Include="Ouellet Method\QuadrantSpecific4.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Vertex.cs" />
   </ItemGroup>
