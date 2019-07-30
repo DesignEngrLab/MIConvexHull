@@ -131,7 +131,11 @@ namespace MIConvexHull
                     maxDiff = diff;
                 }
             }
-
+            // what if all points are on a horizontal line? temporarily set to max and min Y to min X. This'll be fixed
+            // in the function: FindIntermediatePointsForLongSkinny
+            if (minY == maxY) minYIndex = maxYIndex = minXIndex;
+            // what if all points are on a vertical line? then do the opposite
+            if (minX == maxX) minXIndex = maxXIndex = minYIndex;
             //put these on a list in counter-clockwise (CCW) direction
             var extremeIndices = new List<int>(new[]
             {
@@ -168,6 +172,9 @@ namespace MIConvexHull
             {
                 convexHullCCW = FindIntermediatePointsForLongSkinny(points, numPoints, indicesUsed[0], indicesUsed[1],
                     out var newUsedIndices);
+                if (!newUsedIndices.Any())
+                    // looks like only two indices total! so all points are co-linear.
+                    return new List<TVertex> { points[indicesUsed[0]], points[indicesUsed[1]] };
                 newUsedIndices.Add(indicesUsed[0]);
                 newUsedIndices.Add(indicesUsed[1]);
                 indicesUsed = newUsedIndices.OrderBy(x => x).ToArray();
@@ -443,17 +450,19 @@ namespace MIConvexHull
             int usedIndex1, int usedIndex2, out List<int> newUsedIndices) where TVertex : IVertex2D
         {
             newUsedIndices = new List<int>();
-            var run = points[usedIndex1].X - points[usedIndex2].X;
-            var rise = points[usedIndex1].Y - points[usedIndex2].Y;
-            var minCross = 0.0;
-            var maxCross = 0.0;
+            var pStartX = points[usedIndex1].X;
+            var pStartY = points[usedIndex1].Y;
+            var spanVectorX = points[usedIndex2].X - pStartX;
+            var spanVectorY = points[usedIndex2].Y - pStartY;
+            var minCross = -Constants.DefaultPlaneDistanceTolerance;
+            var maxCross = Constants.DefaultPlaneDistanceTolerance;
             var minCrossIndex = -1;
             var maxCrossIndex = -1;
             for (var i = 0; i < numPoints; i++)
             {
                 if (i == usedIndex1 || i == usedIndex2) continue;
                 var p = points[i];
-                var cross = run * p.X - rise * p.Y;
+                var cross = spanVectorX * (p.Y - pStartY) + spanVectorY * (pStartX - p.X);
                 if (cross < minCross)
                 {
                     minCrossIndex = i;
