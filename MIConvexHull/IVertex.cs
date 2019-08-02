@@ -64,4 +64,14 @@ namespace MIConvexHull
         /// <value>The position.</value>
         public double[] Position { get; set; }
     }
+    /// <summary>
+    /// "Default" vertex.
+    /// </summary>
+    /// <seealso cref="MIConvexHull.IVertex2D" />
+    public class DefaultVertex2D : IVertex2D
+    {
+        public double X { get; set; }
+
+        public double Y { get; set; }
+    }
 }

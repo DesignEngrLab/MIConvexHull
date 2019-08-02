@@ -86,9 +86,19 @@ namespace MIConvexHull
                                                                                          double PlaneDistanceTolerance =
                                                                                              Constants.DefaultPlaneDistanceTolerance)
         {
-            var points = data.Select(p => new DefaultVertex {Position = p})
-                             .ToList();
-            return ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>>.Create(points, PlaneDistanceTolerance);
+            if (data[0].Length == 2)
+            {
+                var points = data.Select(p => new DefaultVertex2D { X = p[0], Y = p[1] }).ToList();
+                return new ConvexHullCreationResult<DefaultVertex, DefaultConvexFace<DefaultVertex>>(
+                    new ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>>(),
+                    new ConvexHullCreationResultOutcome()); // { Faces=null, Points=}
+            }
+            else
+            {
+                var points = data.Select(p => new DefaultVertex { Position = p })
+                                 .ToList();
+                return ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>>.Create(points, PlaneDistanceTolerance);
+            }
         }
 
         /// <summary>
@@ -154,7 +164,7 @@ namespace MIConvexHull
             try
             {
                 var convexHull = ConvexHullAlgorithm.GetConvexHull<TVertex, TFace>(data, PlaneDistanceTolerance);
-                return new ConvexHullCreationResult<TVertex, TFace>(convexHull,ConvexHullCreationResultOutcome.Success);
+                return new ConvexHullCreationResult<TVertex, TFace>(convexHull, ConvexHullCreationResultOutcome.Success);
             }
             catch (ConvexHullGenerationException e)
             {
@@ -171,9 +181,9 @@ namespace MIConvexHull
     public class ConvexHullCreationResult<TVertex, TFace> where TVertex : IVertex
                                                           where TFace : ConvexFace<TVertex, TFace>, new()
     {
-        public ConvexHullCreationResult(ConvexHull<TVertex, TFace> result, ConvexHullCreationResultOutcome outcome, string errorMessage="")
+        public ConvexHullCreationResult(ConvexHull<TVertex, TFace> result, ConvexHullCreationResultOutcome outcome, string errorMessage = "")
         {
-            Result  = result;
+            Result = result;
             Outcome = outcome;
             ErrorMessage = errorMessage;
         }

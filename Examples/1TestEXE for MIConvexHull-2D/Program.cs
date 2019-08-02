@@ -34,6 +34,11 @@ namespace TestEXE_for_MIConvexHull2D
         static readonly Stopwatch stopwatch = new Stopwatch();
         static void Main()
         {
+            var d = new[] { new double[] { 260, 600 }, new double[] { 285, 600 },
+           new double[] { 310, 600 },new double[] { 335, 600 }};
+            var miconvexHull0 = MIConvexHull.ConvexHull.Create(d);
+            Console.Write(miconvexHull0.Result.Points);
+
             var averageTimes = new Dictionary<int, List<(string MethodName, double AverageTimeInMilliseconds)>>();
             var repeat = 100;
             var percentError = 0.001;
@@ -47,7 +52,8 @@ namespace TestEXE_for_MIConvexHull2D
 
                 for (int i = 0; i < repeat; i++)
                 {
-                    Vertex[] points = Issues(k);
+                    Vertex[] points = new[] { new Vertex(260, 600), new Vertex(285, 600),
+                    new Vertex(310,600), new Vertex(335,600)};
                     var windowsPoints = points.Select(p => new System.Windows.Point(p.X, p.Y)).ToList();
                     // not including the creation of window points in the time for fairer algorithm comparison
                     // however, converting to System.Windows.Point is a complication especially if performing the

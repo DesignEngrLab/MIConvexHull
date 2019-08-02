@@ -47,11 +47,14 @@ namespace MIConvexHull
         /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
         /// <returns>TCell[].</returns>
         internal static TCell[] GetDelaunayTriangulation<TVertex, TCell>(IList<TVertex> data,
-            double PlaneDistanceTolerance )
+            double PlaneDistanceTolerance)
             where TCell : TriangulationCell<TVertex, TCell>, new()
             where TVertex : IVertex
         {
-            var ch = new ConvexHullAlgorithm(data.Cast<IVertex>().ToArray(), true, PlaneDistanceTolerance);
+            var numberOfVertices = data.Count;
+            var vertices = data.Cast<IVertex>().ToArray();
+            var dim = 1 + DetermineDimension(vertices, numberOfVertices);
+            var ch = new ConvexHullAlgorithm(vertices, true, PlaneDistanceTolerance, dim);
             ch.GetConvexHull();
             ch.RemoveUpperFaces();
             return ch.GetConvexFaces<TVertex, TCell>();

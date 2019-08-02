@@ -61,10 +61,14 @@ namespace MIConvexHull
                     where TFace : ConvexFace<TVertex, TFace>, new()
                     where TVertex : IVertex
         {
-            var ch = new ConvexHullAlgorithm(data.Cast<IVertex>().ToArray(), false, PlaneDistanceTolerance);
+            var vertices = data.Cast<IVertex>().ToArray();
+            var dim = DetermineDimension(vertices, vertices.Length);
+            if (dim < 2) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DimensionSmallerTwo, "Dimension of the input must be 2 or greater.");
+            if (dim == 2) return ConvexHull2DAlgorithm.Return2DResults<TVertex, TFace>(vertices);
+            var ch = new ConvexHullAlgorithm(vertices, false, PlaneDistanceTolerance, dim);
+
             ch.GetConvexHull();
 
-            if (ch.NumOfDimensions == 2) return ch.Return2DResultInOrder<TVertex, TFace>();
             return new ConvexHull<TVertex, TFace>
             {
                 Points = ch.GetHullVertices(data),
@@ -86,15 +90,14 @@ namespace MIConvexHull
         /// Dimension of the input must be 2 or greater.</exception>
         /// <exception cref="ArgumentException">There are too few vertices (m) for the n-dimensional space. (m must be greater " +
         /// "than the n, but m is " + NumberOfVertices + " and n is " + Dimension</exception>
-        private ConvexHullAlgorithm(IVertex[] vertices, bool lift, double PlaneDistanceTolerance)
+        private ConvexHullAlgorithm(IVertex[] vertices, bool lift, double PlaneDistanceTolerance, int numOfDimensions)
         {
             IsLifted = lift;
             Vertices = vertices;
             NumberOfVertices = vertices.Length;
 
-            NumOfDimensions = DetermineDimension();
+            NumOfDimensions = numOfDimensions;
             if (IsLifted) NumOfDimensions++;
-            if (NumOfDimensions < 2) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DimensionSmallerTwo, "Dimension of the input must be 2 or greater.");
             if (NumberOfVertices <= NumOfDimensions)
                 throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.NotEnoughVerticesForDimension,
                     "There are too few vertices (m) for the n-dimensional space. (m must be greater " +
@@ -132,7 +135,7 @@ namespace MIConvexHull
         /// </summary>
         /// <returns>System.Int32.</returns>
         /// <exception cref="ArgumentException">Invalid input data (non-uniform dimension).</exception>
-        private int DetermineDimension()
+        private static int DetermineDimension(IVertex[] Vertices, int NumberOfVertices)
         {
             var r = new Random();
             var dimensions = new List<int>();
@@ -479,7 +482,7 @@ namespace MIConvexHull
                         if (initialPoints.Contains(vIndex)) allVertices.RemoveAt(i);
                         else
                         {
-                            mathHelper.RandomOffsetToLift(vIndex, maxima.Last()-minima.Last());
+                            mathHelper.RandomOffsetToLift(vIndex, maxima.Last() - minima.Last());
                             edgeVectors[index] = mathHelper.VectorBetweenVertices(vIndex, vertex1);
                             var volume = mathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
                             if (maxVolume < volume)
