@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using TVGL;
 
 namespace MIConvexHull
 {
@@ -38,10 +39,10 @@ namespace MIConvexHull
         /// If there are multiple vertices with the same minimum X, then the one with the lowest Y is chosen.
         /// </summary>
         /// <typeparam name="TVertex">The type of the vertex.</typeparam>
-        /// <typeparam name="TFace">The type of the face.</typeparam>
         /// <param name="points">The points.</param>
         /// <returns></returns>
-        internal static List<TVertex> Create<TVertex>(IList<TVertex> points) where TVertex : IVertex2D, new()
+        internal static List<TVertex> Create<TVertex>(IList<TVertex> points) 
+            where TVertex : IVertex2D, new()
         {
             // instead of calling points.Count several times, we create this variable. 
             // by the ways points is unaffected by this method
@@ -202,7 +203,6 @@ namespace MIConvexHull
                                                     //continue - that the vectors are made to the proper new adjacent vertices
                     }
                 }
-
             #endregion
 
             #region Step 2 : Create the sorted zig-zag line for each extrema edge
@@ -382,7 +382,6 @@ namespace MIConvexHull
                     if (AddToListAlong(sortedPoints[7], sortedDistances[7], ref sizes[7], point, newPointX, newPointY, p7X, p7Y, v7X, v7Y)) continue;
                 }
             }
-
             #endregion
 
             #region Step 3: now remove concave "zigs" from each sorted dictionary
@@ -444,6 +443,13 @@ namespace MIConvexHull
             #endregion
 
             return convexHullCCW;
+        }
+
+        internal static ConvexHull<TVertex, TFace> Return2DResults<TVertex, TFace>(IVertex[] vertices)
+            where TVertex : IVertex
+            where TFace : ConvexFace<TVertex, TFace>, new()
+        {
+            return null; // new ConvexHull<TVertex, TFace> { Faces = null, Points = Create<TVertex>(vertices) };
         }
 
         private static List<TVertex> FindIntermediatePointsForLongSkinny<TVertex>(IList<TVertex> points, int numPoints,
@@ -513,7 +519,7 @@ namespace MIConvexHull
                 // non-negative values occur when the same key is found. In this case, we only want to keep
                 // the one vertex that sticks out the farthest.
                 var ptOnList = sortedPoints[index];
-                var onListDxOut = (ptOnList.X - basePointX) * edgeVectorY - (ptOnList.Y - basePointY) * edgeVectorX;
+                var onListDxOut = (ptOnList.X -  basePointX) * edgeVectorY - (ptOnList.Y - basePointY) * edgeVectorX;
                 if (newDxOut > onListDxOut)
                     sortedPoints[index] = newPoint;
             }
@@ -578,7 +584,9 @@ namespace MIConvexHull
             while (lo <= hi)
             {
                 int i = lo + ((hi - lo) >> 1);
-                if (array[i] < value) lo = i + 1;
+                var c = array[i];
+                if (c == value) return i;
+                if (c < value) lo = i + 1;
                 else hi = i - 1;
             }
             return ~lo;
