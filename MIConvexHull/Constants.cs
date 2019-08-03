@@ -24,8 +24,6 @@
  *  
  *****************************************************************************/
 
-using System;
-
 namespace MIConvexHull
 {
     internal static class Constants

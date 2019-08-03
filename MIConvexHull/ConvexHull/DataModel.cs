@@ -106,12 +106,12 @@ namespace MIConvexHull
                 for (i = 0; i < edgeIndex; i++)
                 {
                     Vertices[c++] = vs[i];
-                    hashCode += 31*hashCode + (uint) vs[i];
+                    hashCode += 31 * hashCode + (uint)vs[i];
                 }
                 for (i = edgeIndex + 1; i < vs.Length; i++)
                 {
                     Vertices[c++] = vs[i];
-                    hashCode += 31*hashCode + (uint) vs[i];
+                    hashCode += 31 * hashCode + (uint)vs[i];
                 }
             }
 

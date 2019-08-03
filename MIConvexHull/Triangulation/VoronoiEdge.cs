@@ -86,8 +86,8 @@ namespace MIConvexHull
         public override int GetHashCode()
         {
             var hash = 23;
-            hash = hash*31 + Source.GetHashCode();
-            return hash*31 + Target.GetHashCode();
+            hash = hash * 31 + Source.GetHashCode();
+            return hash * 31 + Target.GetHashCode();
         }
     }
 }

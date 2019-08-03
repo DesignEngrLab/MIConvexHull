@@ -86,7 +86,7 @@ namespace MIConvexHull
                                                                                          double PlaneDistanceTolerance =
                                                                                              Constants.DefaultPlaneDistanceTolerance)
         {
-            var points = data.Select(p => new DefaultVertex {Position = p})
+            var points = data.Select(p => new DefaultVertex { Position = p })
                              .ToList();
             return ConvexHull<DefaultVertex, DefaultConvexFace<DefaultVertex>>.Create(points, PlaneDistanceTolerance);
         }
@@ -154,7 +154,7 @@ namespace MIConvexHull
             try
             {
                 var convexHull = ConvexHullAlgorithm.GetConvexHull<TVertex, TFace>(data, PlaneDistanceTolerance);
-                return new ConvexHullCreationResult<TVertex, TFace>(convexHull,ConvexHullCreationResultOutcome.Success);
+                return new ConvexHullCreationResult<TVertex, TFace>(convexHull, ConvexHullCreationResultOutcome.Success);
             }
             catch (ConvexHullGenerationException e)
             {
@@ -168,20 +168,43 @@ namespace MIConvexHull
         }
     }
 
+    /// <summary>
+    /// Class ConvexHullCreationResult.
+    /// </summary>
+    /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
+    /// <typeparam name="TFace">The type of the t face.</typeparam>
     public class ConvexHullCreationResult<TVertex, TFace> where TVertex : IVertex
                                                           where TFace : ConvexFace<TVertex, TFace>, new()
     {
-        public ConvexHullCreationResult(ConvexHull<TVertex, TFace> result, ConvexHullCreationResultOutcome outcome, string errorMessage="")
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConvexHullCreationResult{TVertex, TFace}" /> class.
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <param name="outcome">The outcome.</param>
+        /// <param name="errorMessage">The error message.</param>
+        public ConvexHullCreationResult(ConvexHull<TVertex, TFace> result, ConvexHullCreationResultOutcome outcome, string errorMessage = "")
         {
-            Result  = result;
+            Result = result;
             Outcome = outcome;
             ErrorMessage = errorMessage;
         }
 
         //this could be null
+        /// <summary>
+        /// Gets the result.
+        /// </summary>
+        /// <value>The result.</value>
         public ConvexHull<TVertex, TFace> Result { get; }
 
+        /// <summary>
+        /// Gets the outcome.
+        /// </summary>
+        /// <value>The outcome.</value>
         public ConvexHullCreationResultOutcome Outcome { get; }
+        /// <summary>
+        /// Gets the error message.
+        /// </summary>
+        /// <value>The error message.</value>
         public string ErrorMessage { get; }
     }
 }

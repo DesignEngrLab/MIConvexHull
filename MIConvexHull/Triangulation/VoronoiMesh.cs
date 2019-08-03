@@ -42,6 +42,7 @@ namespace MIConvexHull
         /// <typeparam name="TCell">The type of the t cell.</typeparam>
         /// <typeparam name="TEdge">The type of the t edge.</typeparam>
         /// <param name="data">The data.</param>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
         /// <returns>VoronoiMesh&lt;TVertex, TCell, TEdge&gt;.</returns>
         public static VoronoiMesh<TVertex, TCell, TEdge> Create<TVertex, TCell, TEdge>(IList<TVertex> data,
             double PlaneDistanceTolerance = Constants.DefaultPlaneDistanceTolerance)
@@ -57,6 +58,7 @@ namespace MIConvexHull
         /// </summary>
         /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
         /// <param name="data">The data.</param>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
         /// <returns>VoronoiMesh&lt;TVertex, DefaultTriangulationCell&lt;TVertex&gt;, VoronoiEdge&lt;TVertex, DefaultTriangulationCell&lt;TVertex&gt;&gt;&gt;.</returns>
         public static
             VoronoiMesh
@@ -75,6 +77,7 @@ namespace MIConvexHull
         /// Create the voronoi mesh.
         /// </summary>
         /// <param name="data">The data.</param>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
         /// <returns>VoronoiMesh&lt;DefaultVertex, DefaultTriangulationCell&lt;DefaultVertex&gt;, VoronoiEdge&lt;DefaultVertex, DefaultTriangulationCell&lt;DefaultVertex&gt;&gt;&gt;.</returns>
         public static
             VoronoiMesh
@@ -96,6 +99,7 @@ namespace MIConvexHull
         /// <typeparam name="TVertex">The type of the t vertex.</typeparam>
         /// <typeparam name="TCell">The type of the t cell.</typeparam>
         /// <param name="data">The data.</param>
+        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
         /// <returns>VoronoiMesh&lt;TVertex, TCell, VoronoiEdge&lt;TVertex, TCell&gt;&gt;.</returns>
         public static VoronoiMesh<TVertex, TCell, VoronoiEdge<TVertex, TCell>> Create<TVertex, TCell>(
             IList<TVertex> data,

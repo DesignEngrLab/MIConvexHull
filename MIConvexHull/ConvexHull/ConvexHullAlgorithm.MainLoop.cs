@@ -595,8 +595,8 @@ namespace MIConvexHull
                 orderDictionary.Add(face.Vertices[1], face);
             var firstPoint = faces[0].Vertices[1];
             var nextPoint = faces[0].Vertices[0];
-            var orderedPointList = new List<TVertex> {firstPoint};
-            var orderedFaceList = new List<TFace> {faces[0]};
+            var orderedPointList = new List<TVertex> { firstPoint };
+            var orderedFaceList = new List<TFace> { faces[0] };
             var lowestXMinIndex = 0;
             var k = 0;
             while (!nextPoint.Equals(firstPoint))

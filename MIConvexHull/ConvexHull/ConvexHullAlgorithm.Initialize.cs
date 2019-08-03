@@ -64,7 +64,9 @@ namespace MIConvexHull
             var ch = new ConvexHullAlgorithm(data.Cast<IVertex>().ToArray(), false, PlaneDistanceTolerance);
             ch.GetConvexHull();
 
+#pragma warning disable CS0618 // 'ConvexHullAlgorithm.Return2DResultInOrder<TVertex, TFace>()' is obsolete: 'The method of finding the 2D convex hull is not as efficient as making TVertex inherit from IVertex2D.'
             if (ch.NumOfDimensions == 2) return ch.Return2DResultInOrder<TVertex, TFace>();
+#pragma warning restore CS0618 // 'ConvexHullAlgorithm.Return2DResultInOrder<TVertex, TFace>()' is obsolete: 'The method of finding the 2D convex hull is not as efficient as making TVertex inherit from IVertex2D.'
             return new ConvexHull<TVertex, TFace>
             {
                 Points = ch.GetHullVertices(data),
@@ -479,7 +481,7 @@ namespace MIConvexHull
                         if (initialPoints.Contains(vIndex)) allVertices.RemoveAt(i);
                         else
                         {
-                            mathHelper.RandomOffsetToLift(vIndex, maxima.Last()-minima.Last());
+                            mathHelper.RandomOffsetToLift(vIndex, maxima.Last() - minima.Last());
                             edgeVectors[index] = mathHelper.VectorBetweenVertices(vIndex, vertex1);
                             var volume = mathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
                             if (maxVolume < volume)

@@ -112,11 +112,11 @@ namespace MIConvexHull
         /// </summary>
         private void ReallocateFacePool()
         {
-            var newPool = new ConvexFaceInternal[2*FacePoolCapacity];
-            var newTags = new bool[2*FacePoolCapacity];
+            var newPool = new ConvexFaceInternal[2 * FacePoolCapacity];
+            var newTags = new bool[2 * FacePoolCapacity];
             Array.Copy(FacePool, newPool, FacePoolCapacity);
-            Buffer.BlockCopy(Hull.AffectedFaceFlags, 0, newTags, 0, FacePoolCapacity*sizeof (bool));
-            FacePoolCapacity = 2*FacePoolCapacity;
+            Buffer.BlockCopy(Hull.AffectedFaceFlags, 0, newTags, 0, FacePoolCapacity * sizeof(bool));
+            FacePoolCapacity = 2 * FacePoolCapacity;
             Hull.FacePool = newPool;
             FacePool = newPool;
             Hull.AffectedFaceFlags = newTags;

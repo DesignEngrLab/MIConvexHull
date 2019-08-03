@@ -44,11 +44,15 @@ namespace MIConvexHull
     public interface IVertex2D
     {
         /// <summary>
-        /// X coordinate value of the 2D vertex.
+        /// Gets the x.
+        /// </summary>
+        /// <value>The x.</value>
         double X { get; }
 
         /// <summary>
-        /// Y coordinate value of the 2D vertex.
+        /// Gets the y.
+        /// </summary>
+        /// <value>The y.</value>
         double Y { get; }
     }
 

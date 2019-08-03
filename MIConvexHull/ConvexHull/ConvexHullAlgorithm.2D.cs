@@ -40,7 +40,8 @@ namespace MIConvexHull
         /// <typeparam name="TVertex">The type of the vertex.</typeparam>
         /// <param name="points">The points.</param>
         /// <returns></returns>
-        internal static List<TVertex> Create<TVertex>(IList<TVertex> points) 
+
+        internal static List<TVertex> Create<TVertex>(IList<TVertex> points)
             where TVertex : IVertex2D, new()
         {
             // instead of calling points.Count several times, we create this variable. 
@@ -178,6 +179,7 @@ namespace MIConvexHull
                 newUsedIndices.Add(indicesUsed[0]);
                 newUsedIndices.Add(indicesUsed[1]);
                 indicesUsed = newUsedIndices.OrderBy(x => x).ToArray();
+                cvxVNum = indicesUsed.Length;
             }
             else
                 for (var i = cvxVNum - 1; i >= 0; i--)
@@ -518,7 +520,7 @@ namespace MIConvexHull
                 // non-negative values occur when the same key is found. In this case, we only want to keep
                 // the one vertex that sticks out the farthest.
                 var ptOnList = sortedPoints[index];
-                var onListDxOut = (ptOnList.X -  basePointX) * edgeVectorY - (ptOnList.Y - basePointY) * edgeVectorX;
+                var onListDxOut = (ptOnList.X - basePointX) * edgeVectorY - (ptOnList.Y - basePointY) * edgeVectorX;
                 if (newDxOut > onListDxOut)
                     sortedPoints[index] = newPoint;
             }

@@ -74,9 +74,9 @@ namespace MIConvexHull
             }
             else
             {
-                var newItems = new T[capacity*2];
+                var newItems = new T[capacity * 2];
                 Array.Copy(items, newItems, capacity);
-                capacity = 2*capacity;
+                capacity = 2 * capacity;
                 items = newItems;
             }
         }

@@ -47,7 +47,7 @@ namespace MIConvexHull
         /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
         /// <returns>TCell[].</returns>
         internal static TCell[] GetDelaunayTriangulation<TVertex, TCell>(IList<TVertex> data,
-            double PlaneDistanceTolerance )
+            double PlaneDistanceTolerance)
             where TCell : TriangulationCell<TVertex, TCell>, new()
             where TVertex : IVertex
         {
