@@ -39,9 +39,11 @@ namespace MIConvexHull
         /// </summary>
         /// <typeparam name="TVertex">The type of the vertex.</typeparam>
         /// <param name="points">The points.</param>
-        /// <returns></returns>
+        /// <param name="tolerance">The tolerance.</param>
+        /// <returns>List&lt;TVertex&gt;.</returns>
+        /// <exception cref="ArgumentException">Cannot define the 2D convex hull for less than two points.</exception>
 
-        internal static List<TVertex> Create<TVertex>(IList<TVertex> points)
+        internal static List<TVertex> Create<TVertex>(IList<TVertex> points, double tolerance =0.0)
             where TVertex : IVertex2D, new()
         {
             // instead of calling points.Count several times, we create this variable. 
@@ -193,7 +195,7 @@ namespace MIConvexHull
                     var prevPt = points[(i == 0) ? extremeIndices[cvxVNum - 1] : extremeIndices[i - 1]];
                     var nextPt = points[(i == cvxVNum - 1) ? extremeIndices[0] : extremeIndices[i + 1]];
                     if ((nextPt.X - currentPt.X) * (prevPt.Y - currentPt.Y) +
-                        (nextPt.Y - currentPt.Y) * (currentPt.X - prevPt.X) > 0)
+                        (nextPt.Y - currentPt.Y) * (currentPt.X - prevPt.X) > tolerance)
                         convexHullCCW.Insert(0,
                             currentPt); //because we are counting backwards, we need to ensure that new points are added
                                         // to the front of the list
@@ -368,19 +370,19 @@ namespace MIConvexHull
                     var point = points[i];
                     var newPointX = point.X;
                     var newPointY = point.Y;
-                    if (AddToListAlong(sortedPoints[0], sortedDistances[0], ref sizes[0], point, newPointX, newPointY, p0X, p0Y, v0X, v0Y)) continue;
-                    if (AddToListAlong(sortedPoints[1], sortedDistances[1], ref sizes[1], point, newPointX, newPointY, p1X, p1Y, v1X, v1Y)) continue;
-                    if (AddToListAlong(sortedPoints[2], sortedDistances[2], ref sizes[2], point, newPointX, newPointY, p2X, p2Y, v2X, v2Y)) continue;
+                    if (AddToListAlong(sortedPoints[0], sortedDistances[0], ref sizes[0], point, newPointX, newPointY, p0X, p0Y, v0X, v0Y, tolerance)) continue;
+                    if (AddToListAlong(sortedPoints[1], sortedDistances[1], ref sizes[1], point, newPointX, newPointY, p1X, p1Y, v1X, v1Y, tolerance)) continue;
+                    if (AddToListAlong(sortedPoints[2], sortedDistances[2], ref sizes[2], point, newPointX, newPointY, p2X, p2Y, v2X, v2Y, tolerance)) continue;
                     if (cvxVNum == 3) continue;
-                    if (AddToListAlong(sortedPoints[3], sortedDistances[3], ref sizes[3], point, newPointX, newPointY, p3X, p3Y, v3X, v3Y)) continue;
+                    if (AddToListAlong(sortedPoints[3], sortedDistances[3], ref sizes[3], point, newPointX, newPointY, p3X, p3Y, v3X, v3Y, tolerance)) continue;
                     if (cvxVNum == 4) continue;
-                    if (AddToListAlong(sortedPoints[4], sortedDistances[4], ref sizes[4], point, newPointX, newPointY, p4X, p4Y, v4X, v4Y)) continue;
+                    if (AddToListAlong(sortedPoints[4], sortedDistances[4], ref sizes[4], point, newPointX, newPointY, p4X, p4Y, v4X, v4Y, tolerance)) continue;
                     if (cvxVNum == 5) continue;
-                    if (AddToListAlong(sortedPoints[5], sortedDistances[5], ref sizes[5], point, newPointX, newPointY, p5X, p5Y, v5X, v5Y)) continue;
+                    if (AddToListAlong(sortedPoints[5], sortedDistances[5], ref sizes[5], point, newPointX, newPointY, p5X, p5Y, v5X, v5Y, tolerance)) continue;
                     if (cvxVNum == 6) continue;
-                    if (AddToListAlong(sortedPoints[6], sortedDistances[6], ref sizes[6], point, newPointX, newPointY, p6X, p6Y, v6X, v6Y)) continue;
+                    if (AddToListAlong(sortedPoints[6], sortedDistances[6], ref sizes[6], point, newPointX, newPointY, p6X, p6Y, v6X, v6Y, tolerance)) continue;
                     if (cvxVNum == 7) continue;
-                    if (AddToListAlong(sortedPoints[7], sortedDistances[7], ref sizes[7], point, newPointX, newPointY, p7X, p7Y, v7X, v7Y)) continue;
+                    if (AddToListAlong(sortedPoints[7], sortedDistances[7], ref sizes[7], point, newPointX, newPointY, p7X, p7Y, v7X, v7Y, tolerance)) continue;
                 }
             }
             #endregion
@@ -507,12 +509,12 @@ namespace MIConvexHull
 #endif
         private static bool AddToListAlong<TVertex>(TVertex[] sortedPoints, double[] sortedKeys, ref int size,
                 TVertex newPoint, double newPointX, double newPointY, double basePointX, double basePointY,
-                double edgeVectorX, double edgeVectorY) where TVertex : IVertex2D
+                double edgeVectorX, double edgeVectorY, double tolerance) where TVertex : IVertex2D
         {
             var vectorToNewPointX = newPointX - basePointX;
             var vectorToNewPointY = newPointY - basePointY;
             var newDxOut = vectorToNewPointX * edgeVectorY - vectorToNewPointY * edgeVectorX;
-            if (newDxOut <= 0) return false;
+            if (newDxOut <= tolerance) return false;
             var newDxAlong = edgeVectorX * vectorToNewPointX + edgeVectorY * vectorToNewPointY;
             int index = BinarySearch(sortedKeys, size, newDxAlong);
             if (index >= 0)
@@ -550,8 +552,9 @@ namespace MIConvexHull
                     double lX = newPointX - prevPt.X, lY = newPointY - prevPt.Y;
                     double rX = nextPt.X - newPointX, rY = nextPt.Y - newPointY;
                     double zValue = lX * rY - lY * rX;
-                    // if cross produce is negative then new point is concave. Don't add it.
-                    if (zValue > 0)
+                    // if cross produce is negative (well, is less than some small positive number, then new point is concave) then don't add it.
+                    // also, don't add it if the point is nearly identical (again, within the tolerance) of the previous point.
+                    if (zValue < tolerance || (Math.Abs(lX) < tolerance && Math.Abs(lY) < tolerance))
                     {
                         for (int i = size; i > index; i--)
                         {
