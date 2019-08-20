@@ -43,7 +43,7 @@ namespace MIConvexHull
         /// <returns>List&lt;TVertex&gt;.</returns>
         /// <exception cref="ArgumentException">Cannot define the 2D convex hull for less than two points.</exception>
 
-        internal static List<TVertex> Create<TVertex>(IList<TVertex> points, double tolerance =0.0)
+        internal static List<TVertex> Create<TVertex>(IList<TVertex> points, double tolerance)
             where TVertex : IVertex2D, new()
         {
             // instead of calling points.Count several times, we create this variable. 
@@ -448,13 +448,6 @@ namespace MIConvexHull
             return convexHullCCW;
         }
 
-        internal static ConvexHull<TVertex, TFace> Return2DResults<TVertex, TFace>(IVertex[] vertices)
-            where TVertex : IVertex
-            where TFace : ConvexFace<TVertex, TFace>, new()
-        {
-            return null; // new ConvexHull<TVertex, TFace> { Faces = null, Points = Create<TVertex>(vertices) };
-        }
-
         private static List<TVertex> FindIntermediatePointsForLongSkinny<TVertex>(IList<TVertex> points, int numPoints,
             int usedIndex1, int usedIndex2, out List<int> newUsedIndices) where TVertex : IVertex2D
         {
@@ -595,6 +588,5 @@ namespace MIConvexHull
             }
             return ~lo;
         }
-
     }
 }

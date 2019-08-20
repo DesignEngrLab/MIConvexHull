@@ -14,6 +14,10 @@ namespace MIConvexHull
         /// </summary>
         DimensionSmallerTwo,
         /// <summary>
+        ///  dimension smaller two
+        /// </summary>
+        DimensionTwoWrongMethod,
+        /// <summary>
         ///  not enough vertices for dimension
         /// </summary>
         NotEnoughVerticesForDimension,

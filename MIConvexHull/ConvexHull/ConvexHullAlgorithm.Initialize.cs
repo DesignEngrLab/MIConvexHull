@@ -44,35 +44,7 @@ namespace MIConvexHull
     internal partial class ConvexHullAlgorithm
     {
         #region Starting functions and constructor
-        /// <summary>
-        /// The main function for the Convex Hull algorithm. It is static, but it creates
-        /// an instantiation of this class in order to allow for parallel execution.
-        /// Following this simple function, the constructor and the main function "FindConvexHull" is listed.
-        /// </summary>
-        /// <typeparam name="TVertex">The type of the vertices in the data.</typeparam>
-        /// <typeparam name="TFace">The desired type of the faces.</typeparam>
-        /// <param name="data">The data is the vertices as a collection of IVertices.</param>
-        /// <param name="PlaneDistanceTolerance">The plane distance tolerance.</param>
-        /// <returns>
-        /// MIConvexHull.ConvexHull&lt;TVertex, TFace&gt;.
-        /// </returns>
-        internal static ConvexHull<TVertex, TFace> GetConvexHull<TVertex, TFace>(IList<TVertex> data,
-                    double PlaneDistanceTolerance)
-                    where TFace : ConvexFace<TVertex, TFace>, new()
-                    where TVertex : IVertex
-        {
-            var ch = new ConvexHullAlgorithm(data.Cast<IVertex>().ToArray(), false, PlaneDistanceTolerance);
-            ch.GetConvexHull();
 
-#pragma warning disable CS0618 // 'ConvexHullAlgorithm.Return2DResultInOrder<TVertex, TFace>()' is obsolete: 'The method of finding the 2D convex hull is not as efficient as making TVertex inherit from IVertex2D.'
-            if (ch.NumOfDimensions == 2) return ch.Return2DResultInOrder<TVertex, TFace>();
-#pragma warning restore CS0618 // 'ConvexHullAlgorithm.Return2DResultInOrder<TVertex, TFace>()' is obsolete: 'The method of finding the 2D convex hull is not as efficient as making TVertex inherit from IVertex2D.'
-            return new ConvexHull<TVertex, TFace>
-            {
-                Points = ch.GetHullVertices(data),
-                Faces = ch.GetConvexFaces<TVertex, TFace>()
-            };
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConvexHullAlgorithm" /> class.
@@ -88,7 +60,7 @@ namespace MIConvexHull
         /// Dimension of the input must be 2 or greater.</exception>
         /// <exception cref="ArgumentException">There are too few vertices (m) for the n-dimensional space. (m must be greater " +
         /// "than the n, but m is " + NumberOfVertices + " and n is " + Dimension</exception>
-        private ConvexHullAlgorithm(IVertex[] vertices, bool lift, double PlaneDistanceTolerance)
+        internal ConvexHullAlgorithm(IVertex[] vertices, bool lift, double PlaneDistanceTolerance)
         {
             IsLifted = lift;
             Vertices = vertices;
@@ -97,6 +69,8 @@ namespace MIConvexHull
             NumOfDimensions = DetermineDimension();
             if (IsLifted) NumOfDimensions++;
             if (NumOfDimensions < 2) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DimensionSmallerTwo, "Dimension of the input must be 2 or greater.");
+            if (NumOfDimensions== 2) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DimensionTwoWrongMethod, "Dimension of the input is 2. Thus you should use the Create2D method" +
+                " instead of the Create.");
             if (NumberOfVertices <= NumOfDimensions)
                 throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.NotEnoughVerticesForDimension,
                     "There are too few vertices (m) for the n-dimensional space. (m must be greater " +
@@ -150,7 +124,7 @@ namespace MIConvexHull
         /// <summary>
         /// Gets/calculates the convex hull. This is 
         /// </summary>
-        private void GetConvexHull()
+        internal void GetConvexHull()
         {
             // accessing a 1D array is quicker than a jagged array, so the first step is to make this array
             SerializeVerticesToPositions();

@@ -68,4 +68,28 @@ namespace MIConvexHull
         /// <value>The position.</value>
         public double[] Position { get; set; }
     }
+
+    /// <summary>
+    /// "Default" 2D vertex.
+    /// </summary>
+    /// <seealso cref="MIConvexHull.IVertex" />
+    public struct DefaultVertex2D : IVertex2D
+    {
+        private double[] p;
+
+        public DefaultVertex2D(double[] coordinates) : this()
+        {
+            X = coordinates[0];
+            Y = coordinates[1];
+        }
+        public DefaultVertex2D(double x, double y) : this()
+        {
+            X = x;
+            Y = y;
+        }
+
+        public double X { get; private set; }
+
+        public double Y { get; private set; }
+    }
 }

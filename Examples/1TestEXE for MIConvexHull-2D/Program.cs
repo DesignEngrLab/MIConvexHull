@@ -61,17 +61,17 @@ namespace TestEXE_for_MIConvexHull2D
                           .Select(p => new Vertex(p.X, p.Y)).ToList();
 
                     stopwatch.Restart();
-                    var miconvexHull = MIConvexHull.ConvexHull.Create(points);
+                    var miconvexHull = MIConvexHull.ConvexHull.Create2D(points, 1e-10);
                     stopwatch.Stop();
                     miconvexhullTotalTime += stopwatch.Elapsed;
 
                     //check if they are the same
-                    var p1 = FindPerimeter(miconvexHull);
+                    var p1 = FindPerimeter(miconvexHull.Result);
                     var p2 = FindPerimeter(ouelletAsVertices);
 
                     if (!IsPracticallySame(p1, p2, p1 * (1 - percentError)))
                     {
-                        ShowAndHang(miconvexHull, ouelletAsVertices);
+                        ShowAndHang(miconvexHull.Result, ouelletAsVertices);
                     }
 
                 }
@@ -118,17 +118,17 @@ namespace TestEXE_for_MIConvexHull2D
                             .Select(p => new Vertex(p.X, p.Y)).ToList();
 
                         stopwatch.Restart();
-                        var miconvexHull = MIConvexHull.ConvexHull.Create(points);
+                        var miconvexHull = MIConvexHull.ConvexHull.Create2D(points);
                         stopwatch.Stop();
                         miconvexhullTotalTime += stopwatch.Elapsed;
 
                         //check if they are the same
-                        var p1 = FindPerimeter(miconvexHull);
+                        var p1 = FindPerimeter(miconvexHull.Result);
                         var p2 = FindPerimeter(ouelletAsVertices);
 
                         if (!IsPracticallySame(p1, p2, p1 * (1 - percentError)))
                         {
-                            ShowAndHang(miconvexHull, ouelletAsVertices);
+                            ShowAndHang(miconvexHull.Result, ouelletAsVertices);
                         }
 
                     }
@@ -160,7 +160,7 @@ namespace TestEXE_for_MIConvexHull2D
             Console.ReadKey();
         }
 
-        private static void ShowAndHang(List<Vertex> miconvexHull, List<Vertex> ouelletAsVertices)
+        private static void ShowAndHang(IList<Vertex> miconvexHull, List<Vertex> ouelletAsVertices)
         {
             throw new NotImplementedException();
             //var window = new Window2DPlot(new[]{ miconvexHull , ouelletAsVertices },
@@ -174,7 +174,7 @@ namespace TestEXE_for_MIConvexHull2D
             return (Math.Abs(p1 - p2) <= v);
         }
 
-        private static double FindPerimeter(List<Vertex> convexHull)
+        private static double FindPerimeter(IList<Vertex> convexHull)
         {
             var perimeter = Math.Sqrt(
                 (convexHull.Last().X - convexHull[0].X) * (convexHull.Last().X - convexHull[0].X) +
