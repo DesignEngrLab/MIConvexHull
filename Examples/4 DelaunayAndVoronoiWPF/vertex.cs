@@ -21,11 +21,11 @@
 using System.Windows;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
+using MIConvexHull;
+using System.Windows.Media;
 
 namespace ExampleWithGraphics
 {
-    using MIConvexHull;
-    using System.Windows.Media;
     /// <summary>
     /// A vertex is a simple class that stores the postion of a point, node or vertex.
     /// </summary>

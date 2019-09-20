@@ -4,12 +4,7 @@
     <TargetFramework>netstandard1.0</TargetFramework>
     <AssemblyName>MIConvexHull</AssemblyName>
     <PackageId>MIConvexHull</PackageId>
-    <!--<NetStandardImplicitPackageVersion>1.0</NetStandardImplicitPackageVersion>
-    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>-->
-    <Version>1.1.19.0820</Version>
+    <Version>1.1.19.0919</Version>
     <Authors>David Sehnal, Matt Campbell</Authors>
     <Description>This project is a convex hull algorithm and library for 2D, 3D, and higher dimensions. The code can also be used to compute Delaunay triangulations and Voronoi meshes of the input data.
 </Description>
@@ -18,8 +13,8 @@
     <PackageProjectUrl>https://designengrlab.github.io/MIConvexHull/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/DesignEngrLab/MIConvexHull.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>1.1.19.0820</AssemblyVersion>
-    <FileVersion>1.1.19.0820</FileVersion>
+    <AssemblyVersion>1.1.19.0919</AssemblyVersion>
+    <FileVersion>1.1.19.0919</FileVersion>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>DesignEngineeringLab.pfx</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -29,37 +24,16 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;NETSTANDARD</DefineConstants>
+    <DefineConstants>NETSTANDARD</DefineConstants>
     <Optimize>false</Optimize>
     <WarningLevel>0</WarningLevel>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="..\MIConvexHull\Constants.cs" Link="Constants.cs" />
-    <Compile Include="..\MIConvexHull\ConvexHull.cs" Link="ConvexHull.cs" />
-    <Compile Include="..\MIConvexHull\ConvexHullCreationResultOutcome.cs" Link="ConvexHullCreationResultOutcome.cs" />
-    <Compile Include="..\MIConvexHull\ConvexHullGenerationException.cs" Link="ConvexHullGenerationException.cs" />
-    <Compile Include="..\MIConvexHull\ConvexHull\Collections.cs" Link="ConvexHull\Collections.cs" />
-    <Compile Include="..\MIConvexHull\ConvexHull\ConvexFace.cs" Link="ConvexHull\ConvexFace.cs" />
-    <Compile Include="..\MIConvexHull\ConvexHull\ConvexHullAlgorithm.2D.cs" Link="ConvexHull\ConvexHullAlgorithm.2D.cs" />
-    <Compile Include="..\MIConvexHull\ConvexHull\ConvexHullAlgorithm.Initialize.cs" Link="ConvexHull\ConvexHullAlgorithm.Initialize.cs" />
-    <Compile Include="..\MIConvexHull\ConvexHull\ConvexHullAlgorithm.MainLoop.cs" Link="ConvexHull\ConvexHullAlgorithm.MainLoop.cs" />
-    <Compile Include="..\MIConvexHull\ConvexHull\DataModel.cs" Link="ConvexHull\DataModel.cs" />
-    <Compile Include="..\MIConvexHull\ConvexHull\MathHelper.cs" Link="ConvexHull\MathHelper.cs" />
-    <Compile Include="..\MIConvexHull\ConvexHull\ObjectManager.cs" Link="ConvexHull\ObjectManager.cs" />
-    <Compile Include="..\MIConvexHull\IVertex.cs" Link="IVertex.cs" />
-    <Compile Include="..\MIConvexHull\Triangulation.cs" Link="Triangulation.cs" />
-    <Compile Include="..\MIConvexHull\Triangulation\DelaunayTrianglationInternal.cs" Link="Triangulation\DelaunayTrianglationInternal.cs" />
-    <Compile Include="..\MIConvexHull\Triangulation\DelaunayTriangulation.cs" Link="Triangulation\DelaunayTriangulation.cs" />
-    <Compile Include="..\MIConvexHull\Triangulation\TriangulationCell.cs" Link="Triangulation\TriangulationCell.cs" />
-    <Compile Include="..\MIConvexHull\Triangulation\VoronoiEdge.cs" Link="Triangulation\VoronoiEdge.cs" />
-    <Compile Include="..\MIConvexHull\Triangulation\VoronoiMesh.cs" Link="Triangulation\VoronoiMesh.cs" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants />
+    <Optimize>true</Optimize>
+  </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="ConvexHull\" />
-    <Folder Include="Properties\" />
-    <Folder Include="Triangulation\" />
-  </ItemGroup>
+
 
 </Project>

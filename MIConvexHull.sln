@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIConvexHull", "MIConvexHull\MIConvexHull.csproj", "{2337776D-7D0C-40AA-A439-C26C3CE24FAB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "1TestEXE for MIConvexHull-2D", "Examples\1TestEXE for MIConvexHull-2D\1TestEXE for MIConvexHull-2D.csproj", "{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "2TestEXE for MIConvexHull-No Interfaces", "Examples\2TestEXE for MIConvexHull-No Interfaces\2TestEXE for MIConvexHull-No Interfaces.csproj", "{62FC0ECE-F54A-47F9-B183-0C54AE944408}"
@@ -33,10 +31,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2337776D-7D0C-40AA-A439-C26C3CE24FAB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
