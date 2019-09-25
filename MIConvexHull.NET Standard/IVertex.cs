@@ -75,8 +75,6 @@ namespace MIConvexHull
     /// <seealso cref="MIConvexHull.IVertex" />
     public struct DefaultVertex2D : IVertex2D
     {
-        private double[] p;
-
         public DefaultVertex2D(double[] coordinates) : this()
         {
             X = coordinates[0];

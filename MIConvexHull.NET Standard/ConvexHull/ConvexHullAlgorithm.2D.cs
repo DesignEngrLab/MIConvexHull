@@ -154,11 +154,14 @@ namespace MIConvexHull
             {
                 var thisExtremeIndex = extremeIndices[i];
                 var nextExtremeIndex = (i == cvxVNum - 1) ? extremeIndices[0] : extremeIndices[i + 1];
-                if (thisExtremeIndex == nextExtremeIndex)
-                {
-                    cvxVNum--;
-                    extremeIndices.RemoveAt(i);
-                }
+                var dx = Math.Abs(points[thisExtremeIndex].X - points[nextExtremeIndex].X);
+                var dy = Math.Abs(points[thisExtremeIndex].Y - points[nextExtremeIndex].Y);
+                if (thisExtremeIndex == nextExtremeIndex || (dx < tolerance && dy < tolerance))
+                    if (thisExtremeIndex == nextExtremeIndex)
+                    {
+                        cvxVNum--;
+                        extremeIndices.RemoveAt(i);
+                    }
             }
             // before we check if points are on top of one another or have some round-off error issues, these
             // indices are stored and sorted numerically for use in the second half of part 2 where we go through
