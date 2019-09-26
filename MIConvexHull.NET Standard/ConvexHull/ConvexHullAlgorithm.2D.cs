@@ -549,17 +549,16 @@ namespace MIConvexHull
                     double zValue = lX * rY - lY * rX;
                     // if cross produce is negative (well, is less than some small positive number, then new point is concave) then don't add it.
                     // also, don't add it if the point is nearly identical (again, within the tolerance) of the previous point.
-                    if (zValue < tolerance || (Math.Abs(lX) < tolerance && Math.Abs(lY) < tolerance))
+                    if (zValue < tolerance || (Math.Abs(lX) < tolerance && Math.Abs(lY) < tolerance)) return false;
+                    //Else
+                    for (int i = size; i > index; i--)
                     {
-                        for (int i = size; i > index; i--)
-                        {
-                            sortedKeys[i] = sortedKeys[i - 1];
-                            sortedPoints[i] = sortedPoints[i - 1];
-                        }
-                        sortedKeys[index] = newDxAlong;
-                        sortedPoints[index] = newPoint;
-                        size++;
+                        sortedKeys[i] = sortedKeys[i - 1];
+                        sortedPoints[i] = sortedPoints[i - 1];
                     }
+                    sortedKeys[index] = newDxAlong;
+                    sortedPoints[index] = newPoint;
+                    size++;
                 }
                 else
                 {   // if at the end, then no need to increment any other members.
