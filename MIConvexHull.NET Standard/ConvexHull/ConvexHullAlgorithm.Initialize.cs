@@ -69,8 +69,8 @@ namespace MIConvexHull
             NumOfDimensions = DetermineDimension();
             if (IsLifted) NumOfDimensions++;
             if (NumOfDimensions < 2) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DimensionSmallerTwo, "Dimension of the input must be 2 or greater.");
-            if (NumOfDimensions== 2) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DimensionTwoWrongMethod, "Dimension of the input is 2. Thus you should use the Create2D method" +
-                " instead of the Create.");
+            if (NumOfDimensions == 2) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DimensionTwoWrongMethod, "Dimension of the input is 2. Thus you should use the Create2D method" +
+                 " instead of the Create.");
             if (NumberOfVertices <= NumOfDimensions)
                 throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.NotEnoughVerticesForDimension,
                     "There are too few vertices (m) for the n-dimensional space. (m must be greater " +
@@ -83,7 +83,7 @@ namespace MIConvexHull
             AffectedFaceFlags = new bool[(NumOfDimensions + 1) * 10];
             ObjectManager = new ObjectManager(this);
 
-            Center = new double[NumOfDimensions];
+            InsidePoint = new double[NumOfDimensions];
             TraverseStack = new IndexBuffer();
             UpdateBuffer = new int[NumOfDimensions];
             UpdateIndices = new int[NumOfDimensions];
@@ -98,7 +98,7 @@ namespace MIConvexHull
 
             VertexVisited = new bool[NumberOfVertices];
             Positions = new double[NumberOfVertices * NumOfDimensions];
-            boundingBoxPoints = new List<int>[NumOfDimensions];
+            boundingBoxPoints = new List<int>();
             minima = new double[NumOfDimensions];
             maxima = new double[NumOfDimensions];
             mathHelper = new MathHelper(NumOfDimensions, Positions);
@@ -142,8 +142,6 @@ namespace MIConvexHull
             {
                 var currentFace = UnprocessedFaces.First;
                 CurrentVertex = currentFace.FurthestVertex;
-
-                UpdateCenter();
 
                 // The affected faces get tagged
                 TagAffectedFaces(currentFace);
@@ -196,8 +194,6 @@ namespace MIConvexHull
         /// </summary>
         private void FindBoundingBoxPoints()
         {
-            indexOfDimensionWithLeastExtremes = -1;
-            var minNumExtremes = int.MaxValue;
             for (var i = 0; i < NumOfDimensions; i++)
             {
                 var minIndices = new List<int>();
@@ -206,42 +202,26 @@ namespace MIConvexHull
                 for (var j = 0; j < NumberOfVertices; j++)
                 {
                     var v = GetCoordinate(j, i);
-                    var difference = min - v;
-                    if (difference >= PlaneDistanceTolerance)
+                    if (v < min)
                     {
                         // you found a better solution than before, clear out the list and store new value
                         min = v;
                         minIndices.Clear();
                         minIndices.Add(j);
                     }
-                    else if (difference > 0)
-                    {
-                        // you found a solution slightly better than before, clear out those that are no longer on the list and store new value
-                        min = v;
-                        minIndices.RemoveAll(index => min - GetCoordinate(index, i) > PlaneDistanceTolerance);
-                        minIndices.Add(j);
-                    }
-                    else if (difference > -PlaneDistanceTolerance)
+                    else if (v == min)
                     {
                         //same or almost as good as current limit, so store it
                         minIndices.Add(j);
                     }
-                    difference = v - max;
-                    if (difference >= PlaneDistanceTolerance)
+                    if (v > max)
                     {
                         // you found a better solution than before, clear out the list and store new value
                         max = v;
                         maxIndices.Clear();
                         maxIndices.Add(j);
                     }
-                    else if (difference > 0)
-                    {
-                        // you found a solution slightly better than before, clear out those that are no longer on the list and store new value
-                        max = v;
-                        maxIndices.RemoveAll(index => min - GetCoordinate(index, i) > PlaneDistanceTolerance);
-                        maxIndices.Add(j);
-                    }
-                    else if (difference > -PlaneDistanceTolerance)
+                    else if (v == max)
                     {
                         //same or almost as good as current limit, so store it
                         maxIndices.Add(j);
@@ -249,14 +229,10 @@ namespace MIConvexHull
                 }
                 minima[i] = min;
                 maxima[i] = max;
-                minIndices.AddRange(maxIndices);
-                if (minIndices.Count < minNumExtremes)
-                {
-                    minNumExtremes = minIndices.Count;
-                    indexOfDimensionWithLeastExtremes = i;
-                }
-                boundingBoxPoints[i] = minIndices;
+                boundingBoxPoints.AddRange(minIndices);
+                boundingBoxPoints.AddRange(maxIndices);
             }
+            boundingBoxPoints = boundingBoxPoints.Distinct().ToList();
         }
 
         /// <summary>
@@ -323,7 +299,7 @@ namespace MIConvexHull
                 var newFace = FacePool[ObjectManager.GetFace()];
                 newFace.Vertices = vertices;
                 Array.Sort(vertices);
-                mathHelper.CalculateFacePlane(newFace, Center);
+                mathHelper.CalculateFacePlane(newFace, InsidePoint);
                 faces[i] = newFace.Index;
             }
             // update the adjacency (check all pairs of faces)
@@ -345,141 +321,153 @@ namespace MIConvexHull
             #endregion
 
             // Set all vertices to false (unvisited).
-            foreach (var vertex in initialPoints) VertexVisited[vertex] = false;
+            // foreach (var vertex in initialPoints) VertexVisited[vertex] = false;
         }
-
-        /// <summary>
-        /// Finds (dimension + 1) initial points.
-        /// </summary>
-        /// <returns>List&lt;System.Int32&gt;.</returns>
-        /// <exception cref="System.ArgumentException">The input data is degenerate. It appears to exist in " + NumOfDimensions +
-        ///                     " dimensions, but it is a " + (NumOfDimensions - 1) + " dimensional set (i.e. the point of collinear,"
-        ///                     + " coplanar, or co-hyperplanar.)</exception>
+        const int NumberOfInitSimplicesToTest = 5;
         private List<int> FindInitialPoints()
         {
-            var bigNumber = maxima.Sum() * NumOfDimensions * NumberOfVertices;
-            // the first two points are taken from the dimension that had the fewest extremes
-            // well, in most cases there will only be 2 in all dimensions: one min and one max
-            // but a lot of engineering part shapes are nice and square and can have hundreds of 
-            // parallel vertices at the extremes
-            var vertex1 = boundingBoxPoints[indexOfDimensionWithLeastExtremes].First(); // these are min and max vertices along
-            var vertex2 = boundingBoxPoints[indexOfDimensionWithLeastExtremes].Last(); // the dimension that had the fewest points
-            boundingBoxPoints[indexOfDimensionWithLeastExtremes].RemoveAt(0);
-            boundingBoxPoints[indexOfDimensionWithLeastExtremes].RemoveAt(boundingBoxPoints[indexOfDimensionWithLeastExtremes].Count - 1);
-            var initialPoints = new List<int> { vertex1, vertex2 };
-            VertexVisited[vertex1] = VertexVisited[vertex2] = true;
-            CurrentVertex = vertex1; UpdateCenter();
-            CurrentVertex = vertex2; UpdateCenter();
-            var edgeVectors = new double[NumOfDimensions][];
-            edgeVectors[0] = mathHelper.VectorBetweenVertices(vertex2, vertex1);
-            // now the remaining vertices are just combined in one big list
-            var extremes = boundingBoxPoints.SelectMany(x => x).ToList();
-            // otherwise find the remaining points by maximizing the initial simplex volume
-            var index = 1;
-            while (index < NumOfDimensions && extremes.Any())
+            var random = new Random();
+            List<int> bestVertexIndices = null;
+            var maxVolume = 0.0;
+            var numBBPoints = boundingBoxPoints.Count;
+            var degenerate = true;
+            if ((NumOfDimensions + 1) < numBBPoints)
             {
-                var bestVertex = -1;
-                var bestEdgeVector = new double[] { };
-                var maxVolume = Constants.DefaultPlaneDistanceTolerance;
-                for (var i = extremes.Count - 1; i >= 0; i--)
+                for (int i = 0; i < NumberOfInitSimplicesToTest; i++)
                 {
-                    // count backwards in order to remove potential duplicates
-                    var vIndex = extremes[i];
-                    if (initialPoints.Contains(vIndex)) extremes.RemoveAt(i);
+                    var vertexIndices = new List<int>(); //[NumOfDimensions + 1];
+                    var alreadyChosenIndices = new HashSet<int>();
+                    var numRandomIndices = (2 * (NumOfDimensions + 1) <= numBBPoints)
+                        ? NumOfDimensions + 1 : numBBPoints - NumOfDimensions - 1;
+                    while (alreadyChosenIndices.Count < numRandomIndices)
+                    {
+                        var index = random.Next(numBBPoints);
+                        if (alreadyChosenIndices.Contains(index)) continue;
+                        alreadyChosenIndices.Add(index);
+                    }
+                    if (2 * (NumOfDimensions + 1) <= numBBPoints)
+                        foreach (var index in alreadyChosenIndices)
+                            vertexIndices.Add(boundingBoxPoints[index]);
                     else
                     {
-                        edgeVectors[index] = mathHelper.VectorBetweenVertices(vIndex, vertex1);
-                        var volume = mathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
-                        if (maxVolume < volume)
-                        {
-                            maxVolume = volume;
-                            bestVertex = vIndex;
-                            bestEdgeVector = edgeVectors[index];
-                        }
+                        for (int j = 0; j < numBBPoints; j++)
+                            if (!alreadyChosenIndices.Contains(j))
+                                vertexIndices.Add(boundingBoxPoints[j]);
                     }
-                }
-                extremes.Remove(bestVertex);
-                if (bestVertex == -1) break;
-                initialPoints.Add(bestVertex);
-                edgeVectors[index++] = bestEdgeVector;
-                CurrentVertex = bestVertex; UpdateCenter();
-            }
-            // hmm, there are not enough points on the bounding box to make a simplex. It is rare but entirely possibly.
-            // As an extreme, the bounding box can be made in n dimensions from only 2 unique points. When we can't find
-            // enough unique points, we start again with ALL the vertices. The following is a near replica of the code 
-            // above, but instead of extremes, we consider "allVertices".
-            if (initialPoints.Count <= NumOfDimensions && !IsLifted)
-            {
-                var allVertices = Enumerable.Range(0, NumberOfVertices).ToList();
-                while (index < NumOfDimensions && allVertices.Any())
-                {
-                    var bestVertex = -1;
-                    var bestEdgeVector = new double[] { };
-                    var maxVolume = 0.0;
-                    for (var i = allVertices.Count - 1; i >= 0; i--)
+                    var volume = mathHelper.VolumeOfSimplex(vertexIndices);
+                    if (maxVolume < volume)
                     {
-                        // count backwards in order to remove potential duplicates
-                        var vIndex = allVertices[i];
-                        if (initialPoints.Contains(vIndex)) allVertices.RemoveAt(i);
-                        else
-                        {
-                            edgeVectors[index] = mathHelper.VectorBetweenVertices(vIndex, vertex1);
-                            var volume = mathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
-                            if (maxVolume < volume)
-                            {
-                                maxVolume = volume;
-                                bestVertex = vIndex;
-                                bestEdgeVector = edgeVectors[index];
-                            }
-                        }
+                        maxVolume = volume;
+                        bestVertexIndices = vertexIndices;
                     }
-                    allVertices.Remove(bestVertex);
-                    if (bestVertex == -1) break;
-                    initialPoints.Add(bestVertex);
-                    edgeVectors[index++] = bestEdgeVector;
-                    CurrentVertex = bestVertex; UpdateCenter();
                 }
+                degenerate = maxVolume == 0;
             }
-            if (initialPoints.Count <= NumOfDimensions && IsLifted)
+            else if ((NumOfDimensions + 1) == numBBPoints)
             {
-                var allVertices = Enumerable.Range(0, NumberOfVertices).ToList();
-                while (index < NumOfDimensions && allVertices.Any())
+                bestVertexIndices = boundingBoxPoints;
+                degenerate = mathHelper.VolumeOfSimplex(boundingBoxPoints) == 0;
+            }
+            if (degenerate)// need extra points that are not on the bounding box
+            {
+                if (NumOfDimensions <= numBBPoints)
                 {
-                    var bestVertex = -1;
-                    var bestEdgeVector = new double[] { };
-                    var maxVolume = 0.0;
-                    for (var i = allVertices.Count - 1; i >= 0; i--)
+                    var vertexIndices = RemoveNVerticesClosestToCentroid(boundingBoxPoints, NumOfDimensions);
+                    var plane = new ConvexFaceInternal(NumOfDimensions, 0, new IndexBuffer());
+                    plane.Vertices = vertexIndices;
+                    mathHelper.CalculateFacePlane(plane, new double[3]);
+                    var maxDistance = 0.0;
+                    var newVertexIndex = -1;
+                    for (int i = 0; i < NumberOfVertices; i++)
                     {
-                        // count backwards in order to remove potential duplicates
-                        var vIndex = allVertices[i];
-                        if (initialPoints.Contains(vIndex)) allVertices.RemoveAt(i);
-                        else
+                        var distance = Math.Abs(mathHelper.GetVertexDistance(i, plane));
+                        if (maxDistance < distance)
                         {
-                            mathHelper.RandomOffsetToLift(vIndex, maxima.Last() - minima.Last());
-                            edgeVectors[index] = mathHelper.VectorBetweenVertices(vIndex, vertex1);
-                            var volume = mathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
-                            if (maxVolume < volume)
-                            {
-                                maxVolume = volume;
-                                bestVertex = vIndex;
-                                bestEdgeVector = edgeVectors[index];
-                            }
+                            maxDistance = distance;
+                            newVertexIndex = i;
                         }
                     }
-                    allVertices.Remove(bestVertex);
-                    if (bestVertex == -1) break;
-                    initialPoints.Add(bestVertex);
-                    edgeVectors[index++] = bestEdgeVector;
-                    CurrentVertex = bestVertex; UpdateCenter();
+                    if (newVertexIndex != -1)
+                    {
+                        bestVertexIndices = new List<int>(vertexIndices);
+                        bestVertexIndices.Add(newVertexIndex);
+                        degenerate = false;
+                    }
+                }
+                else
+                {
+                    bestVertexIndices = AddNVerticesFarthestToCentroid(boundingBoxPoints, NumOfDimensions + 1);
+                    degenerate = mathHelper.VolumeOfSimplex(boundingBoxPoints) == 0;
                 }
             }
-            if (initialPoints.Count <= NumOfDimensions && IsLifted)
-                throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DegenerateData, "The input data is degenerate. It appears to exist in " + NumOfDimensions +
-                    " dimensions, but it is a " + (NumOfDimensions - 1) + " dimensional set (i.e. the point of collinear,"
-                    + " coplanar, or co-hyperplanar.)");
-            return initialPoints;
+            if (degenerate) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DegenerateData,
+                  "Failed to find initial simplex shape with non-zero volume. While data appears to be in " + NumOfDimensions +
+                  " dimensions, the data is all co-planar (or collinear, co-hyperplanar) and is representable by fewer dimensions.");
+            InsidePoint = CalculateVertexCentriod(bestVertexIndices);
+            return bestVertexIndices;
         }
 
+        private int[] RemoveNVerticesClosestToCentroid(List<int> vertexIndices, int n)
+        {
+            var centroid = CalculateVertexCentriod(vertexIndices);
+            var vertsToRemove = new SortedDictionary<double, int>();
+            foreach (var v in vertexIndices)
+            {
+                var distanceSquared = 0.0;
+                for (int i = 0; i < NumOfDimensions; i++)
+                {
+                    var d = centroid[i] - Positions[i + NumOfDimensions * v];
+                    distanceSquared = d * d;
+                }
+                if (vertsToRemove.Count < n) vertsToRemove.Add(distanceSquared, v);
+                else if (vertsToRemove.Keys.Last() > distanceSquared)
+                {
+                    vertsToRemove.Add(distanceSquared, v);
+                    vertsToRemove.Remove(vertsToRemove.Keys.Last());
+                }
+            }
+            return vertsToRemove.Values.ToArray();
+        }
+        private List<int> AddNVerticesFarthestToCentroid(List<int> vertexIndices, int n)
+        {
+            var newVertsList = new List<int>(vertexIndices);
+            while (newVertsList.Count < n)
+            {
+                var centroid = CalculateVertexCentriod(newVertsList);
+                var maxDistance = 0.0;
+                var newVert = -1;
+                for (int v = 0; v < NumberOfVertices; v++)
+                {
+                    if (newVertsList.Contains(v)) continue;
+                    var distanceSquared = 0.0;
+                    for (int i = 0; i < NumOfDimensions; i++)
+                    {
+                        var d = centroid[i] - Positions[i + NumOfDimensions * v];
+                        distanceSquared = d * d;
+                    }
+                    if (maxDistance < distanceSquared)
+                    {
+                        maxDistance = distanceSquared;
+                        newVert = v;
+                    }
+                }
+                newVertsList.Add(newVert);
+            }
+            return newVertsList;
+        }
+
+        private double[] CalculateVertexCentriod(IList<int> vertexIndices)
+        {
+            var numPoints = vertexIndices.Count;
+            var centroid = new double[NumOfDimensions];
+            for (int i = 0; i < NumOfDimensions; i++)
+            {
+                for (int j = 0; j < numPoints; j++)
+                    centroid[i] += this.Positions[i + NumOfDimensions * vertexIndices[j]];
+                centroid[i] /= numPoints;
+            }
+            return centroid;
+        }
         /// <summary>
         /// Check if 2 faces are adjacent and if so, update their AdjacentFaces array.
         /// </summary>
@@ -492,13 +480,13 @@ namespace MIConvexHull
             int i;
 
             // reset marks on the 1st face
-            for (i = 0; i < lv.Length; i++) VertexVisited[lv[i]] = false;
+            for (i = 0; i < NumOfDimensions; i++) VertexVisited[lv[i]] = false;
 
             // mark all vertices on the 2nd face
-            for (i = 0; i < rv.Length; i++) VertexVisited[rv[i]] = true;
+            for (i = 0; i < NumOfDimensions; i++) VertexVisited[rv[i]] = true;
 
             // find the 1st false index
-            for (i = 0; i < lv.Length; i++) if (!VertexVisited[lv[i]]) break;
+            for (i = 0; i < NumOfDimensions; i++) if (!VertexVisited[lv[i]]) break;
 
             // no vertex was marked
             if (i == NumOfDimensions) return;
@@ -624,9 +612,12 @@ namespace MIConvexHull
         private int FurthestVertex;
 
         /// <summary>
-        /// The centroid of the currently computed hull.
+        /// The inside point is used to determine which side of the face is pointing inside
+        /// and which is pointing outside. This may be relatively trivial for 3D, but it is
+        /// unknown for higher dimensions. It is calculated as the average of the initial
+        /// simplex points.
         /// </summary>
-        private readonly double[] Center;
+        private double[] InsidePoint;
 
         /*
          * Helper arrays to store faces for adjacency update.
@@ -688,8 +679,7 @@ namespace MIConvexHull
         /// Helper class for handling math related stuff.
         /// </summary>
         private readonly MathHelper mathHelper;
-        private readonly List<int>[] boundingBoxPoints;
-        private int indexOfDimensionWithLeastExtremes;
+        private List<int> boundingBoxPoints;
         private readonly double[] minima;
         private readonly double[] maxima;
         #endregion

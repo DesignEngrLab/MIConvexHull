@@ -40,5 +40,19 @@ namespace MIConvexHull
         /// The connector table size
         /// </summary>
         internal const int ConnectorTableSize = 2017;
+
+
+        internal const double DefaultEqualityTolerance = 1e-15;
+        /// <summary>
+        /// Determines whether the specified x is negligible (|x| lte 1e-15).
+        /// </summary>
+        /// <param name="x">The x.</param>
+        /// <param name="optionalTolerance">An optional tolerance.</param>
+        /// <returns><c>true</c> if the specified x is negligible; otherwise, <c>false</c>.</returns>
+        internal static bool IsNegligible(this double x, double optionalTolerance = DefaultEqualityTolerance)
+        {
+            return (System.Math.Abs(x) <= optionalTolerance);
+        }
+
     }
 }

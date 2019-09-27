@@ -223,7 +223,7 @@ namespace MIConvexHull
 
                     vertices[orderedPivotIndex] = CurrentVertex;
 
-                    if (!mathHelper.CalculateFacePlane(newFace, Center))
+                    if (!mathHelper.CalculateFacePlane(newFace, InsidePoint))
                     {
                         return false;
                     }
@@ -420,35 +420,10 @@ namespace MIConvexHull
         }
 
         /// <summary>
-        /// Recalculates the centroid of the current hull.
-        /// </summary>
-        private void UpdateCenter()
-        {
-            for (var i = 0; i < NumOfDimensions; i++) Center[i] *= ConvexHullSize;
-            ConvexHullSize += 1;
-            var f = 1.0 / ConvexHullSize;
-            var co = CurrentVertex * NumOfDimensions;
-            for (var i = 0; i < NumOfDimensions; i++) Center[i] = f * (Center[i] + Positions[co + i]);
-        }
-
-        /// <summary>
-        /// Removes the last vertex from the center.
-        /// </summary>
-        private void RollbackCenter()
-        {
-            for (var i = 0; i < NumOfDimensions; i++) Center[i] *= ConvexHullSize;
-            ConvexHullSize -= 1;
-            var f = ConvexHullSize > 0 ? 1.0 / ConvexHullSize : 0.0;
-            var co = CurrentVertex * NumOfDimensions;
-            for (var i = 0; i < NumOfDimensions; i++) Center[i] = f * (Center[i] - Positions[co + i]);
-        }
-
-        /// <summary>
         /// Handles singular vertex.
         /// </summary>
         private void HandleSingular()
         {
-            RollbackCenter();
             SingularVertices.Add(CurrentVertex);
 
             // This means that all the affected faces must be on the hull and that all their "vertices beyond" are singular.

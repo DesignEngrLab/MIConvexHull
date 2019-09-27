@@ -8,7 +8,7 @@
     <ProjectGuid>{878DB77C-3BC3-4815-B47E-A45DE7F3F3D6}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TestEXE_for_StarMat</RootNamespace>
+    <RootNamespace>TestEXE_for_MIConvexHull</RootNamespace>
     <AssemblyName>test</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
