@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MIConvexHull
 {
@@ -142,7 +143,8 @@ namespace MIConvexHull
             var normal = f.Normal;
             var x = v * Dimension;
             var distance = f.Offset;
-            for (var i = 0; i < normal.Length; i++) distance += normal[i] * PositionData[x + i];
+            for (var i = 0; i < normal.Length; i++)
+                distance += normal[i] * PositionData[x + i];
             return distance;
         }
 
@@ -174,12 +176,6 @@ namespace MIConvexHull
             }
         }
 
-        internal void RandomOffsetToLift(int index, double maxHeight)
-        {
-            var random = new Random();
-            var liftIndex = (index * Dimension) + Dimension - 1;
-            PositionData[liftIndex] += 0.0001 * maxHeight * (random.NextDouble() - 0.5);
-        }
         #region Find the normal vector of the face
         /// <summary>
         /// Finds normal vector of a hyper-plane given by vertices.
@@ -356,13 +352,14 @@ namespace MIConvexHull
                     A[(i + 1) + (j + 1) * numRowCol] = distanceSquared;
                     A[(j + 1) + (i + 1) * numRowCol] = distanceSquared;
                 }
-            var iPiv = new int[Dimension];
-            var helper = new double[Dimension];
-            LUFactor(A, Dimension, iPiv, helper);
+            var iPiv = new int[2 + Dimension];
+            var helper = new double[2 + Dimension];
+            // determinant(A, 2 + Dimension);  //, iPiv, helper);
+            LUFactor(A, 2 + Dimension, iPiv, helper);
             var det = 1.0;
             for (var i = 0; i < iPiv.Length; i++)
             {
-                det *= A[Dimension * i + i];
+                det *= A[(2 + Dimension) * i + i];
                 if (iPiv[i] != i) det *= -1; // the determinant sign changes on row swap.
             }
             if (divideByConstToGetActualVolume)
