@@ -500,9 +500,7 @@ namespace MIConvexHull
         // if it errors - it is because there are two points at the same distance along. So, we then
         // check if the new point or the existing one on the list should stay. Simply keep the one that is
         // furthest from the edge vector.
-#if NETSTANDARD
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private static bool AddToListAlong<TVertex>(TVertex[] sortedPoints, double[] sortedKeys, ref int size,
                 TVertex newPoint, double newPointX, double newPointY, double basePointX, double basePointY,
                 double edgeVectorX, double edgeVectorY, double tolerance) where TVertex : IVertex2D
@@ -574,9 +572,7 @@ namespace MIConvexHull
 
         // This binary search is modified/simplified from Array.BinarySearch
         // (https://referencesource.microsoft.com/mscorlib/a.html#b92d187c91d4c9a9)
-#if NETSTANDARD
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private static int BinarySearch(double[] array, int length, double value)
         {
             var lo = 0;

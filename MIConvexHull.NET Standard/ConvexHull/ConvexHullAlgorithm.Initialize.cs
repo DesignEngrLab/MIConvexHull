@@ -69,8 +69,8 @@ namespace MIConvexHull
             NumOfDimensions = DetermineDimension();
             if (IsLifted) NumOfDimensions++;
             if (NumOfDimensions < 2) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DimensionSmallerTwo, "Dimension of the input must be 2 or greater.");
-            if (NumOfDimensions== 2) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DimensionTwoWrongMethod, "Dimension of the input is 2. Thus you should use the Create2D method" +
-                " instead of the Create.");
+            if (NumOfDimensions == 2) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DimensionTwoWrongMethod, "Dimension of the input is 2. Thus you should use the Create2D method" +
+                 " instead of the Create.");
             if (NumberOfVertices <= NumOfDimensions)
                 throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.NotEnoughVerticesForDimension,
                     "There are too few vertices (m) for the n-dimensional space. (m must be greater " +
@@ -83,7 +83,7 @@ namespace MIConvexHull
             AffectedFaceFlags = new bool[(NumOfDimensions + 1) * 10];
             ObjectManager = new ObjectManager(this);
 
-            Center = new double[NumOfDimensions];
+            InsidePoint = new double[NumOfDimensions];
             TraverseStack = new IndexBuffer();
             UpdateBuffer = new int[NumOfDimensions];
             UpdateIndices = new int[NumOfDimensions];
@@ -142,8 +142,6 @@ namespace MIConvexHull
             {
                 var currentFace = UnprocessedFaces.First;
                 CurrentVertex = currentFace.FurthestVertex;
-
-                UpdateCenter();
 
                 // The affected faces get tagged
                 TagAffectedFaces(currentFace);
@@ -323,7 +321,7 @@ namespace MIConvexHull
                 var newFace = FacePool[ObjectManager.GetFace()];
                 newFace.Vertices = vertices;
                 Array.Sort(vertices);
-                mathHelper.CalculateFacePlane(newFace, Center);
+                mathHelper.CalculateFacePlane(newFace, InsidePoint);
                 faces[i] = newFace.Index;
             }
             // update the adjacency (check all pairs of faces)
@@ -345,141 +343,42 @@ namespace MIConvexHull
             #endregion
 
             // Set all vertices to false (unvisited).
-            foreach (var vertex in initialPoints) VertexVisited[vertex] = false;
+            // foreach (var vertex in initialPoints) VertexVisited[vertex] = false;
         }
-
-        /// <summary>
-        /// Finds (dimension + 1) initial points.
-        /// </summary>
-        /// <returns>List&lt;System.Int32&gt;.</returns>
-        /// <exception cref="System.ArgumentException">The input data is degenerate. It appears to exist in " + NumOfDimensions +
-        ///                     " dimensions, but it is a " + (NumOfDimensions - 1) + " dimensional set (i.e. the point of collinear,"
-        ///                     + " coplanar, or co-hyperplanar.)</exception>
+        const int NumberOfInitSimplicesToTest = 5;
         private List<int> FindInitialPoints()
         {
-            var bigNumber = maxima.Sum() * NumOfDimensions * NumberOfVertices;
-            // the first two points are taken from the dimension that had the fewest extremes
-            // well, in most cases there will only be 2 in all dimensions: one min and one max
-            // but a lot of engineering part shapes are nice and square and can have hundreds of 
-            // parallel vertices at the extremes
-            var vertex1 = boundingBoxPoints[indexOfDimensionWithLeastExtremes].First(); // these are min and max vertices along
-            var vertex2 = boundingBoxPoints[indexOfDimensionWithLeastExtremes].Last(); // the dimension that had the fewest points
-            boundingBoxPoints[indexOfDimensionWithLeastExtremes].RemoveAt(0);
-            boundingBoxPoints[indexOfDimensionWithLeastExtremes].RemoveAt(boundingBoxPoints[indexOfDimensionWithLeastExtremes].Count - 1);
-            var initialPoints = new List<int> { vertex1, vertex2 };
-            VertexVisited[vertex1] = VertexVisited[vertex2] = true;
-            CurrentVertex = vertex1; UpdateCenter();
-            CurrentVertex = vertex2; UpdateCenter();
-            var edgeVectors = new double[NumOfDimensions][];
-            edgeVectors[0] = mathHelper.VectorBetweenVertices(vertex2, vertex1);
-            // now the remaining vertices are just combined in one big list
-            var extremes = boundingBoxPoints.SelectMany(x => x).ToList();
-            // otherwise find the remaining points by maximizing the initial simplex volume
-            var index = 1;
-            while (index < NumOfDimensions && extremes.Any())
+            var random = new Random();
+            List<int> bestVertexIndices = null;
+            var maxVolume = 0.0;
+            for (int i = 0; i < NumberOfInitSimplicesToTest; i++)
             {
-                var bestVertex = -1;
-                var bestEdgeVector = new double[] { };
-                var maxVolume = Constants.DefaultPlaneDistanceTolerance;
-                for (var i = extremes.Count - 1; i >= 0; i--)
+                var vertexIndices = new List<int>(); //[NumOfDimensions + 1];
+                while (vertexIndices.Count <= NumOfDimensions)
                 {
-                    // count backwards in order to remove potential duplicates
-                    var vIndex = extremes[i];
-                    if (initialPoints.Contains(vIndex)) extremes.RemoveAt(i);
-                    else
-                    {
-                        edgeVectors[index] = mathHelper.VectorBetweenVertices(vIndex, vertex1);
-                        var volume = mathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
-                        if (maxVolume < volume)
-                        {
-                            maxVolume = volume;
-                            bestVertex = vIndex;
-                            bestEdgeVector = edgeVectors[index];
-                        }
-                    }
+                    var index = random.Next(NumberOfVertices);
+                    if (!vertexIndices.Contains(index)) vertexIndices.Add(index);
                 }
-                extremes.Remove(bestVertex);
-                if (bestVertex == -1) break;
-                initialPoints.Add(bestVertex);
-                edgeVectors[index++] = bestEdgeVector;
-                CurrentVertex = bestVertex; UpdateCenter();
-            }
-            // hmm, there are not enough points on the bounding box to make a simplex. It is rare but entirely possibly.
-            // As an extreme, the bounding box can be made in n dimensions from only 2 unique points. When we can't find
-            // enough unique points, we start again with ALL the vertices. The following is a near replica of the code 
-            // above, but instead of extremes, we consider "allVertices".
-            if (initialPoints.Count <= NumOfDimensions && !IsLifted)
-            {
-                var allVertices = Enumerable.Range(0, NumberOfVertices).ToList();
-                while (index < NumOfDimensions && allVertices.Any())
+                //for (int j = 0; j <= NumOfDimensions; j++)
+                //    vertexIndices[j] =  // i * increment + j * indexStep;
+                var volume = Math.Abs(mathHelper.VolumeOfSimplex(vertexIndices));
+                if (maxVolume < volume)
                 {
-                    var bestVertex = -1;
-                    var bestEdgeVector = new double[] { };
-                    var maxVolume = 0.0;
-                    for (var i = allVertices.Count - 1; i >= 0; i--)
-                    {
-                        // count backwards in order to remove potential duplicates
-                        var vIndex = allVertices[i];
-                        if (initialPoints.Contains(vIndex)) allVertices.RemoveAt(i);
-                        else
-                        {
-                            edgeVectors[index] = mathHelper.VectorBetweenVertices(vIndex, vertex1);
-                            var volume = mathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
-                            if (maxVolume < volume)
-                            {
-                                maxVolume = volume;
-                                bestVertex = vIndex;
-                                bestEdgeVector = edgeVectors[index];
-                            }
-                        }
-                    }
-                    allVertices.Remove(bestVertex);
-                    if (bestVertex == -1) break;
-                    initialPoints.Add(bestVertex);
-                    edgeVectors[index++] = bestEdgeVector;
-                    CurrentVertex = bestVertex; UpdateCenter();
+                    maxVolume = volume;
+                    bestVertexIndices = vertexIndices;
                 }
             }
-            if (initialPoints.Count <= NumOfDimensions && IsLifted)
+            if (maxVolume == 0) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DegenerateData,
+                  "Failed to find initial simplex shape with non-zero volume. While data appears to be in " + NumOfDimensions +
+                  " dimensions, the data is all co-planar (or collinear, co-hyperplanar) and is representable by fewer dimensions.");
+            for (int i = 0; i < NumOfDimensions; i++)
             {
-                var allVertices = Enumerable.Range(0, NumberOfVertices).ToList();
-                while (index < NumOfDimensions && allVertices.Any())
-                {
-                    var bestVertex = -1;
-                    var bestEdgeVector = new double[] { };
-                    var maxVolume = 0.0;
-                    for (var i = allVertices.Count - 1; i >= 0; i--)
-                    {
-                        // count backwards in order to remove potential duplicates
-                        var vIndex = allVertices[i];
-                        if (initialPoints.Contains(vIndex)) allVertices.RemoveAt(i);
-                        else
-                        {
-                            mathHelper.RandomOffsetToLift(vIndex, maxima.Last() - minima.Last());
-                            edgeVectors[index] = mathHelper.VectorBetweenVertices(vIndex, vertex1);
-                            var volume = mathHelper.GetSimplexVolume(edgeVectors, index, bigNumber);
-                            if (maxVolume < volume)
-                            {
-                                maxVolume = volume;
-                                bestVertex = vIndex;
-                                bestEdgeVector = edgeVectors[index];
-                            }
-                        }
-                    }
-                    allVertices.Remove(bestVertex);
-                    if (bestVertex == -1) break;
-                    initialPoints.Add(bestVertex);
-                    edgeVectors[index++] = bestEdgeVector;
-                    CurrentVertex = bestVertex; UpdateCenter();
-                }
+                for (int j = 0; j <= NumOfDimensions; j++)
+                    InsidePoint[i] += this.Positions[i + NumOfDimensions * bestVertexIndices[j]];
+                InsidePoint[i] /= (NumOfDimensions + 1);
             }
-            if (initialPoints.Count <= NumOfDimensions && IsLifted)
-                throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DegenerateData, "The input data is degenerate. It appears to exist in " + NumOfDimensions +
-                    " dimensions, but it is a " + (NumOfDimensions - 1) + " dimensional set (i.e. the point of collinear,"
-                    + " coplanar, or co-hyperplanar.)");
-            return initialPoints;
+            return bestVertexIndices;
         }
-
         /// <summary>
         /// Check if 2 faces are adjacent and if so, update their AdjacentFaces array.
         /// </summary>
@@ -492,13 +391,13 @@ namespace MIConvexHull
             int i;
 
             // reset marks on the 1st face
-            for (i = 0; i < lv.Length; i++) VertexVisited[lv[i]] = false;
+            for (i = 0; i < NumOfDimensions; i++) VertexVisited[lv[i]] = false;
 
             // mark all vertices on the 2nd face
-            for (i = 0; i < rv.Length; i++) VertexVisited[rv[i]] = true;
+            for (i = 0; i < NumOfDimensions; i++) VertexVisited[rv[i]] = true;
 
             // find the 1st false index
-            for (i = 0; i < lv.Length; i++) if (!VertexVisited[lv[i]]) break;
+            for (i = 0; i < NumOfDimensions; i++) if (!VertexVisited[lv[i]]) break;
 
             // no vertex was marked
             if (i == NumOfDimensions) return;
@@ -624,9 +523,12 @@ namespace MIConvexHull
         private int FurthestVertex;
 
         /// <summary>
-        /// The centroid of the currently computed hull.
+        /// The inside point is used to determine which side of the face is pointing inside
+        /// and which is pointing outside. This may be relatively trivial for 3D, but it is
+        /// unknown for higher dimensions. It is calculated as the average of the initial
+        /// simplex points.
         /// </summary>
-        private readonly double[] Center;
+        private readonly double[] InsidePoint;
 
         /*
          * Helper arrays to store faces for adjacency update.

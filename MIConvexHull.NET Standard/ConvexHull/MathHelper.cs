@@ -25,6 +25,7 @@
  *****************************************************************************/
 
 using System;
+using System.Collections.Generic;
 
 namespace MIConvexHull
 {
@@ -329,66 +330,50 @@ namespace MIConvexHull
         #endregion
 
         #region Simplex Volume
-        /// <summary>
-        /// Gets the simplex volume. Prior to having enough edge vectors, the method pads the remaining with all
-        /// "other numbers". So, yes, this method is not really finding the volume. But a relative volume-like measure. It
-        /// uses the magnitude of the determinant as the volume stand-in following the Cayley-Menger theorem.
-        /// </summary>
-        /// <param name="edgeVectors">The edge vectors.</param>
-        /// <param name="lastIndex">The last index.</param>
-        /// <param name="bigNumber">The big number.</param>
-        /// <returns>System.Double.</returns>
-        internal double GetSimplexVolume(double[][] edgeVectors, int lastIndex, double bigNumber)
-        {
-            var A = new double[Dimension * Dimension];
-            var index = 0;
-            for (int i = 0; i < Dimension; i++)
-                for (int j = 0; j < Dimension; j++)
-                    if (i <= lastIndex)
-                        A[index++] = edgeVectors[i][j];
-                    else A[index] = (Math.Pow(-1, index) * index++) / bigNumber;
-            // this last term is used for all the vertices in the comparison for the yet determined vertices
-            // the idea is to come up with sets of numbers that are orthogonal so that an non-zero value will result
-            // and to choose smallish numbers since the choice of vectors will affect what the end volume is.
-            // A better way (todo?) is to solve a smaller matrix. However, cases were found in which the obvious smaller vector
-            // (the upper left) had too many zeros. So, one would need to find the right subset. Indeed choosing a subset
-            // biases the first dimensions of the others. Perhaps a larger volume would be created from a different vertex
-            // if another subset of dimensions were used. 
-            return Math.Abs(DeterminantDestructive(A));
-        }
 
         /// <summary>
-        /// Determinants the destructive.
+        /// Determinants the volume of the simplex.
         /// </summary>
         /// <param name="A">a.</param>
         /// <returns>System.Double.</returns>
-        private double DeterminantDestructive(double[] A)
+        internal double VolumeOfSimplex(IList<int> vertexIndices, bool divideByConstToGetActualVolume = false)
         {
-            switch (Dimension)
+            // this is the Cayley-Menger determinant, so a matrix is defined that is numDimensions+2
+            var numRowCol = Dimension + 2;
+            var A = new double[numRowCol * numRowCol];
+            for (int i = 1; i < numRowCol; i++)
             {
-                case 0:
-                    return 0.0;
-                case 1:
-                    return A[0];
-                case 2:
-                    return A[0] * A[3] - A[1] * A[2];
-                case 3:
-                    return A[0] * A[4] * A[8] + A[1] * A[5] * A[6] + A[2] * A[3] * A[7]
-                           - A[0] * A[5] * A[7] - A[1] * A[3] * A[8] - A[2] * A[4] * A[6];
-                default:
-                    {
-                        var iPiv = new int[Dimension];
-                        var helper = new double[Dimension];
-                        LUFactor(A, Dimension, iPiv, helper);
-                        var det = 1.0;
-                        for (var i = 0; i < iPiv.Length; i++)
-                        {
-                            det *= A[Dimension * i + i];
-                            if (iPiv[i] != i) det *= -1; // the determinant sign changes on row swap.
-                        }
-                        return det;
-                    }
+                A[i] = 1;
+                A[i * numRowCol] = 1;
             }
+            for (int i = 0; i <= Dimension; i++)
+                for (int j = i + 1; j <= Dimension; j++)
+                {
+                    var d = VectorBetweenVertices(vertexIndices[i], vertexIndices[j]);
+                    var distanceSquared = 0.0;
+                    for (int k = 0; k < Dimension; k++)
+                        distanceSquared += d[k] * d[k];
+                    A[(i + 1) + (j + 1) * numRowCol] = distanceSquared;
+                    A[(j + 1) + (i + 1) * numRowCol] = distanceSquared;
+                }
+            var iPiv = new int[Dimension];
+            var helper = new double[Dimension];
+            LUFactor(A, Dimension, iPiv, helper);
+            var det = 1.0;
+            for (var i = 0; i < iPiv.Length; i++)
+            {
+                det *= A[Dimension * i + i];
+                if (iPiv[i] != i) det *= -1; // the determinant sign changes on row swap.
+            }
+            if (divideByConstToGetActualVolume)
+            {
+                var denom = Math.Pow(2, Dimension);
+                var i = 1;
+                while (i++ < Dimension) denom *= i;
+                det /= denom;
+            }
+            if (Dimension % 2 == 0) det *= -1;
+            return det;
         }
         #endregion
 
@@ -402,7 +387,7 @@ namespace MIConvexHull
         /// <param name="order">The order.</param>
         /// <param name="ipiv">The ipiv.</param>
         /// <param name="vecLUcolj">The vec l ucolj.</param>
-        private static void LUFactor(double[] data, int order, int[] ipiv, double[] vecLUcolj)
+        private static void LUFactor(IList<double> data, int order, int[] ipiv, double[] vecLUcolj)
         {
             // Initialize the pivot matrix to the identity permutation.
             for (var i = 0; i < order; i++)

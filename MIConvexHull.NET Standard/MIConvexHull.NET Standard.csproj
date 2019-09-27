@@ -23,17 +23,4 @@
     <RootNamespace>MIConvexHull</RootNamespace>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>NETSTANDARD</DefineConstants>
-    <Optimize>false</Optimize>
-    <WarningLevel>0</WarningLevel>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants />
-    <Optimize>true</Optimize>
-  </PropertyGroup>
-
-
-
 </Project>
