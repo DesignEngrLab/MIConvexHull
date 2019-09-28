@@ -366,15 +366,15 @@ namespace MIConvexHull
             else if ((NumOfDimensions + 1) == numBBPoints)
             {
                 bestVertexIndices = boundingBoxPoints;
-                degenerate = mathHelper.VolumeOfSimplex(boundingBoxPoints) == 0;
+                degenerate = mathHelper.VolumeOfSimplex(boundingBoxPoints) <= Constants.DefaultPlaneDistanceTolerance;
             }
             if (degenerate)// need extra points that are not on the bounding box
             {
                 if (NumOfDimensions <= numBBPoints)
                 {
-                    var vertexIndices = RemoveNVerticesClosestToCentroid(boundingBoxPoints, NumOfDimensions);
+                    var vertexIndices = RemoveNVerticesClosestToCentroid(boundingBoxPoints, numBBPoints - NumOfDimensions);
                     var plane = new ConvexFaceInternal(NumOfDimensions, 0, new IndexBuffer());
-                    plane.Vertices = vertexIndices;
+                    plane.Vertices = vertexIndices.ToArray();
                     mathHelper.CalculateFacePlane(plane, new double[3]);
                     var maxDistance = 0.0;
                     var newVertexIndex = -1;
@@ -407,7 +407,7 @@ namespace MIConvexHull
             return bestVertexIndices;
         }
 
-        private int[] RemoveNVerticesClosestToCentroid(List<int> vertexIndices, int n)
+        private List<int> RemoveNVerticesClosestToCentroid(List<int> vertexIndices, int n)
         {
             var centroid = CalculateVertexCentriod(vertexIndices);
             var vertsToRemove = new SortedDictionary<double, int>();
@@ -426,8 +426,17 @@ namespace MIConvexHull
                     vertsToRemove.Remove(vertsToRemove.Keys.Last());
                 }
             }
-            return vertsToRemove.Values.ToArray();
+            var newVertexIndices = new List<int>();
+            var hashOfRemoval = new HashSet<int>(vertsToRemove.Values);
+            for (int i = 0; i < vertexIndices.Count; i++)
+            {
+                var v = vertexIndices[i];
+                if (!hashOfRemoval.Contains(v))
+                    newVertexIndices.Add(v);
+            }
+            return newVertexIndices;
         }
+
         private List<int> AddNVerticesFarthestToCentroid(List<int> vertexIndices, int n)
         {
             var newVertsList = new List<int>(vertexIndices);
