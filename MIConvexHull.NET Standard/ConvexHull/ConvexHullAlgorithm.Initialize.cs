@@ -363,7 +363,7 @@ namespace MIConvexHull
         }
         private List<int> FindLargestRandomSimplex(IList<int> bbPoints, IEnumerable<int> otherPoints, out double volume)
         {
-            var random = new Random(5);
+            var random = new Random();
             List<int> bestVertexIndices = null;
             var maxVolume = Constants.DefaultPlaneDistanceTolerance;
             volume = 0.0;
@@ -403,6 +403,7 @@ namespace MIConvexHull
                     bestVertexIndices = vertexIndices;
                 }
             }
+            volume = maxVolume;
             return bestVertexIndices;
         }
         private int FindFarthestPoint(IEnumerable<int> vertexIndices, ConvexFaceInternal plane)
