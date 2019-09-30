@@ -326,85 +326,99 @@ namespace MIConvexHull
         const int NumberOfInitSimplicesToTest = 5;
         private List<int> FindInitialPoints()
         {
-            var random = new Random();
+            // given the way that the algorithm works, points that are put on the convex hull are not
+            // removed. So it is important that we start with a simplex of points guaranteed to be on the
+            // convex hull. This is where the bounding box points come in.
             List<int> bestVertexIndices = null;
-            var maxVolume = 0.0;
             var numBBPoints = boundingBoxPoints.Count;
             var degenerate = true;
-            if ((NumOfDimensions + 1) < numBBPoints)
-            {
-                for (int i = 0; i < NumberOfInitSimplicesToTest; i++)
-                {
-                    var vertexIndices = new List<int>(); //[NumOfDimensions + 1];
-                    var alreadyChosenIndices = new HashSet<int>();
-                    var numRandomIndices = (2 * (NumOfDimensions + 1) <= numBBPoints)
-                        ? NumOfDimensions + 1 : numBBPoints - NumOfDimensions - 1;
-                    while (alreadyChosenIndices.Count < numRandomIndices)
-                    {
-                        var index = random.Next(numBBPoints);
-                        if (alreadyChosenIndices.Contains(index)) continue;
-                        alreadyChosenIndices.Add(index);
-                    }
-                    if (2 * (NumOfDimensions + 1) <= numBBPoints)
-                        foreach (var index in alreadyChosenIndices)
-                            vertexIndices.Add(boundingBoxPoints[index]);
-                    else
-                    {
-                        for (int j = 0; j < numBBPoints; j++)
-                            if (!alreadyChosenIndices.Contains(j))
-                                vertexIndices.Add(boundingBoxPoints[j]);
-                    }
-                    var volume = mathHelper.VolumeOfSimplex(vertexIndices);
-                    if (maxVolume < volume)
-                    {
-                        maxVolume = volume;
-                        bestVertexIndices = vertexIndices;
-                    }
-                }
-                degenerate = maxVolume == 0;
+            if ((NumOfDimensions + 1) > numBBPoints)
+            {  //if there are fewer bounding box points than what is needed for the simplex (this is quite
+               //rare), then add the ones farthest form the centroid of the current bounding box points.
+                boundingBoxPoints = AddNVerticesFarthestToCentroid(boundingBoxPoints, NumOfDimensions + 1);
             }
-            else if ((NumOfDimensions + 1) == numBBPoints)
-            {
+            if ((NumOfDimensions + 1) == numBBPoints)
+            {   // if the number of points is the same then just go with these
                 bestVertexIndices = boundingBoxPoints;
                 degenerate = mathHelper.VolumeOfSimplex(boundingBoxPoints) <= Constants.DefaultPlaneDistanceTolerance;
             }
-            if (degenerate)// need extra points that are not on the bounding box
-            {
-                if (NumOfDimensions <= numBBPoints)
-                {
-                    var vertexIndices = RemoveNVerticesClosestToCentroid(boundingBoxPoints, numBBPoints - NumOfDimensions);
-                    var plane = new ConvexFaceInternal(NumOfDimensions, 0, new IndexBuffer());
-                    plane.Vertices = vertexIndices.ToArray();
-                    mathHelper.CalculateFacePlane(plane, new double[3]);
-                    var maxDistance = 0.0;
-                    var newVertexIndex = -1;
-                    for (int i = 0; i < NumberOfVertices; i++)
-                    {
-                        var distance = Math.Abs(mathHelper.GetVertexDistance(i, plane));
-                        if (maxDistance < distance)
-                        {
-                            maxDistance = distance;
-                            newVertexIndex = i;
-                        }
-                    }
-                    if (newVertexIndex != -1)
-                    {
-                        bestVertexIndices = new List<int>(vertexIndices);
-                        bestVertexIndices.Add(newVertexIndex);
-                        degenerate = false;
-                    }
-                }
-                else
-                {
-                    bestVertexIndices = AddNVerticesFarthestToCentroid(boundingBoxPoints, NumOfDimensions + 1);
-                    degenerate = mathHelper.VolumeOfSimplex(boundingBoxPoints) == 0;
-                }
+            else if ((NumOfDimensions + 1) < numBBPoints)
+            {   //if there are more bounding box points than needed, call the following function to find a 
+                // random one that has a large volume.
+                bestVertexIndices = FindLargestRandomSimplex(boundingBoxPoints, boundingBoxPoints, out var volume);
+                degenerate = volume == 0.0;
+            }
+            if (degenerate)
+            {   // if it turns out to still be degenerate, then increase the check to include all vertices.
+                // this is potentially expensive, but we don't have a choice.
+                bestVertexIndices = FindLargestRandomSimplex(boundingBoxPoints, Enumerable.Range(0, NumberOfVertices), out var volume);
+                degenerate = volume == 0.0;
+
             }
             if (degenerate) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DegenerateData,
                   "Failed to find initial simplex shape with non-zero volume. While data appears to be in " + NumOfDimensions +
                   " dimensions, the data is all co-planar (or collinear, co-hyperplanar) and is representable by fewer dimensions.");
             InsidePoint = CalculateVertexCentriod(bestVertexIndices);
             return bestVertexIndices;
+        }
+        private List<int> FindLargestRandomSimplex(IList<int> bbPoints, IEnumerable<int> otherPoints, out double volume)
+        {
+            var random = new Random(5);
+            List<int> bestVertexIndices = null;
+            var maxVolume = Constants.DefaultPlaneDistanceTolerance;
+            volume = 0.0;
+            var numBBPoints = bbPoints.Count;
+            for (int i = 0; i < NumberOfInitSimplicesToTest; i++)
+            {
+                var vertexIndices = new List<int>();
+                var alreadyChosenIndices = new HashSet<int>();
+                var numRandomIndices = (2 * NumOfDimensions <= numBBPoints)
+                    ? NumOfDimensions : numBBPoints - NumOfDimensions;
+                while (alreadyChosenIndices.Count < numRandomIndices)
+                {
+                    var index = random.Next(numBBPoints);
+                    if (alreadyChosenIndices.Contains(index)) continue;
+                    alreadyChosenIndices.Add(index);
+                }
+                if (2 * NumOfDimensions <= numBBPoints)
+                    foreach (var index in alreadyChosenIndices)
+                        vertexIndices.Add(bbPoints[index]);
+                else
+                {
+                    for (int j = 0; j < numBBPoints; j++)
+                        if (!alreadyChosenIndices.Contains(j))
+                            vertexIndices.Add(bbPoints[j]);
+                }
+                var plane = new ConvexFaceInternal(NumOfDimensions, 0, new IndexBuffer());
+                plane.Vertices = vertexIndices.ToArray();
+                mathHelper.CalculateFacePlane(plane, new double[3]);
+                // this next line is the only difference between this subroutine and the one
+                var newVertex = FindFarthestPoint(otherPoints, plane);
+                if (newVertex == -1) continue;
+                vertexIndices.Add(newVertex);
+                volume = mathHelper.VolumeOfSimplex(vertexIndices);
+                if (maxVolume < volume)
+                {
+                    maxVolume = volume;
+                    bestVertexIndices = vertexIndices;
+                }
+            }
+            return bestVertexIndices;
+        }
+        private int FindFarthestPoint(IEnumerable<int> vertexIndices, ConvexFaceInternal plane)
+        {
+            var maxDistance = 0.0;
+            var farthestVertexIndex = -1;
+            foreach (var v in vertexIndices)
+            {
+                var distance = Math.Abs(mathHelper.GetVertexDistance(v, plane));
+                if (maxDistance < distance)
+                {
+                    maxDistance = distance;
+                    farthestVertexIndex = v;
+                }
+            }
+            return farthestVertexIndex;
         }
 
         private List<int> RemoveNVerticesClosestToCentroid(List<int> vertexIndices, int n)
