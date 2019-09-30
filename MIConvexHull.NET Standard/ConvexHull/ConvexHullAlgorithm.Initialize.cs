@@ -331,6 +331,11 @@ namespace MIConvexHull
             // given the way that the algorithm works, points that are put on the convex hull are not
             // removed. So it is important that we start with a simplex of points guaranteed to be on the
             // convex hull. This is where the bounding box points come in.
+            var negligibleVolume = Constants.FractionalNegligibleVolume;
+            for (int i = 0; i < NumOfDimensions; i++)
+            {
+                negligibleVolume *= maxima[i] - minima[i];
+            }
             List<int> bestVertexIndices = null;
             var numBBPoints = boundingBoxPoints.Count;
             var degenerate = true;
@@ -342,7 +347,7 @@ namespace MIConvexHull
             if ((NumOfDimensions + 1) == numBBPoints)
             {   // if the number of points is the same then just go with these
                 bestVertexIndices = boundingBoxPoints;
-                degenerate = mathHelper.VolumeOfSimplex(boundingBoxPoints) <= Constants.DefaultPlaneDistanceTolerance;
+                degenerate = mathHelper.VolumeOfSimplex(boundingBoxPoints) <= negligibleVolume;
             }
             else if ((NumOfDimensions + 1) < numBBPoints)
             {   //if there are more bounding box points than needed, call the following function to find a 
@@ -365,7 +370,7 @@ namespace MIConvexHull
         }
         private List<int> FindLargestRandomSimplex(IList<int> bbPoints, IEnumerable<int> otherPoints, out double volume)
         {
-            var random = new Random();
+            var random = new Random(5);
             List<int> bestVertexIndices = null;
             var maxVolume = Constants.DefaultPlaneDistanceTolerance;
             volume = 0.0;

@@ -43,6 +43,8 @@ namespace MIConvexHull
 
 
         internal const double DefaultEqualityTolerance = 1e-15;
+        internal const double FractionalNegligibleVolume = 1e-8;
+
         /// <summary>
         /// Determines whether the specified x is negligible (|x| lte 1e-15).
         /// </summary>

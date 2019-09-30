@@ -332,7 +332,7 @@ namespace MIConvexHull
         /// </summary>
         /// <param name="A">a.</param>
         /// <returns>System.Double.</returns>
-        internal double VolumeOfSimplex(IList<int> vertexIndices, bool divideByConstToGetActualVolume = false)
+        internal double VolumeOfSimplex(IList<int> vertexIndices)
         {
             // this is the Cayley-Menger determinant, so a matrix is defined that is numDimensions+2
             var numRowCol = Dimension + 2;
@@ -362,13 +362,10 @@ namespace MIConvexHull
                 det *= A[(2 + Dimension) * i + i];
                 if (iPiv[i] != i) det *= -1; // the determinant sign changes on row swap.
             }
-            if (divideByConstToGetActualVolume)
-            {
-                var denom = Math.Pow(2, Dimension);
-                var i = 1;
-                while (i++ < Dimension) denom *= i;
-                det /= denom;
-            }
+            var denom = Math.Pow(2, Dimension);
+            var m= 1;
+            while (m++ < Dimension) denom *= m;
+            det /= denom;
             if (Dimension % 2 == 0) det *= -1;
             return det;
         }
