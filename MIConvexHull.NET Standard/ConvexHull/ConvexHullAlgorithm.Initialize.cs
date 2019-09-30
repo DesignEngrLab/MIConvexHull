@@ -304,8 +304,10 @@ namespace MIConvexHull
             }
             // update the adjacency (check all pairs of faces)
             for (var i = 0; i < NumOfDimensions; i++)
-                for (var j = i + 1; j < NumOfDimensions + 1; j++) UpdateAdjacency(FacePool[faces[i]], FacePool[faces[j]]);
-
+                for (var j = i + 1; j < NumOfDimensions + 1; j++) 
+                    UpdateAdjacency(FacePool[faces[i]], FacePool[faces[j]]);
+            foreach (var item in initialPoints)
+                VertexVisited[item] = true;
             #endregion
 
             #region Init the vertex beyond buffers.
@@ -522,8 +524,8 @@ namespace MIConvexHull
             l.AdjacentFaces[i] = r.Index;
 
             // update the adj. face on the other face - find the vertex that remains marked
-            for (i = 0; i < lv.Length; i++) VertexVisited[lv[i]] = false;
-            for (i = 0; i < rv.Length; i++)
+            for (i = 0; i < NumOfDimensions; i++) VertexVisited[lv[i]] = false;
+            for (i = 0; i < NumOfDimensions; i++)
             {
                 if (VertexVisited[rv[i]]) break;
             }
