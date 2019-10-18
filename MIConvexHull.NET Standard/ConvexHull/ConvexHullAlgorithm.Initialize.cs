@@ -369,7 +369,7 @@ namespace MIConvexHull
         }
         private List<int> FindLargestRandomSimplex(IList<int> bbPoints, IEnumerable<int> otherPoints, out double volume)
         {
-            var random = new Random(5);
+            var random = new Random(1);
             List<int> bestVertexIndices = null;
             var maxVolume = Constants.DefaultPlaneDistanceTolerance;
             volume = 0.0;
