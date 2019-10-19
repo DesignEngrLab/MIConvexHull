@@ -397,7 +397,7 @@ namespace MIConvexHull
                 }
                 var plane = new ConvexFaceInternal(NumOfDimensions, 0, new IndexBuffer());
                 plane.Vertices = vertexIndices.ToArray();
-                mathHelper.CalculateFacePlane(plane, new double[3]);
+                mathHelper.CalculateFacePlane(plane, new double[NumOfDimensions]);
                 // this next line is the only difference between this subroutine and the one
                 var newVertex = FindFarthestPoint(otherPoints, plane);
                 if (newVertex == -1) continue;
