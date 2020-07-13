@@ -371,7 +371,7 @@ namespace MIConvexHull
         {
             var random = new Random(1);
             List<int> bestVertexIndices = null;
-            var maxVolume = Constants.DefaultPlaneDistanceTolerance;
+            var maxVolume = 0.0;
             volume = 0.0;
             var numBBPoints = bbPoints.Count;
             for (int i = 0; i < NumberOfInitSimplicesToTest; i++)

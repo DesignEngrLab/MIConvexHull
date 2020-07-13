@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace MIConvexHull
@@ -334,6 +335,7 @@ namespace MIConvexHull
         /// <returns>System.Double.</returns>
         internal double VolumeOfSimplex(IList<int> vertexIndices)
         {
+            //DebugPrintVertices(vertexIndices);
             // this is the Cayley-Menger determinant, so a matrix is defined that is numDimensions+2
             var numRowCol = Dimension + 2;
             var A = new double[numRowCol * numRowCol];
@@ -363,92 +365,103 @@ namespace MIConvexHull
                 if (iPiv[i] != i) det *= -1; // the determinant sign changes on row swap.
             }
             var denom = Math.Pow(2, Dimension);
-            var m= 1;
+            var m = 1;
             while (m++ < Dimension) denom *= m;
             det /= denom;
             if (Dimension % 2 == 0) det *= -1;
             return det;
         }
-        #endregion
 
-
-        // Modified from Math.NET
-        // Copyright (c) 2009-2013 Math.NET
-        /// <summary>
-        /// Lus the factor.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="ipiv">The ipiv.</param>
-        /// <param name="vecLUcolj">The vec l ucolj.</param>
-        private static void LUFactor(IList<double> data, int order, int[] ipiv, double[] vecLUcolj)
+        private void DebugPrintVertices(IList<int> vertexIndices)
         {
-            // Initialize the pivot matrix to the identity permutation.
-            for (var i = 0; i < order; i++)
+            foreach (var vertexIndex in vertexIndices)
             {
-                ipiv[i] = i;
+                string coordinates = "{ ";
+                for (var i = 0; i < Dimension; i++)
+                    coordinates += PositionData[vertexIndex + i] + ", ";
+            Debug.WriteLine(coordinates);
             }
+        }
+            #endregion
 
-            // Outer loop.
-            for (var j = 0; j < order; j++)
+
+            // Modified from Math.NET
+            // Copyright (c) 2009-2013 Math.NET
+            /// <summary>
+            /// Lus the factor.
+            /// </summary>
+            /// <param name="data">The data.</param>
+            /// <param name="order">The order.</param>
+            /// <param name="ipiv">The ipiv.</param>
+            /// <param name="vecLUcolj">The vec l ucolj.</param>
+            private static void LUFactor(IList<double> data, int order, int[] ipiv, double[] vecLUcolj)
             {
-                var indexj = j * order;
-                var indexjj = indexj + j;
-
-                // Make a copy of the j-th column to localize references.
+                // Initialize the pivot matrix to the identity permutation.
                 for (var i = 0; i < order; i++)
                 {
-                    vecLUcolj[i] = data[indexj + i];
+                    ipiv[i] = i;
                 }
 
-                // Apply previous transformations.
-                for (var i = 0; i < order; i++)
+                // Outer loop.
+                for (var j = 0; j < order; j++)
                 {
-                    // Most of the time is spent in the following dot product.
-                    var kmax = Math.Min(i, j);
-                    var s = 0.0;
-                    for (var k = 0; k < kmax; k++)
+                    var indexj = j * order;
+                    var indexjj = indexj + j;
+
+                    // Make a copy of the j-th column to localize references.
+                    for (var i = 0; i < order; i++)
                     {
-                        s += data[k * order + i] * vecLUcolj[k];
+                        vecLUcolj[i] = data[indexj + i];
                     }
 
-                    data[indexj + i] = vecLUcolj[i] -= s;
-                }
-
-                // Find pivot and exchange if necessary.
-                var p = j;
-                for (var i = j + 1; i < order; i++)
-                {
-                    if (Math.Abs(vecLUcolj[i]) > Math.Abs(vecLUcolj[p]))
+                    // Apply previous transformations.
+                    for (var i = 0; i < order; i++)
                     {
-                        p = i;
-                    }
-                }
+                        // Most of the time is spent in the following dot product.
+                        var kmax = Math.Min(i, j);
+                        var s = 0.0;
+                        for (var k = 0; k < kmax; k++)
+                        {
+                            s += data[k * order + i] * vecLUcolj[k];
+                        }
 
-                if (p != j)
-                {
-                    for (var k = 0; k < order; k++)
-                    {
-                        var indexk = k * order;
-                        var indexkp = indexk + p;
-                        var indexkj = indexk + j;
-                        var temp = data[indexkp];
-                        data[indexkp] = data[indexkj];
-                        data[indexkj] = temp;
+                        data[indexj + i] = vecLUcolj[i] -= s;
                     }
 
-                    ipiv[j] = p;
-                }
-
-                // Compute multipliers.
-                if (j < order & data[indexjj] != 0.0)
-                {
+                    // Find pivot and exchange if necessary.
+                    var p = j;
                     for (var i = j + 1; i < order; i++)
                     {
-                        data[indexj + i] /= data[indexjj];
+                        if (Math.Abs(vecLUcolj[i]) > Math.Abs(vecLUcolj[p]))
+                        {
+                            p = i;
+                        }
+                    }
+
+                    if (p != j)
+                    {
+                        for (var k = 0; k < order; k++)
+                        {
+                            var indexk = k * order;
+                            var indexkp = indexk + p;
+                            var indexkj = indexk + j;
+                            var temp = data[indexkp];
+                            data[indexkp] = data[indexkj];
+                            data[indexkj] = temp;
+                        }
+
+                        ipiv[j] = p;
+                    }
+
+                    // Compute multipliers.
+                    if (j < order & data[indexjj] != 0.0)
+                    {
+                        for (var i = j + 1; i < order; i++)
+                        {
+                            data[indexj + i] /= data[indexjj];
+                        }
                     }
                 }
             }
         }
     }
-}
