@@ -364,7 +364,7 @@ namespace MIConvexHull
             if (degenerate) throw new ConvexHullGenerationException(ConvexHullCreationResultOutcome.DegenerateData,
                   "Failed to find initial simplex shape with non-zero volume. While data appears to be in " + NumOfDimensions +
                   " dimensions, the data is all co-planar (or collinear, co-hyperplanar) and is representable by fewer dimensions.");
-            InsidePoint = CalculateVertexCentriod(bestVertexIndices);
+            InsidePoint = CalculateVertexCentroid(bestVertexIndices);
             return bestVertexIndices;
         }
         private List<int> FindLargestRandomSimplex(IList<int> bbPoints, IEnumerable<int> otherPoints, out double volume)
@@ -430,7 +430,7 @@ namespace MIConvexHull
 
         private List<int> RemoveNVerticesClosestToCentroid(List<int> vertexIndices, int n)
         {
-            var centroid = CalculateVertexCentriod(vertexIndices);
+            var centroid = CalculateVertexCentroid(vertexIndices);
             var vertsToRemove = new SortedDictionary<double, int>();
             foreach (var v in vertexIndices)
             {
@@ -463,7 +463,7 @@ namespace MIConvexHull
             var newVertsList = new List<int>(vertexIndices);
             while (newVertsList.Count < n)
             {
-                var centroid = CalculateVertexCentriod(newVertsList);
+                var centroid = CalculateVertexCentroid(newVertsList);
                 var maxDistance = 0.0;
                 var newVert = -1;
                 for (int v = 0; v < NumberOfVertices; v++)
@@ -486,7 +486,7 @@ namespace MIConvexHull
             return newVertsList;
         }
 
-        private double[] CalculateVertexCentriod(IList<int> vertexIndices)
+        private double[] CalculateVertexCentroid(IList<int> vertexIndices)
         {
             var numPoints = vertexIndices.Count;
             var centroid = new double[NumOfDimensions];
