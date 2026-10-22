@@ -1,4 +1,4 @@
-﻿/******************************************************************************
+/******************************************************************************
  *
  * The MIT License (MIT)
  *
@@ -331,7 +331,7 @@ namespace MIConvexHull
             // given the way that the algorithm works, points that are put on the convex hull are not
             // removed. So it is important that we start with a simplex of points guaranteed to be on the
             // convex hull. This is where the bounding box points come in.
-            var negligibleVolume = Constants.FractionalNegligibleVolume;
+            var negligibleVolume = (PlaneDistanceTolerance < Constants.DefaultPlaneDistanceTolerance) ? PlaneDistanceTolerance : Constants.FractionalNegligibleVolume;
             for (int i = 0; i < NumOfDimensions; i++)
             {
                 negligibleVolume *= maxima[i] - minima[i];

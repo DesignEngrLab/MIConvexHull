@@ -1,4 +1,4 @@
-﻿/******************************************************************************
+/******************************************************************************
  *
  * The MIT License (MIT)
  *
@@ -366,10 +366,11 @@ namespace MIConvexHull
             }
             var denom = Math.Pow(2, Dimension);
             var m = 1;
-            while (m++ < Dimension) denom *= m;
+            while (m++ < Dimension) denom *= m * m;
             det /= denom;
             if (Dimension % 2 == 0) det *= -1;
-            return det;
+            if (det <= 0.0) return 0.0;
+            return Math.Sqrt(det);
         }
 
         private void DebugPrintVertices(IList<int> vertexIndices)

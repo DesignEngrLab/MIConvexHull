@@ -1,26 +1,32 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <TargetFrameworks>netstandard1.0;netstandard2.0</TargetFrameworks>
     <AssemblyName>MIConvexHull</AssemblyName>
     <PackageId>MIConvexHull</PackageId>
-    <Version>1.1.19.1018 </Version>
+    <Version>1.2.0</Version>
     <Authors>David Sehnal, Matt Campbell</Authors>
     <Description>This project is a convex hull algorithm and library for 2D, 3D, and higher dimensions. The code can also be used to compute Delaunay triangulations and Voronoi meshes of the input data.
 </Description>
-    <Copyright>2019</Copyright>
-    <PackageLicenseUrl>https://github.com/DesignEngrLab/MIConvexHull/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <Copyright>2026</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://designengrlab.github.io/MIConvexHull/</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/DesignEngrLab/MIConvexHull.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>1.1.19.1018</AssemblyVersion>
-    <FileVersion>1.1.19.1018</FileVersion>
-    <SignAssembly>true</SignAssembly>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
+    <SignAssembly Condition="Exists('DesignEngineeringLab.pfx')">true</SignAssembly>
+    <SignAssembly Condition="!Exists('DesignEngineeringLab.pfx')">false</SignAssembly>
     <AssemblyOriginatorKeyFile>DesignEngineeringLab.pfx</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Product>MIConvexHull</Product>
     <DelaySign>false</DelaySign>
     <RootNamespace>MIConvexHull</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
 </Project>
