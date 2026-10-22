@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.0;netstandard2.0</TargetFrameworks>
+    <!-- Retain netstandard1.0 for existing consumers while suppressing its intentional SDK warning. -->
+    <NoWarn>$(NoWarn);NETSDK1215</NoWarn>
     <AssemblyName>MIConvexHull</AssemblyName>
     <PackageId>MIConvexHull</PackageId>
     <Version>1.2.0</Version>
@@ -16,12 +18,7 @@
     <RepositoryType>git</RepositoryType>
     <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <FileVersion>1.2.0.0</FileVersion>
-    <SignAssembly Condition="Exists('DesignEngineeringLab.pfx')">true</SignAssembly>
-    <SignAssembly Condition="!Exists('DesignEngineeringLab.pfx')">false</SignAssembly>
-    <AssemblyOriginatorKeyFile>DesignEngineeringLab.pfx</AssemblyOriginatorKeyFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Product>MIConvexHull</Product>
-    <DelaySign>false</DelaySign>
     <RootNamespace>MIConvexHull</RootNamespace>
   </PropertyGroup>
 

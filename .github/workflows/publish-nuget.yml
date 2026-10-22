@@ -1,0 +1,158 @@
+name: Publish MIConvexHull to NuGet
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'MIConvexHull.NET Standard/MIConvexHull.NET Standard.csproj'
+
+  # Needed for the initial 1.2.0 publication because that version bump
+  # was committed before this workflow existed.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish; must exactly match <Version> in the project'
+        required: true
+        type: string
+
+concurrency:
+  group: publish-miconvexhull
+  cancel-in-progress: false
+
+env:
+  PROJECT_PATH: 'MIConvexHull.NET Standard/MIConvexHull.NET Standard.csproj'
+  PACKAGE_ID: 'MIConvexHull'
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    environment: release
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Validate package version
+        id: version
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          function Get-ProjectVersion([string] $contents) {
+              [xml] $project = $contents
+
+              $versions = @(
+                  $project.Project.PropertyGroup |
+                      ForEach-Object { $_.Version } |
+                      Where-Object { $null -ne $_ } |
+                      ForEach-Object { ([string] $_).Trim() }
+              )
+
+              if ($versions.Count -ne 1) {
+                  throw "Expected exactly one non-empty <Version> property, but found $($versions.Count)."
+              }
+
+              return $versions[0]
+          }
+
+          function ConvertTo-NumericVersion([string] $text) {
+              if ($text -notmatch '^\d+\.\d+\.\d+(?:\.\d+)?$') {
+                  throw "Version '$text' is not a stable three- or four-part numeric version."
+              }
+
+              $parts = @($text.Split('.') | ForEach-Object { [int] $_ })
+              if ($parts.Count -eq 3) {
+                  $parts += 0
+              }
+
+              return [version]::new($parts[0], $parts[1], $parts[2], $parts[3])
+          }
+
+          $currentContents = Get-Content -Raw -LiteralPath $env:PROJECT_PATH
+          $currentVersion = Get-ProjectVersion $currentContents
+          $currentComparable = ConvertTo-NumericVersion $currentVersion
+
+          if ($env:EVENT_NAME -eq 'push') {
+              if ([string]::IsNullOrWhiteSpace($env:BEFORE_SHA) -or
+                  $env:BEFORE_SHA -match '^0+$') {
+                  throw "GitHub did not provide a usable previous commit."
+              }
+
+              $previousLines = & git show "$($env:BEFORE_SHA):$($env:PROJECT_PATH)"
+              if ($LASTEXITCODE -ne 0) {
+                  throw "Could not read the project from commit $env:BEFORE_SHA."
+              }
+
+              $previousVersion = Get-ProjectVersion ($previousLines -join "`n")
+              $previousComparable = ConvertTo-NumericVersion $previousVersion
+
+              if ($currentComparable -le $previousComparable) {
+                  throw "Package version must increase. Previous: $previousVersion; current: $currentVersion."
+              }
+
+              Write-Host "Version increased from $previousVersion to $currentVersion."
+          }
+          else {
+              if ($currentVersion -ne $env:REQUESTED_VERSION) {
+                  throw "Requested version '$env:REQUESTED_VERSION' does not match project version '$currentVersion'."
+              }
+
+              Write-Host "Manual publication requested for version $currentVersion."
+          }
+
+          "number=$currentVersion" >> $env:GITHUB_OUTPUT
+
+      - name: Pack
+        shell: pwsh
+        run: |
+          dotnet pack $env:PROJECT_PATH `
+              --configuration Release `
+              --output artifacts `
+              -p:ContinuousIntegrationBuild=true
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "dotnet pack failed."
+          }
+
+          $version = '${{ steps.version.outputs.number }}'
+          $packagePath = Join-Path 'artifacts' "$env:PACKAGE_ID.$version.nupkg"
+
+          if (-not (Test-Path -LiteralPath $packagePath)) {
+              throw "Expected package was not created: $packagePath"
+          }
+
+      # Keep this close to the push because the temporary credential expires.
+      - name: NuGet login using OIDC
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push package to NuGet
+        shell: pwsh
+        env:
+          TEMP_NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          PACKAGE_VERSION: ${{ steps.version.outputs.number }}
+        run: |
+          $packagePath = Join-Path 'artifacts' "$env:PACKAGE_ID.$env:PACKAGE_VERSION.nupkg"
+
+          dotnet nuget push $packagePath --api-key $env:TEMP_NUGET_API_KEY --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "NuGet publication failed."
+          }
